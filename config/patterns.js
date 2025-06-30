@@ -5,77 +5,77 @@ export default [
   {
     name: "commit-and-push",
     match: /commit.*push|push.*commit/i,
-    recipe: "commit-push"
+    recipe: "commit-push",
   },
   {
     name: "fix-ci",
     match: /fix.*ci|ci.*broken|ci.*fail/i,
-    recipe: "fix-ci"
+    recipe: "fix-ci",
   },
   {
     name: "clean-code",
     match: /clean.*code|cleanup|code.*quality/i,
-    recipe: "clean-code"
+    recipe: "clean-code",
   },
   {
     name: "start-day",
     match: /start.*day|morning|begin.*work/i,
-    recipe: "start-day"
+    recipe: "start-day",
   },
   {
     name: "end-day",
     match: /end.*day|finish.*work|done.*today/i,
-    recipe: "end-day"
+    recipe: "end-day",
   },
   {
     name: "whats-broken",
     match: /what.*broken|what.*wrong|show.*issues/i,
-    command: "detect-issues"
+    command: "detect-issues",
   },
   {
     name: "fix-it",
     match: /^fix$/i,
-    recipe: "fix"
+    recipe: "fix",
   },
-  
+
   // Direct command patterns
   {
     name: "search-pattern",
     match: /search\s+(?:for\s+)?(.+)/i,
     handler: (match) => ({
       command: "search",
-      args: { query: match[1].trim() }
-    })
+      args: { query: match[1].trim() },
+    }),
   },
   {
     name: "find-files",
     match: /find\s+(?:all\s+)?(\S+)\s+files?/i,
     handler: (match) => ({
       command: "find",
-      args: { pattern: match[1] }
-    })
+      args: { pattern: match[1] },
+    }),
   },
   {
     name: "read-file",
     match: /read\s+(?:file\s+)?(.+)/i,
     handler: (match) => ({
       command: "read",
-      args: { path: match[1].trim() }
-    })
+      args: { path: match[1].trim() },
+    }),
   },
   {
     name: "run-tests",
     match: /run.*test|test.*all/i,
-    command: "test"
+    command: "test",
   },
   {
     name: "show-status",
     match: /show.*status|git.*status/i,
-    command: "git:status"
+    command: "git:status",
   },
   {
     name: "generate-docs",
     match: /generate.*doc|create.*doc/i,
-    command: "doc:generate"
-  }
+    command: "doc:generate",
+  },
 ];

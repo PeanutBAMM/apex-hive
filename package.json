@@ -1,0 +1,37 @@
+{
+  "name": "apex-hive",
+  "version": "1.0.0",
+  "description": "Apex Hive - AI Development Hub",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "lint": "eslint .",
+    "build": "node scripts/build.js",
+    "apex": "apex",
+    "apex:help": "apex help",
+    "apex:ci": "apex ci:monitor",
+    "apex:test": "apex test",
+    "apex:search": "apex search"
+  },
+  "keywords": [
+    "mcp",
+    "ai",
+    "development",
+    "tools",
+    "apex"
+  ],
+  "author": "Apex Team",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.13.2",
+    "glob": "^11.0.3",
+    "lru-cache": "^10.1.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

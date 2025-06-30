@@ -22,6 +22,8 @@ export async function formatOutput(result, context = {}) {
     if (result.error) {
       return formatError(result);
     }
+    // Handle generic objects by converting to readable JSON
+    return JSON.stringify(result, null, 2);
   }
   
   // Default: return as string

@@ -1,0 +1,62 @@
+{
+  "help": {
+    "module": "core",
+    "description": "Show available commands"
+  },
+  "search": {
+    "script": "scripts/search.js",
+    "description": "Search codebase using ripgrep"
+  },
+  "test": {
+    "script": "scripts/test-runner.js",
+    "description": "Run test suite"
+  },
+  "build": {
+    "script": "scripts/build.js",
+    "description": "Build the project"
+  },
+  "ci:monitor": {
+    "script": "scripts/ci-monitor.js",
+    "description": "Monitor CI status"
+  },
+  "ci:status": {
+    "script": "scripts/ci-status.js", 
+    "description": "Show CI status"
+  },
+  "ci:fix": {
+    "script": "scripts/ci-fix.js",
+    "description": "Fix CI issues"
+  },
+  "ci:parse": {
+    "script": "scripts/ci-parse.js",
+    "description": "Parse CI logs"
+  },
+  "ci:heal": {
+    "script": "scripts/ci-heal.js",
+    "description": "Self-healing CI"
+  },
+  "ci:smart-push": {
+    "script": "scripts/ci-smart-push.js",
+    "description": "Smart push with CI"
+  },
+  "ci:watch": {
+    "script": "scripts/ci-watch.js",
+    "description": "Watch CI runs"
+  },
+  "doc:generate": {
+    "script": "scripts/doc-generate.js",
+    "description": "Generate documentation"
+  },
+  "doc:update": {
+    "script": "scripts/doc-update.js",
+    "description": "Update documentation"
+  },
+  "git:commit": {
+    "script": "scripts/git-commit.js",
+    "description": "Create git commit"
+  },
+  "git:push": {
+    "script": "scripts/git-push.js",
+    "description": "Push to remote"
+  }
+}

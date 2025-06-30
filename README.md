@@ -1,229 +1,68 @@
-# 🚀 Apex Hive
+# Apex Hive
 
-> Powerful AI development automation with 60+ scripts for CI/CD, documentation, quality control, and more.
+Smart command system with natural language support.
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](package.json)
-[![Scripts](https://img.shields.io/badge/scripts-60+-green.svg)](scripts/)
-[![License](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
-
-## ✨ Features
-
-- **60+ Automation Scripts**: CI/CD, documentation, quality control, backlog management
-- **Natural Language Support**: English and Dutch command patterns
-- **MCP Integration**: Works seamlessly with Claude Desktop
-- **Zero Stdout Pollution**: Clean MCP server implementation
-- **Recipe Workflows**: Combine multiple commands for complex tasks
-- **Smart Caching**: LRU cache for performance
-- **Ripgrep Powered**: Ultra-fast code search
-
-## 🚀 Quick Start
-
-### 1. Installation
+## Installation
 
 ```bash
-# Clone or download Apex Hive
-cd apex-hive
-
-# Install dependencies
-npm install
-
-# Make install script executable
-chmod +x install-mcp.js
-
-# Register with Claude
-node install-mcp.js
+npm install @apex-hive/core
+apex init
 ```
 
-### 2. Verify Installation
+## Quick Start
 
 ```bash
-# Run verification
-node verify-installation.js
-
-# All checks should pass ✅
-```
-
-### 3. Restart Claude Desktop
-
-After installation, restart Claude Desktop to load the MCP server.
-
-### 4. Test It Out
-
-In Claude, try these commands:
-
-```bash
-# Show help
-apex help
-
-# Check CI status
-apex ci:status
-
-# Search codebase
+# Search for code
 apex search "function authenticate"
 
-# Natural language
-apex "fix the CI"
-apex "wat is kapot?"  # Dutch
-```
+# Check CI status
+apex ci:monitor
 
-## 📚 Command Categories
-
-### CI/CD (7 commands)
-- `apex ci:monitor` - Real-time CI monitoring
-- `apex ci:fix` - Auto-fix CI issues
-- `apex ci:smart-push` - Push with CI checks
-- [See all...](CLAUDE.md#cicd-commands)
-
-### Documentation (15 commands)
-- `apex doc:generate` - Generate docs
-- `apex doc:validate` - Validate structure
-- `apex doc:fix-links` - Fix broken links
-- [See all...](CLAUDE.md#documentation-commands)
-
-### Quality Control (8 commands)
-- `apex quality:lint` - Run linting
-- `apex quality:fix-all` - Fix all issues
-- `apex quality:console-clean` - Remove console.logs
-- [See all...](CLAUDE.md#quality-control)
-
-### Git Operations (8 commands)
-- `apex git:commit` - Smart commits
-- `apex git:status` - Enhanced status
-- `apex git:branch` - Branch management
-- [See all...](CLAUDE.md#git-operations)
-
-[View all 60+ commands →](CLAUDE.md)
-
-## 🎯 Recipe Workflows
-
-Combine commands for powerful workflows:
-
-```bash
-# Morning routine
-apex start-day
-# → git:pull → ci:status → backlog:display
-
-# Commit and push
-apex commit-and-push  
-# → git:commit → ci:smart-push → ci:monitor
-
-# Fix everything
-apex fix-all
-# → quality:fix-all → doc:generate → test:run
-```
-
-## 🌍 Natural Language
-
-Apex Hive understands natural language:
-
-### English
-- "fix the CI" → `apex ci:fix`
-- "what's broken?" → `apex detect-issues`
-- "generate docs" → `apex doc:generate`
-
-### Dutch (Nederlands)
-- "fix de CI" → `apex ci:fix`
-- "wat is kapot?" → `apex detect-issues`
-- "commit en push" → commit and push workflow
-
-## 🛠️ Configuration
-
-### MCP Registration
-
-```bash
-# Automatic registration
-node install-mcp.js
-
-# Manual registration
-claude mcp add apex-hive -s user "node /path/to/apex-hive/mcp-server.js"
-
-# Verify registration
-claude mcp list
-```
-
-### Options
-
-Most commands support:
-- `--dry-run` - Preview changes
-- `--verbose` - Detailed output
-- `--force` - Skip confirmations
-- `--help` - Command help
-
-## 📂 Project Structure
-
-```
-apex-hive/
-├── mcp-server.js       # MCP gateway (50 lines)
-├── apex-router.js      # Command router (200 lines)
-├── scripts/            # 60+ automation scripts
-├── modules/            # Shared modules
-├── config/             # Configuration files
-├── CLAUDE.md          # Full command reference
-└── README.md          # This file
-```
-
-## 🧪 Testing
-
-```bash
 # Run tests
-node test-scripts.js
+apex test
 
-# Test specific category
-node test-scripts.js --category ci
-
-# Test MCP integration
-bash test-mcp.sh
+# Get help
+apex help
 ```
 
-## 🚀 Advanced Usage
+## Features
 
-### Direct Script Execution
+- 🚀 60 built-in scripts for common tasks
+- 🌍 Natural language support (English & Dutch)
+- 🔍 Fast search with ripgrep integration
+- 🤖 CI/CD automation with self-healing
+- 📚 Smart documentation generation
+- 🔧 Extensible recipe system
 
-```bash
-# Run scripts directly
-node index.js ci:status
-node index.js search "TODO"
-node index.js quality:fix-all --dry-run
-```
+## Available Commands
 
-### Module System
+### CI Commands
+- `ci:monitor` - Monitor CI status
+- `ci:parse` - Parse CI logs
+- `ci:fix` - Fix CI issues
+- `ci:heal` - Self-healing CI
+- `ci:watch` - Watch CI progress
+- `ci:smart-push` - Smart push with monitoring
 
-Scripts can access shared modules:
-- `cache` - LRU caching
-- `fileOps` - Safe file operations
-- `rag` - Ripgrep search
-- `gitOps` - Git helpers
+### Documentation Commands
+- `doc:generate` - Generate documentation
+- `doc:update` - Update existing docs
+- `doc:validate` - Validate documentation
+- `doc:sync` - Sync documentation
 
-### Custom Recipes
+### Core Commands
+- `search` - Search codebase
+- `test` - Run tests
+- `init` - Initialize project
+- `help` - Show help
 
-Add custom workflows to `config/recipes.json`:
+## Configuration
 
-```json
-{
-  "my-workflow": {
-    "description": "My custom workflow",
-    "steps": ["git:pull", "test:run", "git:push"]
-  }
-}
-```
+Configuration is stored in `.apex-hive/config.json`.
 
-## 🤝 Contributing
+## License
 
-1. Fork the repository
-2. Create feature branch
-3. Add tests for new scripts
-4. Submit pull request
-
-## 📄 License
-
-MIT License - see [LICENSE](LICENSE) file
-
-## 🙏 Acknowledgments
-
-- Built for the Apex AI ecosystem
-- Powered by ripgrep for fast searching
-- MCP SDK for Claude integration
+MIT
 
 ---
-
-**Need help?** Check [CLAUDE.md](CLAUDE.md) for the complete command reference or run `apex help`.
+*Generated by Apex Hive on 2025-06-30T21:27:19.216Z*
