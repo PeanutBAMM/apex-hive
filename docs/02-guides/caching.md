@@ -51,6 +51,7 @@ apex cache:status --detailed
 
 ### Warm the Cache
 
+#### README Files
 Pre-cache README files for instant access:
 
 ```bash
@@ -58,6 +59,33 @@ apex cache:warm-readmes
 
 # This caches all README files for 24 hours
 # Useful for documentation-heavy workflows
+```
+
+#### High-Value Documentation  
+Pre-cache critical documentation files for development:
+
+```bash
+apex cache:warm-docs
+
+# Caches 8 high-value documentation files:
+# - commands-reference.md
+# - architecture.md  
+# - troubleshooting.md
+# - development.md
+# - caching.md
+# - natural-language.md
+# - recipes.md
+# - getting-started.md
+```
+
+#### Complete Cache Warming
+Warm both READMEs and documentation (recommended):
+
+```bash
+apex cache:warm-all
+
+# Combines both README and documentation warming
+# Used by automated daily cron job at 08:00 CET
 ```
 
 ### Clear Cache
@@ -68,6 +96,42 @@ apex cache:clear
 
 # Clear specific namespace (future feature)
 apex cache:clear --namespace search
+```
+
+## 🕰️ Automated Cache System
+
+### Daily Cache Warming
+
+The enhanced cache system automatically refreshes cache daily:
+
+- **Schedule**: Every day at 08:00 CET  
+- **Command**: `apex cache:warm-all`
+- **Coverage**: 
+  - All README files across the project
+  - 8 high-value documentation files
+- **Logging**: Operations logged to `~/.apex-cache/cron.log`
+
+### Cron Job Details
+
+```bash
+# View current cron configuration
+crontab -l
+
+# Expected entry:
+0 8 * * * /path/to/apex-hive/scripts/cache-cron-warm.sh >/dev/null 2>&1
+
+# Check cron log for issues
+tail -f ~/.apex-cache/cron.log
+```
+
+### Manual Cache Refresh
+
+```bash
+# Trigger immediate cache refresh
+apex cache:warm-all
+
+# Check if cache warming succeeded
+apex cache:status
 ```
 
 ## 📊 Performance Benefits
