@@ -15,13 +15,13 @@ This error typically occurs when there's a protocol mismatch or stdout pollution
 ### 1. Test for stdout pollution
 ```bash
 timeout 2s node mcp-server.js 2>/dev/null | wc -c
-```
+```javascript
 Expected output: `0` (zero bytes)
 
 ### 2. Test the protocol directly
 ```bash
 node test-mcp-protocol.js
-```
+```javascript
 This should show successful initialize, list tools, and call tool responses.
 
 ### 3. Test with Claude Code
@@ -36,16 +36,16 @@ claude mcp add apex-hive -s user "node $(pwd)/mcp-server.js"
 
 # Verify registration
 claude mcp get apex-hive
-```
+```javascript
 
-### 4. Start Claude Code with debugging
+## 4. Start Claude Code with debugging
 ```bash
 # On Windows WSL
 claude.exe
 
 # On Linux/Mac
 claude
-```
+```javascript
 
 ## Common Issues and Fixes
 
@@ -57,12 +57,12 @@ claude
 ```bash
 chmod +x mcp-server.js
 chmod +x index.js
-```
+```javascript
 
 ### Issue: Module not found
 ```bash
 npm install
-```
+```javascript
 
 ### Issue: Still getting the tool_use error
 1. Restart Claude Code completely
@@ -89,7 +89,7 @@ If you need to debug, use the debug server:
 ```bash
 node mcp-server-debug.js
 # Check mcp-debug.log for protocol messages
-```
+```javascript
 
 ## Next Steps
 

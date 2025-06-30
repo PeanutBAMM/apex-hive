@@ -78,4 +78,9 @@ export default [
     match: /generate.*doc|create.*doc/i,
     command: "doc:generate",
   },
+  {
+    name: "cache-status",
+    match: /cache.*status|show.*cache/i,
+    command: "cache:status",
+  },
 ];

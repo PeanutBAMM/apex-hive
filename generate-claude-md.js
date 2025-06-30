@@ -93,6 +93,7 @@ const descriptions = {
   // Cache Scripts
   'cache:warm-readmes': 'Pre-cache README files for performance',
   'cache:clear': 'Clear all caches',
+  'cache:status': 'Display cache statistics and status',
   
   // Workflow Helpers
   'commit': 'Quick commit (alias for git:commit)',
