@@ -1,0 +1,51 @@
+{
+  "commit-push": [
+    "quality:fix-all",
+    "test",
+    "doc:generate-changed",
+    "doc:update-readme",
+    "git:commit",
+    "git:push",
+    "ci:monitor"
+  ],
+  "fix-ci": [
+    "ci:monitor",
+    "ci:parse",
+    "ci:fix",
+    "test:run"
+  ],
+  "clean-code": [
+    "quality:lint",
+    "quality:console-clean",
+    "quality:format"
+  ],
+  "start-day": [
+    "git:pull",
+    "test",
+    "backlog:display",
+    "ci:status"
+  ],
+  "end-day": [
+    "doc:organize",
+    "git:status",
+    "save-conversation"
+  ],
+  "fix": [
+    "detect-issues",
+    "fix-detected",
+    "test"
+  ],
+  "pre-commit": [
+    "doc:check",
+    "doc:generate-missing",
+    "quality:fix-all",
+    "test",
+    "doc:validate"
+  ],
+  "post-merge": [
+    "doc:post-merge",
+    "doc:organize",
+    "doc:update-readme",
+    "cache:warm-readmes"
+  ]
+}

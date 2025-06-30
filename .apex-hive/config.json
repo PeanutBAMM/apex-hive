@@ -1,0 +1,37 @@
+{
+  "version": "1.0.0",
+  "projectName": "apex-hive",
+  "created": "2025-06-30T14:21:26.804Z",
+  "template": "default",
+  "rag": {
+    "repositories": [
+      "."
+    ],
+    "useRipgrep": true,
+    "cacheDir": ".apex-hive/cache",
+    "dataDir": ".apex-hive/data",
+    "maxConversations": 5
+  },
+  "cache": {
+    "enabled": true,
+    "ttl": 3600000,
+    "maxSize": 104857600,
+    "persistentPatterns": [
+      "README.md",
+      "CLAUDE.md",
+      "package.json",
+      ".apex-hive/config.json"
+    ]
+  },
+  "scripts": {
+    "timeout": 300000,
+    "parallelLimit": 3
+  },
+  "naturalLanguage": {
+    "enabled": true,
+    "languages": [
+      "en",
+      "nl"
+    ]
+  }
+}

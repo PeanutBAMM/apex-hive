@@ -1,0 +1,11 @@
+{
+  "name": "quick-fix",
+  "description": "Quick fix for CI issues",
+  "steps": [
+    "ci:monitor",
+    "ci:parse",
+    "ci:fix",
+    "git:commit -m \"fix: Auto-fix CI issues\"",
+    "ci:smart-push"
+  ]
+}

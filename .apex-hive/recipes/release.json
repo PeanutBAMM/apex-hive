@@ -1,0 +1,13 @@
+{
+  "name": "release",
+  "description": "Prepare a release",
+  "steps": [
+    "test",
+    "lint",
+    "version:bump",
+    "changelog:generate",
+    "git:commit -m \"chore: Prepare release\"",
+    "git:tag",
+    "git:push --tags"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "name": "daily",
+  "description": "Daily development workflow",
+  "steps": [
+    "git:pull",
+    "test",
+    "lint",
+    "git:status"
+  ]
+}

@@ -1,0 +1,836 @@
+{
+  "timestamp": "2025-06-30T14:28:41.319Z",
+  "summary": {
+    "totalScripts": 20,
+    "totalTests": 22,
+    "passed": 16,
+    "failed": 6,
+    "successRate": 73
+  },
+  "categories": {
+    "ci": [
+      {
+        "name": "ci-monitor",
+        "tests": [
+          {
+            "name": "Basic status check",
+            "success": "error",
+            "duration": 109,
+            "error": null
+          }
+        ],
+        "passed": 1,
+        "failed": 0
+      },
+      {
+        "name": "ci-parse",
+        "tests": [
+          {
+            "name": "Parse empty logs",
+            "success": false,
+            "duration": 97,
+            "error": "Validation failed"
+          },
+          {
+            "name": "Parse with sample log",
+            "success": true,
+            "duration": 1,
+            "error": null
+          }
+        ],
+        "passed": 1,
+        "failed": 1
+      },
+      {
+        "name": "ci-fix",
+        "tests": [
+          {
+            "name": "Fix without errors",
+            "success": true,
+            "duration": 106,
+            "error": null
+          }
+        ],
+        "passed": 1,
+        "failed": 0
+      },
+      {
+        "name": "ci-heal",
+        "tests": [
+          {
+            "name": "Self-heal check",
+            "success": true,
+            "duration": 211,
+            "error": null
+          }
+        ],
+        "passed": 1,
+        "failed": 0
+      },
+      {
+        "name": "ci-watch",
+        "tests": [
+          {
+            "name": "Watch status",
+            "success": true,
+            "duration": 100,
+            "error": null
+          }
+        ],
+        "passed": 1,
+        "failed": 0
+      },
+      {
+        "name": "ci-smart-push",
+        "tests": [
+          {
+            "name": "Smart push check",
+            "success": false,
+            "duration": 4934,
+            "error": "Validation failed"
+          }
+        ],
+        "passed": 0,
+        "failed": 1
+      }
+    ],
+    "core": [
+      {
+        "name": "test-runner",
+        "tests": [
+          {
+            "name": "List available tests",
+            "success": true,
+            "duration": 6,
+            "error": null
+          }
+        ],
+        "passed": 1,
+        "failed": 0
+      },
+      {
+        "name": "search",
+        "tests": [
+          {
+            "name": "Search for \"router\"",
+            "success": [
+              {
+                "file": "mcp-server.js",
+                "line": 11,
+                "column": 31,
+                "text": "import ApexRouter from './apex-router.js';",
+                "context": {}
+              },
+              {
+                "file": "mcp-server.js",
+                "line": 24,
+                "column": 14,
+                "text": "// Initialize router",
+                "context": {}
+              },
+              {
+                "file": "mcp-server.js",
+                "line": 25,
+                "column": 6,
+                "text": "const router = new ApexRouter();",
+                "context": {}
+              },
+              {
+                "file": "mcp-server.js",
+                "line": 26,
+                "column": 6,
+                "text": "await router.initialize();",
+                "context": {}
+              },
+              {
+                "file": "mcp-server.js",
+                "line": 64,
+                "column": 25,
+                "text": "const result = await router.execute(command, args);",
+                "context": {}
+              },
+              {
+                "file": "package-lock.json",
+                "line": 877,
+                "column": 9,
+                "text": "\"router\": \"^2.2.0\",",
+                "context": {}
+              },
+              {
+                "file": "package-lock.json",
+                "line": 1907,
+                "column": 18,
+                "text": "\"node_modules/router\": {",
+                "context": {}
+              },
+              {
+                "file": "package-lock.json",
+                "line": 1909,
+                "column": 46,
+                "text": "\"resolved\": \"https://registry.npmjs.org/router/-/router-2.2.0.tgz\",",
+                "context": {}
+              },
+              {
+                "file": "index.js",
+                "line": 3,
+                "column": 31,
+                "text": "import ApexRouter from './apex-router.js';",
+                "context": {}
+              },
+              {
+                "file": "index.js",
+                "line": 5,
+                "column": 14,
+                "text": "// Export the router for use by other modules",
+                "context": {}
+              },
+              {
+                "file": "index.js",
+                "line": 13,
+                "column": 8,
+                "text": "const router = new ApexRouter();",
+                "context": {}
+              },
+              {
+                "file": "index.js",
+                "line": 17,
+                "column": 12,
+                "text": "await router.initialize();",
+                "context": {}
+              },
+              {
+                "file": "index.js",
+                "line": 23,
+                "column": 26,
+                "text": "console.log(await router.execute('help'));",
+                "context": {}
+              },
+              {
+                "file": "index.js",
+                "line": 28,
+                "column": 33,
+                "text": "const argsObj = { modules: router.modules };",
+                "context": {}
+              },
+              {
+                "file": "index.js",
+                "line": 55,
+                "column": 27,
+                "text": "const result = await router.execute(command, argsObj);",
+                "context": {}
+              },
+              {
+                "file": "apex-router.js",
+                "line": 1,
+                "column": 8,
+                "text": "// apex-router.js - Smart command dispatcher with NL support",
+                "context": {}
+              },
+              {
+                "file": "test-scripts.js",
+                "line": 8,
+                "column": 53,
+                "text": "const { default: ApexRouter } = await import('./apex-router.js');",
+                "context": {}
+              },
+              {
+                "file": "test-scripts.js",
+                "line": 17,
+                "column": 14,
+                "text": "// Initialize router",
+                "context": {}
+              },
+              {
+                "file": "test-scripts.js",
+                "line": 18,
+                "column": 6,
+                "text": "const router = new ApexRouter();",
+                "context": {}
+              },
+              {
+                "file": "test-scripts.js",
+                "line": 19,
+                "column": 6,
+                "text": "await router.initialize();",
+                "context": {}
+              },
+              {
+                "file": "test-scripts.js",
+                "line": 34,
+                "column": 27,
+                "text": "const result = await router.execute(testCase.command, testCase.args || {});",
+                "context": {}
+              },
+              {
+                "file": "test-scripts.js",
+                "line": 142,
+                "column": 23,
+                "text": "name: 'Search for \"router\"',",
+                "context": {}
+              },
+              {
+                "file": "test-scripts.js",
+                "line": 144,
+                "column": 20,
+                "text": "args: { query: 'router' },",
+                "context": {}
+              },
+              {
+                "file": "test-integration.js",
+                "line": 37,
+                "column": 55,
+                "text": "const { default: ApexRouter } = await import('./apex-router.js');",
+                "context": {}
+              },
+              {
+                "file": "test-integration.js",
+                "line": 38,
+                "column": 8,
+                "text": "const router = new ApexRouter();",
+                "context": {}
+              },
+              {
+                "file": "test-integration.js",
+                "line": 39,
+                "column": 8,
+                "text": "await router.initialize();",
+                "context": {}
+              },
+              {
+                "file": "test-integration.js",
+                "line": 40,
+                "column": 9,
+                "text": "return router.modules.cache !== undefined;",
+                "context": {}
+              },
+              {
+                "file": "test-integration.js",
+                "line": 98,
+                "column": 35,
+                "text": "const result = await rag.search('router');",
+                "context": {}
+              },
+              {
+                "file": "test-integration.js",
+                "line": 119,
+                "column": 55,
+                "text": "const { default: ApexRouter } = await import('./apex-router.js');",
+                "context": {}
+              },
+              {
+                "file": "test-integration.js",
+                "line": 120,
+                "column": 8,
+                "text": "const router = new ApexRouter();",
+                "context": {}
+              },
+              {
+                "file": "test-integration.js",
+                "line": 121,
+                "column": 8,
+                "text": "await router.initialize();",
+                "context": {}
+              },
+              {
+                "file": "test-integration.js",
+                "line": 123,
+                "column": 23,
+                "text": "const result = await router.execute('fix-ci');",
+                "context": {}
+              },
+              {
+                "file": "test-integration.js",
+                "line": 145,
+                "column": 55,
+                "text": "const { default: ApexRouter } = await import('./apex-router.js');",
+                "context": {}
+              },
+              {
+                "file": "test-integration.js",
+                "line": 146,
+                "column": 8,
+                "text": "const router = new ApexRouter();",
+                "context": {}
+              },
+              {
+                "file": "test-integration.js",
+                "line": 147,
+                "column": 8,
+                "text": "await router.initialize();",
+                "context": {}
+              },
+              {
+                "file": "test-integration.js",
+                "line": 150,
+                "column": 10,
+                "text": "await router.execute('nonexistent-command');",
+                "context": {}
+              },
+              {
+                "file": "test.txt",
+                "line": 4,
+                "column": 4,
+                "text": "The router handles commands.",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 113,
+                "column": 34,
+                "text": "\"name\": \"Search for \\\"router\\\"\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 116,
+                "column": 30,
+                "text": "\"file\": \"apex-router.js\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 119,
+                "column": 33,
+                "text": "\"text\": \"// apex-router.js - Smart command dispatcher with NL support\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 126,
+                "column": 56,
+                "text": "\"text\": \"import ApexRouter from './apex-router.js';\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 133,
+                "column": 39,
+                "text": "\"text\": \"// Export the router for use by other modules\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 140,
+                "column": 31,
+                "text": "\"text\": \"const router = new ApexRouter();\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 147,
+                "column": 31,
+                "text": "\"text\": \"await router.initialize();\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 154,
+                "column": 43,
+                "text": "\"text\": \"console.log(await router.execute('help'));\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 161,
+                "column": 52,
+                "text": "\"text\": \"const argsObj = { modules: router.modules };\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 168,
+                "column": 46,
+                "text": "\"text\": \"const result = await router.execute(command, argsObj);\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 175,
+                "column": 56,
+                "text": "\"text\": \"import ApexRouter from './apex-router.js';\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 182,
+                "column": 39,
+                "text": "\"text\": \"// Initialize router\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 189,
+                "column": 31,
+                "text": "\"text\": \"const router = new ApexRouter();\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 196,
+                "column": 31,
+                "text": "\"text\": \"await router.initialize();\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 203,
+                "column": 46,
+                "text": "\"text\": \"const result = await router.execute(command, args);\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 210,
+                "column": 78,
+                "text": "\"text\": \"const { default: ApexRouter } = await import('./apex-router.js');\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 217,
+                "column": 39,
+                "text": "\"text\": \"// Initialize router\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 224,
+                "column": 31,
+                "text": "\"text\": \"const router = new ApexRouter();\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 231,
+                "column": 31,
+                "text": "\"text\": \"await router.initialize();\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 238,
+                "column": 46,
+                "text": "\"text\": \"const result = await router.execute(testCase.command, testCase.args || {});\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 245,
+                "column": 45,
+                "text": "\"text\": \"name: 'Search for \\\"router\\\"',\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 252,
+                "column": 41,
+                "text": "\"text\": \"args: { query: 'router' },\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 259,
+                "column": 27,
+                "text": "\"text\": \"\\\"router\\\": \\\"^2.2.0\\\",\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 266,
+                "column": 40,
+                "text": "\"text\": \"\\\"node_modules/router\\\": {\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 273,
+                "column": 68,
+                "text": "\"text\": \"\\\"resolved\\\": \\\"https://registry.npmjs.org/router/-/router-2.2.0.tgz\\\",\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 280,
+                "column": 78,
+                "text": "\"text\": \"const { default: ApexRouter } = await import('./apex-router.js');\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 287,
+                "column": 31,
+                "text": "\"text\": \"const router = new ApexRouter();\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 294,
+                "column": 31,
+                "text": "\"text\": \"await router.initialize();\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 301,
+                "column": 32,
+                "text": "\"text\": \"return router.modules.cache !== undefined;\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 308,
+                "column": 58,
+                "text": "\"text\": \"const result = await rag.search('router');\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 315,
+                "column": 78,
+                "text": "\"text\": \"const { default: ApexRouter } = await import('./apex-router.js');\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 322,
+                "column": 31,
+                "text": "\"text\": \"const router = new ApexRouter();\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 329,
+                "column": 31,
+                "text": "\"text\": \"await router.initialize();\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 336,
+                "column": 46,
+                "text": "\"text\": \"const result = await router.execute('fix-ci');\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 343,
+                "column": 78,
+                "text": "\"text\": \"const { default: ApexRouter } = await import('./apex-router.js');\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 350,
+                "column": 31,
+                "text": "\"text\": \"const router = new ApexRouter();\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 357,
+                "column": 31,
+                "text": "\"text\": \"await router.initialize();\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 364,
+                "column": 31,
+                "text": "\"text\": \"await router.execute('nonexistent-command');\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 371,
+                "column": 29,
+                "text": "\"text\": \"The router handles commands.\",",
+                "context": {}
+              },
+              {
+                "file": "test-results.json",
+                "line": 378,
+                "column": 52,
+                "text": "\"text\": \"'help': null // Handled by router directly\",",
+                "context": {}
+              },
+              {
+                "file": "config/registry.js",
+                "line": 92,
+                "column": 29,
+                "text": "'help': null // Handled by router directly",
+                "context": {}
+              }
+            ],
+            "duration": 43,
+            "error": null
+          },
+          {
+            "name": "Search with file pattern",
+            "success": true,
+            "duration": 38,
+            "error": null
+          }
+        ],
+        "passed": 2,
+        "failed": 0
+      },
+      {
+        "name": "git-status",
+        "tests": [
+          {
+            "name": "Get git status",
+            "success": true,
+            "duration": 159,
+            "error": null
+          }
+        ],
+        "passed": 1,
+        "failed": 0
+      },
+      {
+        "name": "init-project",
+        "tests": [
+          {
+            "name": "Init check",
+            "success": true,
+            "duration": 6,
+            "error": null
+          }
+        ],
+        "passed": 1,
+        "failed": 0
+      }
+    ],
+    "doc": [
+      {
+        "name": "doc-generate",
+        "tests": [
+          {
+            "name": "Generate with dry run",
+            "success": true,
+            "duration": 4,
+            "error": null
+          }
+        ],
+        "passed": 1,
+        "failed": 0
+      },
+      {
+        "name": "doc-update",
+        "tests": [
+          {
+            "name": "Update check",
+            "success": true,
+            "duration": 15,
+            "error": null
+          }
+        ],
+        "passed": 1,
+        "failed": 0
+      },
+      {
+        "name": "doc-validate",
+        "tests": [
+          {
+            "name": "Validate docs",
+            "success": false,
+            "duration": 53,
+            "error": "Validation failed"
+          }
+        ],
+        "passed": 0,
+        "failed": 1
+      },
+      {
+        "name": "doc-sync",
+        "tests": [
+          {
+            "name": "Sync check",
+            "success": true,
+            "duration": 6,
+            "error": null
+          }
+        ],
+        "passed": 1,
+        "failed": 0
+      },
+      {
+        "name": "doc-organize",
+        "tests": [
+          {
+            "name": "Organize check",
+            "success": true,
+            "duration": 5,
+            "error": null
+          }
+        ],
+        "passed": 1,
+        "failed": 0
+      },
+      {
+        "name": "doc-search",
+        "tests": [
+          {
+            "name": "Search docs for \"test\"",
+            "success": false,
+            "duration": 8,
+            "error": "Validation failed"
+          }
+        ],
+        "passed": 0,
+        "failed": 1
+      },
+      {
+        "name": "doc-fix-links",
+        "tests": [
+          {
+            "name": "Check links",
+            "success": false,
+            "duration": 18,
+            "error": "Validation failed"
+          }
+        ],
+        "passed": 0,
+        "failed": 1
+      },
+      {
+        "name": "doc-check",
+        "tests": [
+          {
+            "name": "Check documentation",
+            "success": true,
+            "duration": 55,
+            "error": null
+          }
+        ],
+        "passed": 1,
+        "failed": 0
+      },
+      {
+        "name": "doc-add-xml",
+        "tests": [
+          {
+            "name": "XML validation",
+            "success": false,
+            "error": "Target file and tag required. Usage: apex doc:add-xml <file> --tag <tagname>"
+          }
+        ],
+        "passed": 0,
+        "failed": 1
+      },
+      {
+        "name": "doc-update-readme",
+        "tests": [
+          {
+            "name": "README check",
+            "success": true,
+            "duration": 10,
+            "error": null
+          }
+        ],
+        "passed": 1,
+        "failed": 0
+      }
+    ]
+  }
+}
