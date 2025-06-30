@@ -1,7 +1,7 @@
 // search.js - Fast search module using ripgrep
 
 import { exec } from "./utils.js";
-import { searchCache } from "./cache.js";
+import { searchCache } from "./unified-cache.js";
 import path from "path";
 
 /**
@@ -11,8 +11,11 @@ export async function searchFiles(pattern, options = {}) {
   const cacheKey = `files:${pattern}:${JSON.stringify(options)}`;
 
   // Check cache
-  if (!options.noCache && searchCache.has(cacheKey)) {
-    return searchCache.get(cacheKey);
+  if (!options.noCache) {
+    const cached = await searchCache.get(cacheKey);
+    if (cached !== null) {
+      return cached;
+    }
   }
 
   // Build rg command
@@ -35,7 +38,7 @@ export async function searchFiles(pattern, options = {}) {
       .map((f) => f.trim());
 
     // Cache result
-    searchCache.set(cacheKey, files);
+    await searchCache.set(cacheKey, files);
     return files;
   }
 
@@ -49,8 +52,11 @@ export async function searchContent(query, options = {}) {
   const cacheKey = `content:${query}:${JSON.stringify(options)}`;
 
   // Check cache
-  if (!options.noCache && searchCache.has(cacheKey)) {
-    return searchCache.get(cacheKey);
+  if (!options.noCache) {
+    const cached = await searchCache.get(cacheKey);
+    if (cached !== null) {
+      return cached;
+    }
   }
 
   // Build rg command
@@ -99,7 +105,7 @@ export async function searchContent(query, options = {}) {
     }
 
     // Cache result
-    searchCache.set(cacheKey, matches);
+    await searchCache.set(cacheKey, matches);
     return matches;
   }
 

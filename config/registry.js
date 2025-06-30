@@ -80,9 +80,10 @@ export default {
   "fix-detected": "./scripts/fix-detected.js",
   report: "./scripts/report-status.js",
 
-  // Cache Scripts (2)
+  // Cache Scripts (3)
   "cache:warm-readmes": "./scripts/cache-warm-readmes.js",
   "cache:clear": "./scripts/cache-clear.js",
+  "cache:status": "./scripts/cache-status.js",
 
   // Workflow Helpers (2)
   commit: "./scripts/git-commit.js", // Alias

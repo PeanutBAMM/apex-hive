@@ -124,6 +124,7 @@ Apex Hive is a powerful development automation system with 60+ scripts for CI/CD
 
 - `apex cache:warm-readmes` - Pre-cache README files for performance
 - `apex cache:clear` - Clear all caches
+- `apex cache:status` - Display cache statistics and status
 
 ### Aliases & Helpers
 
@@ -228,5 +229,5 @@ If a command fails:
 
 ---
 
-*Generated: 2025-06-30T18:34:47.774Z*
-*Total Commands: 66*
+*Generated: 2025-06-30T22:21:13.677Z*
+*Total Commands: 67*

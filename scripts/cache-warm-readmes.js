@@ -3,6 +3,7 @@ import { promises as fs } from "fs";
 import { execSync } from "child_process";
 import path from "path";
 import os from "os";
+import { fileCache } from "../modules/unified-cache.js";
 
 export async function run(args = {}) {
   const {
@@ -51,11 +52,7 @@ export async function run(args = {}) {
       `[CACHE-WARM-READMES] Found ${readmeFiles.length} README files`,
     );
 
-    // Prepare cache directory
-    const cacheDir = path.join(os.homedir(), ".apex-cache", "readmes");
-    if (!dryRun) {
-      await fs.mkdir(cacheDir, { recursive: true });
-    }
+    // Cache directory is handled by unified cache
 
     // Process each README
     for (const file of readmeFiles) {
@@ -74,10 +71,6 @@ export async function run(args = {}) {
         // Read file content
         const content = await fs.readFile(file, encoding);
 
-        // Generate cache key
-        const cacheKey = generateCacheKey(file);
-        const cachePath = path.join(cacheDir, cacheKey);
-
         // Cache metadata
         const metadata = {
           path: file,
@@ -91,19 +84,23 @@ export async function run(args = {}) {
         };
 
         if (!dryRun) {
-          // Write content to cache
-          await fs.writeFile(cachePath, content, encoding);
-
-          // Write metadata
-          await fs.writeFile(
-            cachePath + ".meta",
-            JSON.stringify(metadata, null, 2),
-          );
+          // Cache content with metadata using unified cache
+          const cacheData = {
+            content,
+            metadata
+          };
+          
+          const cacheSuccess = await fileCache.set(file, cacheData, {
+            ttl: 24 * 60 * 60 * 1000 // 24 hours for README files
+          });
+          
+          if (!cacheSuccess) {
+            throw new Error("Failed to cache file");
+          }
         }
 
         cached.push({
           file,
-          cacheKey,
           size: stats.size,
           sections: metadata.sections.length,
         });
@@ -115,26 +112,7 @@ export async function run(args = {}) {
       }
     }
 
-    // Generate index
-    if (cached.length > 0 && !dryRun) {
-      const indexPath = path.join(cacheDir, "index.json");
-      const index = {
-        generated: new Date().toISOString(),
-        readmes: cached.map((c) => ({
-          path: c.file,
-          key: c.cacheKey,
-          size: c.size,
-        })),
-        stats: {
-          total: readmeFiles.length,
-          cached: cached.length,
-          skipped: skipped.length,
-          failed: failed.length,
-        },
-      };
-
-      await fs.writeFile(indexPath, JSON.stringify(index, null, 2));
-    }
+    // Index is now handled by unified cache stats
 
     // Calculate total cached size
     const totalSize = cached.reduce((sum, item) => sum + item.size, 0);
@@ -148,7 +126,6 @@ export async function run(args = {}) {
         skipped: skipped.length,
         failed: failed.length,
         totalSize: formatSize(totalSize),
-        cacheDir: dryRun ? null : cacheDir,
         examples: cached.slice(0, 5).map((c) => c.file),
       },
       message: dryRun
@@ -213,22 +190,6 @@ async function findReadmeFiles(directory, options) {
   return files;
 }
 
-function generateCacheKey(filepath) {
-  // Generate a cache key from the file path
-  const normalized = filepath
-    .replace(/^\.\//, "")
-    .replace(/\//g, "_")
-    .replace(/[^a-zA-Z0-9._-]/g, "");
-
-  // Add hash for uniqueness
-  const hash = require("crypto")
-    .createHash("md5")
-    .update(filepath)
-    .digest("hex")
-    .substring(0, 8);
-
-  return `${normalized}_${hash}`;
-}
 
 function detectTableOfContents(content) {
   // Check for common ToC patterns

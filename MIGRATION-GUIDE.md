@@ -5,21 +5,21 @@ This guide helps you migrate from the old Lead-Manager-Worker system to the new 
 ## 📊 Architecture Changes
 
 ### Old System (Complex)
-```
+```javascript
 Lead (apex-lead.js)
   ├── CI Manager
   │     └── Workers (monitor, fix, heal...)
   ├── Doc Manager
   │     └── Workers (generate, validate...)
   └── ... 5 Managers total
-```
+```javascript
 
 ### New System (Simple)
-```
+```javascript
 MCP Gateway (mcp-server.js)
   └── Apex Router (apex-router.js)
         └── 60 Direct Scripts
-```
+```javascript
 
 ## 🔧 Command Mapping
 
@@ -57,9 +57,9 @@ MCP Gateway (mcp-server.js)
 # Save your current configuration
 cp package.json package.json.backup
 cp -r scripts scripts.backup
-```
+```javascript
 
-### 2. Install Apex Hive
+## 2. Install Apex Hive
 ```bash
 # Clone or download Apex Hive
 cd ../apex-hive-workspace/apex-hive
@@ -69,9 +69,9 @@ npm install
 
 # Register with Claude
 node install-mcp.js
-```
+```javascript
 
-### 3. Update Package.json Scripts
+## 3. Update Package.json Scripts
 
 Remove old npm scripts and add new ones:
 
@@ -88,7 +88,7 @@ Remove old npm scripts and add new ones:
     "apex:status": "node index.js ci:status"
   }
 }
-```
+```javascript
 
 ### 4. Update CI/CD Workflows
 
@@ -99,9 +99,9 @@ Remove old npm scripts and add new ones:
 
 # New
 - run: npx apex ci:monitor
-```
+```javascript
 
-#### Local Development
+## Local Development
 ```bash
 # Old workflow
 npm run apex ci monitor
@@ -116,9 +116,9 @@ apex quality:lint
 # Or use recipes
 apex start-day
 apex fix-all
-```
+```javascript
 
-### 5. Natural Language Migration
+## 5. Natural Language Migration
 
 The new system supports natural language:
 
@@ -129,7 +129,7 @@ npm run apex ci fix && npm run apex ci monitor
 # New: Natural language
 apex "fix the CI"
 apex "wat is kapot?"
-```
+```javascript
 
 ## 🔍 Key Differences
 
@@ -156,7 +156,7 @@ apex "wat is kapot?"
 ## 📝 Configuration Migration
 
 ### Old Config Structure
-```
+```javascript
 scripts/
 ├── apex-lead.js
 ├── workers/
@@ -164,10 +164,10 @@ scripts/
 │   ├── docs/
 │   └── ...
 └── config/
-```
+```javascript
 
 ### New Config Structure
-```
+```javascript
 apex-hive/
 ├── scripts/          # All 60 scripts flat
 ├── config/
@@ -175,7 +175,7 @@ apex-hive/
 │   ├── patterns.js   # NL patterns
 │   └── recipes.json  # Workflows
 └── modules/          # Shared functionality
-```
+```javascript
 
 ## ⚠️ Breaking Changes
 
@@ -205,18 +205,18 @@ claude mcp list
 # Should show apex-hive
 # If not, run:
 node install-mcp.js
-```
+```javascript
 
-### "Script not working"
+## "Script not working"
 ```bash
 # Test directly
 node index.js <command>
 
 # Check with dry-run
 apex <command> --dry-run
-```
+```javascript
 
-### "Different output format"
+## "Different output format"
 The new system returns structured JSON. Update any scripts that parse output:
 
 ```javascript
@@ -227,7 +227,7 @@ const lines = output.toString().split('\n');
 // New
 const result = JSON.parse(execSync('apex ci:status'));
 console.log(result.data);
-```
+```javascript
 
 ## 📚 Resources
 

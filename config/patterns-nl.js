@@ -83,4 +83,9 @@ export default [
     match: /help|hulp/i,
     command: "help",
   },
+  {
+    name: "cache-status-nl",
+    match: /cache.*status|toon.*cache/i,
+    command: "cache:status",
+  },
 ];

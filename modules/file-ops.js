@@ -2,7 +2,7 @@
 
 import { promises as fs } from "fs";
 import path from "path";
-import { fileCache } from "./cache.js";
+import { fileCache } from "./unified-cache.js";
 
 /**
  * Read file with caching
@@ -11,8 +11,17 @@ export async function readFile(filePath, options = {}) {
   const absolutePath = path.resolve(filePath);
 
   // Check cache first
-  if (!options.noCache && fileCache.has(absolutePath)) {
-    return fileCache.get(absolutePath);
+  if (!options.noCache) {
+    const cached = await fileCache.get(absolutePath);
+    if (cached !== null) {
+      // Handle both direct content and structured cache data
+      if (typeof cached === 'string') {
+        return cached;
+      } else if (cached.content) {
+        return cached.content;
+      }
+      return cached;
+    }
   }
 
   try {
@@ -20,7 +29,7 @@ export async function readFile(filePath, options = {}) {
 
     // Cache the content
     if (!options.noCache) {
-      fileCache.set(absolutePath, content);
+      await fileCache.set(absolutePath, content);
     }
 
     return content;
@@ -46,7 +55,7 @@ export async function writeFile(filePath, content) {
   await fs.writeFile(absolutePath, content, "utf8");
 
   // Update cache
-  fileCache.set(absolutePath, content);
+  await fileCache.set(absolutePath, content);
 
   return absolutePath;
 }
@@ -150,7 +159,7 @@ export async function moveFile(source, destination) {
   await fs.rename(srcPath, destPath);
 
   // Clear cache for old path
-  fileCache.delete(srcPath);
+  await fileCache.delete(srcPath);
 
   return destPath;
 }
@@ -164,7 +173,7 @@ export async function deleteFile(filePath) {
   await fs.unlink(absolutePath);
 
   // Clear from cache
-  fileCache.delete(absolutePath);
+  await fileCache.delete(absolutePath);
 
   return true;
 }
