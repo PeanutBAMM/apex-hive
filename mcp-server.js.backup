@@ -1,0 +1,103 @@
+#!/usr/bin/env node
+// Stdout protection - FIRST LINE
+const originalConsoleLog = console.log;
+const originalConsoleError = console.error;
+console.log = () => {};  // Complete silence
+console.error = () => {};  // Complete silence
+
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { 
+  CallToolRequestSchema,
+  ListToolsRequestSchema 
+} from '@modelcontextprotocol/sdk/types.js';
+import ApexRouter from './apex-router.js';
+import { formatOutput } from './output-formatter.js';
+
+// Initialize server
+const server = new Server({
+  name: 'apex-hive-gateway',
+  version: '1.0.0'
+}, {
+  capabilities: { 
+    tools: {} 
+  }
+});
+
+// Initialize router
+const router = new ApexRouter();
+await router.initialize();
+
+// Define the single apex tool
+const APEX_TOOL = {
+  name: 'apex',
+  description: 'Execute Apex Hive commands with natural language support',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      command: {
+        type: 'string',
+        description: 'Command to execute (supports natural language)'
+      },
+      args: {
+        type: 'object',
+        description: 'Optional arguments for the command'
+      }
+    },
+    required: ['command']
+  }
+};
+
+// Handle list tools request
+server.setRequestHandler(ListToolsRequestSchema, async () => {
+  return {
+    tools: [APEX_TOOL]
+  };
+});
+
+// Handle tool execution
+server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  if (request.params.name !== 'apex') {
+    return {
+      content: [{
+        type: 'text',
+        text: `Unknown tool: ${request.params.name}`
+      }],
+      isError: true
+    };
+  }
+
+  const { command, args = {} } = request.params.arguments;
+  
+  try {
+    const result = await router.execute(command, args);
+    const formatted = await formatOutput(result, { command, args });
+    
+    return {
+      content: [{
+        type: 'text',
+        text: formatted
+      }]
+    };
+  } catch (error) {
+    return {
+      content: [{
+        type: 'text',
+        text: `Error: ${error.message}`
+      }],
+      isError: true
+    };
+  }
+});
+
+// Connect transport
+const transport = new StdioServerTransport();
+await server.connect(transport);
+
+// Handle errors silently
+process.on('unhandledRejection', (error) => {
+  // Exit silently on unhandled rejection
+  process.exit(1);
+});
+
+// Server started silently
