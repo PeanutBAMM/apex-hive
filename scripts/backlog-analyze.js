@@ -1,6 +1,7 @@
 // backlog-analyze.js - Analyze backlog items and provide insights
 import { promises as fs } from "fs";
 import path from "path";
+import { loadBacklogItems } from "../modules/backlog-parser.js";
 
 export async function run(args = {}) {
   const {
@@ -13,7 +14,7 @@ export async function run(args = {}) {
   console.error("[BACKLOG-ANALYZE] Analyzing backlog items...");
 
   try {
-    const items = await loadBacklogItems(source, modules);
+    const items = await loadBacklogItemsWrapper(source, modules);
 
     if (items.length === 0) {
       return {
@@ -136,26 +137,14 @@ export async function run(args = {}) {
   }
 }
 
-async function loadBacklogItems(source, modules) {
+async function loadBacklogItemsWrapper(source, modules) {
   const items = [];
 
   switch (source) {
     case "todos":
-      // Load from TODO files
-      try {
-        const todoFiles = ["TODO.md", "BACKLOG.md", "ROADMAP.md"];
-        for (const file of todoFiles) {
-          try {
-            const content = await fs.readFile(file, "utf8");
-            const parsed = parseTodoFile(content);
-            items.push(...parsed);
-          } catch {
-            // File doesn't exist
-          }
-        }
-      } catch {
-        // No todo files
-      }
+      // Load from BACKLOG.md using the new parser
+      const backlogItems = await loadBacklogItems();
+      items.push(...backlogItems);
       break;
 
     case "github":
@@ -178,33 +167,6 @@ async function loadBacklogItems(source, modules) {
         // No backlog.json
       }
       break;
-  }
-
-  // Add sample items if none found
-  if (items.length === 0) {
-    items.push(
-      {
-        id: "1",
-        title: "Implement feature X",
-        priority: "high",
-        status: "pending",
-        category: "feature",
-      },
-      {
-        id: "2",
-        title: "Fix bug Y",
-        priority: "critical",
-        status: "in-progress",
-        category: "bug",
-      },
-      {
-        id: "3",
-        title: "Update documentation",
-        priority: "low",
-        status: "pending",
-        category: "docs",
-      },
-    );
   }
 
   return items;
