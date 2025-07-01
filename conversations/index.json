@@ -1,9 +1,13 @@
 [
   {
-    "file": "2025-06-30-01-20-09-ai-session-2025-06-30.md",
-    "title": "AI Session 2025-06-30",
-    "timestamp": "2025-06-30T23:20:06.064Z",
-    "tags": [],
+    "file": "2025-07-01-12-28-58-test-after-restart-narrative-summary-working.md",
+    "title": "Test After Restart - Narrative Summary Working",
+    "timestamp": "2025-07-01T10:28:53.549Z",
+    "tags": [
+      "test",
+      "narrative-summary",
+      "success"
+    ],
     "summary": [
       "apex",
       "router",
@@ -15,6 +19,28 @@
       "server",
       "debug",
       "fixed"
-    ]
+    ],
+    "narrativeSummary": "## Conversation Summary\n\nToday's development session focused on the **apex-hive** project on the `master` branch.\n\n### What We Accomplished\n\nThroughout this session, we made significant progress on se..."
+  },
+  {
+    "file": "2025-07-01-12-17-18-direct-test-full.md",
+    "title": "Direct Test Full",
+    "timestamp": "2025-07-01T10:17:13.819Z",
+    "tags": [
+      "test"
+    ],
+    "summary": [
+      "apex",
+      "router",
+      "patterns",
+      "registry",
+      "generate",
+      "claude",
+      "install",
+      "server",
+      "debug",
+      "fixed"
+    ],
+    "narrativeSummary": "## Conversation Summary\n\nToday's development session focused on the **apex-hive** project on the `master` branch.\n\n### What We Accomplished\n\nThroughout this session, we made significant progress on se..."
   }
 ]

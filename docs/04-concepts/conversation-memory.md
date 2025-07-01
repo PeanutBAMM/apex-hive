@@ -1,229 +1,218 @@
 # Conversation Memory System
 
 <overview>
-The Conversation Memory System enables Claude to save and retrieve conversation summaries, providing better context retention across sessions. This system is integrated with the unified cache infrastructure for persistence and performance.
+The Conversation Memory System enables saving and retrieving detailed conversation summaries with narrative context. The system follows a simple, reliable pattern: save to filesystem first, then warm the cache for performance.
 </overview>
 
 ## 🎯 Purpose
 
-The conversation memory system addresses several key needs:
+The conversation memory system provides:
 
-1. **Context Retention**: Preserve important conversation context across sessions
-2. **Quick Recall**: Fast access to recent conversation summaries
-3. **Pattern Recognition**: Identify common topics and workflows
-4. **Performance**: Leverage the unified cache for efficient storage
+1. **Detailed Context**: Rich narrative summaries of development sessions
+2. **Persistent Storage**: All conversations saved as markdown files
+3. **Fast Access**: Cache warming for recent conversations
+4. **Natural Language**: Easy commands like "save this conversation"
 
 ## 🏗️ Architecture
+
+### Simple Flow
+
+```
+1. Save Conversation → Filesystem (conversations/*.md)
+2. Cache Warming → Read from disk → Store in cache
+3. Fast Access → Retrieve from cache
+```
 
 ### Components
 
 ```
 apex-hive/
-├── modules/
-│   └── unified-cache.js          # Added conversationCache export
+├── conversations/            # Persistent storage
+│   ├── index.json           # Conversation index
+│   ├── README.md            # Auto-generated index
+│   └── *.md                 # Individual conversations
 ├── scripts/
-│   ├── save-conversation.js      # Enhanced with cache support
-│   ├── cache-warm-conversations.js # New warming script
-│   ├── cache-warm-all.js         # Updated to include conversations
-│   └── cache-status.js           # Shows conversation stats
-└── config/
-    └── registry.js               # Added conversation commands
+│   ├── save-conversation.js # Save with narrative summary
+│   └── cache-warm-conversations.js # Warm from disk
+└── ~/.apex-cache/
+    └── conversations/       # Performance cache
 ```
-
-### Cache Structure
-
-Conversations are stored in the unified cache with:
-- **Namespace**: `conversations`
-- **TTL**: 7 days (configurable)
-- **Max Size**: 10MB per conversation
-- **Key Format**: `conversation-YYYY-MM-DD-{hash}`
 
 ## 📝 Usage
 
 ### Saving Conversations
 
-The `save-conversation` script now supports cache storage:
-
 ```bash
-# Save to cache (preferred)
-apex save-conversation-to-cache \
-  --title "Implemented conversation memory" \
-  --conversationSummary "Full summary text here..." \
-  --tags "memory,cache,claude"
+# Direct command
+apex save-conversation --title "Feature Implementation" --tags "auth,security"
 
-# Traditional file save (legacy)
-apex save-conversation \
-  --title "Session notes" \
-  --directory "conversations"
+# Natural language (English)
+apex "save this conversation"
+apex "remember this session"
+
+# Natural language (Dutch)
+apex "sla dit gesprek op"
+apex "bewaar deze conversatie"
 ```
 
-### Parameters
+### What Gets Saved
 
-- `title` (required): Brief title for the conversation
-- `conversationSummary` (required for cache): The actual summary text
-- `tags`: Array of keywords for categorization
-- `useCache`: Boolean to enable cache storage (default: true)
+Each conversation includes:
 
-### Retrieving Conversations
+1. **Narrative Summary** (~2000 words)
+   - What was accomplished
+   - Challenges encountered
+   - Solutions implemented
+   - Technical details
+   - Development workflow
 
-Recent conversations can be accessed through:
+2. **Metadata**
+   - Project name and branch
+   - Timestamp and tags
+   - File modifications
+   - Git commits
+   - Recent commands
 
-```javascript
-// In scripts
-import { getRecentConversations } from "./save-conversation.js";
+### Example Output
 
-const recent = await getRecentConversations(10);
-// Returns array of conversation objects with metadata
+```markdown
+# Feature Implementation Session
+
+**Date**: 2025-01-01T10:00:00Z
+**Tags**: `auth`, `security`
+**Project**: apex-hive
+**Branch**: feature/auth
+
+## Conversation Summary
+
+Today's development session focused on the **apex-hive** project on the `feature/auth` branch.
+
+### What We Accomplished
+
+Throughout this session, we made significant progress on several fronts:
+
+**New Implementations:**
+- Implemented JWT authentication system
+- Added role-based access control
+- Created secure session management
+
+### Challenges & Solutions
+
+The main challenge was integrating the authentication system with the existing 
+cache infrastructure. We solved this by...
+
+[... continues with detailed narrative ...]
 ```
 
-### Cache Management
-
-```bash
-# Warm conversation cache
-apex cache:warm-conversations --limit 50
-
-# Check conversation cache status
-apex cache:status conversations --detailed
-
-# View all cache statistics including conversations
-apex cache:status
-```
-
-## 🔄 Integration with Cache System
-
-The conversation memory is fully integrated with the unified cache:
+## 🔄 Cache Management
 
 ### Automatic Warming
 
-The daily cron job (`cache:warm-all`) now includes conversations:
-1. Warms README files
-2. Warms high-value documentation
-3. Warms last 50 conversations
+The cache is automatically warmed daily at 08:00 CET with the last 5 conversations:
 
-### Cache Benefits
+```bash
+# Manual warm (last 5 conversations)
+apex cache:warm-conversations
 
-- **Persistence**: Survives MCP restarts
-- **Performance**: Hash-based lookups
-- **Deduplication**: Automatic handling of duplicates
-- **TTL Management**: Auto-expiry after 7 days
+# Warm all caches including conversations
+apex cache:warm-all
+```
+
+### Cache Details
+
+- **Namespace**: `conversations`
+- **TTL**: 7 days
+- **Limit**: Last 5 conversations (reduced from 50 for size)
+- **Size**: ~2KB per conversation summary
 
 ## 💡 Best Practices
 
-### 1. Summary Guidelines
+### 1. Save Regularly
 
-Keep summaries concise but informative:
-- 50-1000 words ideal
-- Include key decisions made
-- Note important code changes
-- Mention any blockers or issues
+Save conversations after significant work:
+- Major feature implementations
+- Complex debugging sessions
+- Important architectural decisions
+- After resolving challenging issues
 
-### 2. Tagging Strategy
+### 2. Use Descriptive Titles
 
-Use consistent tags:
-- Feature names: `authentication`, `cache-system`
-- Technologies: `react`, `nodejs`, `typescript`
-- Actions: `bugfix`, `refactor`, `implementation`
-
-### 3. Regular Warming
-
-Run cache warming regularly:
 ```bash
-# Manual warm (last 50 conversations)
-apex cache:warm-conversations
+# Good
+apex save-conversation --title "Implemented OAuth2 with Google"
 
-# Check what's cached
-apex cache:status conversations
+# Less descriptive
+apex save-conversation --title "Auth work"
 ```
+
+### 3. Tag Consistently
+
+Use consistent tags for easy searching:
+- Feature areas: `auth`, `cache`, `ui`
+- Types: `bugfix`, `feature`, `refactor`
+- Technologies: `react`, `nodejs`, `docker`
 
 ## 🔍 Implementation Details
 
-### Cache Key Generation
+### Narrative Summary Generation
 
-```javascript
-const timestamp = new Date().toISOString();
-const id = crypto
-  .createHash('md5')
-  .update(`${timestamp}-${title}`)
-  .digest('hex')
-  .substring(0, 12);
+The system automatically generates detailed summaries by analyzing:
 
-const cacheKey = `conversation-${datePrefix}-${id}`;
-```
+1. **Git History**: Recent commits and their messages
+2. **File Changes**: Modified files grouped by type
+3. **Command History**: Development workflow patterns
+4. **Project Context**: Current branch and project state
 
-### Metadata Structure
+### Storage Format
 
-Each cached conversation includes:
-```javascript
-{
-  id: "abc123",
-  title: "Conversation title",
-  summary: "Full summary text...",
-  keywords: ["tag1", "tag2"],
-  timestamp: "2025-01-01T10:00:00Z",
-  wordCount: 250,
-  characterCount: 1500,
-  context: { /* optional context data */ },
-  metadata: { /* optional metadata */ }
-}
-```
-
-### Recent Access Keys
-
-For quick access to recent conversations:
-```javascript
-const recentKey = `recent-${Date.now()}-${id}`;
-// TTL: 24 hours for recent list
-```
+Conversations are stored as markdown files with:
+- Human-readable narrative summary
+- Structured metadata
+- Full context preservation
+- Automatic index generation
 
 ## 🛠️ Troubleshooting
 
 ### Common Issues
 
-1. **Cache not saving**
-   - Check cache directory permissions
-   - Verify summary is provided
-   - Check cache size limits
+1. **No narrative summary in old files**
+   - These were created before the feature was added
+   - New conversations will include full narratives
 
-2. **Conversations not found**
-   - Run `apex cache:warm-conversations`
-   - Check TTL hasn't expired
-   - Verify cache namespace
+2. **Cache not updating**
+   - Run `apex cache:warm-conversations` manually
+   - Check cache status with `apex cache:status`
 
-3. **Performance issues**
-   - Limit conversation size to < 10MB
-   - Use warming for frequently accessed items
-   - Check cache stats for capacity
+3. **Natural language not working**
+   - Restart Claude to reload MCP server
+   - Check patterns in `config/patterns.js`
 
 ### Debug Commands
 
 ```bash
-# Check if cache is working
+# Check cache status
 apex cache:status conversations
 
 # Warm with verbose output
 apex cache:warm-conversations --verbose
 
 # Test save functionality
-apex save-conversation-to-cache \
-  --title "Test" \
-  --conversationSummary "Test summary" \
-  --dryRun
+apex save-conversation --title "Test" --dryRun
 ```
 
-## 🚀 Future Enhancements
+## 🚀 Why This Design?
 
-Potential improvements:
-1. **Search functionality**: Full-text search across summaries
-2. **Auto-summarization**: Generate summaries from git history
-3. **Export/Import**: Backup conversation history
-4. **Analytics**: Track common patterns and topics
-5. **Integration**: Connect with external knowledge bases
+1. **Reliability**: Filesystem storage ensures data persistence
+2. **Simplicity**: No complex cache-only modes or dual systems
+3. **Performance**: Cache provides fast access when needed
+4. **Compatibility**: Works like README/docs caching
+5. **Debuggability**: Easy to inspect markdown files
 
 ## 📚 Related Documentation
 
 - [Unified Cache System](./unified-cache.md)
+- [Natural Language Patterns](../02-guides/natural-language.md)
 - [Cache Management](../02-guides/cache-management.md)
-- [MCP Integration](../02-guides/mcp-integration.md)
 
 ---
 

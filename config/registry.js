@@ -87,7 +87,6 @@ export default {
   "cache:warm-all": "./scripts/cache-warm-all.js",
   "cache:clear": "./scripts/cache-clear.js",
   "cache:status": "./scripts/cache-status.js",
-  "save-conversation-to-cache": "./scripts/save-conversation.js", // New conversation cache variant
 
   // Workflow Helpers (2)
   commit: "./scripts/git-commit.js", // Alias

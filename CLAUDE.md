@@ -104,7 +104,7 @@ Apex Hive is a powerful development automation system with 64+ scripts for CI/CD
 - `apex test:run` - Run test suite (alias)
 - `apex test:setup` - Setup test environment
 - `apex search` - Search codebase using ripgrep
-- `apex save-conversation` - Save AI conversation for reference
+- `apex save-conversation` - Save AI conversation with narrative summary
 - `apex code` - Generate code stubs and boilerplate
 
 ### Deployment
@@ -131,9 +131,9 @@ Apex Hive is a powerful development automation system with 64+ scripts for CI/CD
 
 ### Conversation Memory
 
-- `apex save-conversation` - Save conversation context to files (traditional)
-- `apex save-conversation-to-cache` - Save conversation summary to cache (new)
-- `apex cache:warm-conversations` - Warm cache with recent conversations
+- `apex save-conversation` - Save conversation with detailed narrative summary
+- `apex cache:warm-conversations` - Warm cache with recent conversations from disk
+- Natural language: "sla dit gesprek op", "save this conversation"
 
 ### Aliases & Helpers
 
@@ -267,9 +267,8 @@ Save and retrieve conversation summaries for better context retention:
 ### Usage:
 ```bash
 # Save conversation with summary from Claude
-apex save-conversation-to-cache \
+apex save-conversation \
   --title "Implemented cache system" \
-  --conversationSummary "Today we implemented..." \
   --tags "cache,performance,optimization"
 
 # Warm conversation cache

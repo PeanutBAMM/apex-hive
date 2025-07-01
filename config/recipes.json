@@ -20,6 +20,8 @@
     "quality:format"
   ],
   "start-day": [
+    "cache:clear",
+    "cache:warm-all",
     "git:pull",
     "test",
     "backlog:display",

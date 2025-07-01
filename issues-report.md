@@ -1,14 +1,14 @@
 # Issues Report
 
-Generated: 2025-07-01T08:28:37.353Z
+Generated: 2025-07-01T09:37:08.924Z
 
 ## Summary
 
-- Total Issues: 367
+- Total Issues: 372
 - Critical: 0
 - High: 12
 - Medium: 141
-- Low: 214
+- Low: 219
 - Info: 0
 
 ## 🟠 HIGH (12)
@@ -896,7 +896,7 @@ Generated: 2025-07-01T08:28:37.353Z
 - **File**: scripts/detect-issues.js:444
 - **Message**: Synchronous operation 'mkdirSync' found
 
-## 🔵 LOW (214)
+## 🔵 LOW (219)
 
 ### todo-comment
 - **Category**: code
@@ -1195,7 +1195,7 @@ Generated: 2025-07-01T08:28:37.353Z
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: modules/unified-cache.js:232
+- **File**: modules/unified-cache.js:236
 - **Message**: Function 'formatBytes' missing JSDoc
 
 ### missing-jsdoc
@@ -1240,8 +1240,18 @@ Generated: 2025-07-01T08:28:37.353Z
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/cache-warm-all.js:5
+- **File**: scripts/cache-warm-all.js:6
 - **Message**: Function 'run' missing JSDoc
+
+### missing-jsdoc
+- **Category**: documentation
+- **File**: scripts/cache-warm-conversations.js:5
+- **Message**: Function 'run' missing JSDoc
+
+### missing-jsdoc
+- **Category**: documentation
+- **File**: scripts/cache-warm-conversations.js:132
+- **Message**: Function 'findConversationPatterns' missing JSDoc
 
 ### missing-jsdoc
 - **Category**: documentation
@@ -1485,8 +1495,18 @@ Generated: 2025-07-01T08:28:37.353Z
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/save-conversation.js:6
+- **File**: scripts/save-conversation.js:8
 - **Message**: Function 'run' missing JSDoc
+
+### missing-jsdoc
+- **Category**: documentation
+- **File**: scripts/save-conversation.js:581
+- **Message**: Function 'getRecentConversations' missing JSDoc
+
+### missing-jsdoc
+- **Category**: documentation
+- **File**: scripts/save-conversation.js:613
+- **Message**: Function 'extractKeywords' missing JSDoc
 
 ### missing-jsdoc
 - **Category**: documentation
@@ -1661,6 +1681,11 @@ Generated: 2025-07-01T08:28:37.353Z
 ### missing-tests
 - **Category**: testing
 - **File**: scripts/cache-warm-all.js
+- **Message**: No test file found
+
+### missing-tests
+- **Category**: testing
+- **File**: scripts/cache-warm-conversations.js
 - **Message**: No test file found
 
 ### missing-tests
