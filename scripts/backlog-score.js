@@ -1,5 +1,6 @@
 // backlog-score.js - Score and prioritize backlog items
 import { promises as fs } from "fs";
+import { loadBacklogItems } from "../modules/backlog-parser.js";
 
 export async function run(args = {}) {
   const {
@@ -97,69 +98,8 @@ export async function run(args = {}) {
 }
 
 async function loadDetailedItems(modules) {
-  // For now, return sample items with more details
-  return [
-    {
-      id: "1",
-      title: "Implement user authentication",
-      priority: "high",
-      status: "pending",
-      category: "feature",
-      effort: 8,
-      value: 9,
-      risk: 3,
-      dependencies: [],
-      tags: ["security", "core"],
-    },
-    {
-      id: "2",
-      title: "Fix memory leak in worker",
-      priority: "critical",
-      status: "in-progress",
-      category: "bug",
-      effort: 5,
-      value: 8,
-      risk: 2,
-      dependencies: [],
-      tags: ["performance"],
-    },
-    {
-      id: "3",
-      title: "Add dark mode",
-      priority: "low",
-      status: "pending",
-      category: "feature",
-      effort: 3,
-      value: 4,
-      risk: 1,
-      dependencies: ["1"],
-      tags: ["ui", "enhancement"],
-    },
-    {
-      id: "4",
-      title: "Optimize database queries",
-      priority: "medium",
-      status: "pending",
-      category: "performance",
-      effort: 6,
-      value: 7,
-      risk: 4,
-      dependencies: [],
-      tags: ["backend", "performance"],
-    },
-    {
-      id: "5",
-      title: "Write API documentation",
-      priority: "medium",
-      status: "pending",
-      category: "docs",
-      effort: 4,
-      value: 6,
-      risk: 1,
-      dependencies: ["1"],
-      tags: ["documentation"],
-    },
-  ];
+  // Load items from BACKLOG.md using the new parser
+  return await loadBacklogItems();
 }
 
 function calculateScore(item, criteria, customWeight) {

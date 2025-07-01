@@ -1,5 +1,6 @@
 // backlog-display.js - Display backlog in various formats
 import { promises as fs } from "fs";
+import { loadBacklogItems } from "../modules/backlog-parser.js";
 
 export async function run(args = {}) {
   const {
@@ -132,49 +133,8 @@ export async function run(args = {}) {
 }
 
 async function loadDetailedItems(modules) {
-  // Load from various sources
-  const items = [];
-
-  // Try loading from backlog.json
-  try {
-    const data = JSON.parse(await fs.readFile("backlog.json", "utf8"));
-    items.push(...(Array.isArray(data) ? data : data.items || []));
-  } catch {
-    // Use sample data
-    items.push(
-      {
-        id: "1",
-        title: "Implement user authentication",
-        priority: "high",
-        status: "pending",
-        category: "feature",
-        effort: 8,
-        value: 9,
-        assignee: "john",
-      },
-      {
-        id: "2",
-        title: "Fix memory leak",
-        priority: "critical",
-        status: "in-progress",
-        category: "bug",
-        effort: 5,
-        value: 8,
-        assignee: "jane",
-      },
-      {
-        id: "3",
-        title: "Add dark mode",
-        priority: "low",
-        status: "pending",
-        category: "feature",
-        effort: 3,
-        value: 4,
-      },
-    );
-  }
-
-  return items;
+  // Load items from BACKLOG.md using the new parser
+  return await loadBacklogItems();
 }
 
 function sortItems(items, sortBy) {
