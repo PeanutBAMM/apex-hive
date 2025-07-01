@@ -91,19 +91,19 @@ export async function run(args = {}) {
     const currentPage = Math.min(Math.max(1, page), totalPages || 1);
     const startIndex = (currentPage - 1) * limit;
     const endIndex = startIndex + limit;
-    
+
     // Paginate issues
     const paginatedIssues = allIssues.slice(startIndex, endIndex);
-    
+
     // Rebuild issues object with paginated results
     const paginatedFilteredIssues = {
       critical: [],
       high: [],
       medium: [],
       low: [],
-      info: []
+      info: [],
     };
-    
+
     for (const issue of paginatedIssues) {
       if (paginatedFilteredIssues[issue.severity]) {
         paginatedFilteredIssues[issue.severity].push(issue);
@@ -134,7 +134,7 @@ export async function run(args = {}) {
           totalItems: totalCount,
           hasNext: currentPage < totalPages,
           hasPrev: currentPage > 1,
-          showing: `${startIndex + 1}-${Math.min(endIndex, totalCount)} of ${totalCount}`
+          showing: `${startIndex + 1}-${Math.min(endIndex, totalCount)} of ${totalCount}`,
         },
         summary: {
           total: totalIssues,
@@ -202,6 +202,26 @@ async function detectCodeIssues() {
       for (const line of lines) {
         const [file, lineNum, ...rest] = line.split(":");
         const content = rest.join(":").trim();
+
+        // Skip false positives - code that's checking for TODOs/FIXMEs
+        const isFalsePositive =
+          (content.includes("grep") && content.includes("TODO")) ||
+          (content.includes("grep") && content.includes("FIXME")) ||
+          content.includes('"TODO') ||
+          content.includes("'TODO") ||
+          content.includes('"FIXME') ||
+          content.includes("'FIXME") ||
+          content.includes("Check for TODO") ||
+          content.includes("Count TODO") ||
+          content.includes("TODO/FIXME") ||
+          content.includes("TODO\\\\|FIXME") ||
+          content.includes("Found ${count} TODO") ||
+          content.includes("No TODO/FIXME");
+
+        if (isFalsePositive) {
+          continue;
+        }
+
         const severity = content.includes("FIXME") ? "high" : "low";
 
         issues.push({

@@ -104,7 +104,7 @@ const descriptions = {
 };
 
 async function generateClaudeMd() {
-  console.log('Generating CLAUDE.md...');
+  // Generating CLAUDE.md...
   
   let content = `# Apex Hive - Claude Integration Guide
 
@@ -302,8 +302,8 @@ If a command fails:
   const claudeMdPath = path.join(__dirname, 'CLAUDE.md');
   await fs.writeFile(claudeMdPath, content, 'utf8');
   
-  console.log(`✅ Generated CLAUDE.md with ${Object.keys(registry).length} commands`);
-  console.log(`📄 File saved to: ${claudeMdPath}`);
+  // Generated CLAUDE.md with commands
+  // File saved to: claudeMdPath
 }
 
 // Run if called directly
