@@ -1,5 +1,6 @@
 // doc-validate-links.js - Validate links in documentation files
-import { promises as fs } from "fs";
+import { readFile, writeFile, pathExists, listFiles, getFileStats } from "../modules/file-ops.js";
+import { promises as fs } from "fs"; // Still need for mkdir
 import { execSync } from "child_process";
 import path from "path";
 import { URL } from "url";
@@ -126,7 +127,7 @@ export async function run(args = {}) {
         ...categorized,
         ...validation,
       });
-      await fs.writeFile(reportPath, report);
+      await writeFile(reportPath, report);
     }
 
     return {
@@ -174,7 +175,8 @@ async function findDocFiles(directory, recursive) {
     // Verify files exist
     for (const file of found) {
       try {
-        await fs.access(file);
+        const exists = await pathExists(file);
+        if (!exists) throw new Error("File not found");
         files.push(file);
       } catch {
         // File not accessible
@@ -192,7 +194,7 @@ async function extractAllLinks(files) {
 
   for (const file of files) {
     try {
-      const content = await fs.readFile(file, "utf8");
+      const content = await readFile(file);
       const links = extractLinks(content, file);
       allLinks.push(...links);
     } catch (error) {
@@ -327,7 +329,8 @@ async function validateInternalLinks(links, baseDir) {
 
       // Check if file exists
       try {
-        await fs.access(targetPath);
+        const exists = await pathExists(targetPath);
+    if (!exists) throw new Error("File not found");
 
         // If there's a fragment, validate it
         if (fragment) {
@@ -485,7 +488,7 @@ async function validateAnchorLinks(links, allFiles) {
 
 async function validateAnchorInFile(filepath, anchor) {
   try {
-    const content = await fs.readFile(filepath, "utf8");
+    const content = await readFile(filepath);
     const ext = path.extname(filepath);
 
     if (ext === ".md" || ext === ".markdown" || ext === ".mdx") {
@@ -527,7 +530,7 @@ async function validateAnchorInFile(filepath, anchor) {
 
 async function findSimilarAnchor(filepath, anchor) {
   try {
-    const content = await fs.readFile(filepath, "utf8");
+    const content = await readFile(filepath);
     const ext = path.extname(filepath);
 
     const anchors = [];
@@ -663,7 +666,7 @@ async function fixBrokenLinks(brokenLinks) {
   // Fix links file by file
   for (const [filepath, links] of Object.entries(byFile)) {
     try {
-      let content = await fs.readFile(filepath, "utf8");
+      let content = await readFile(filepath);
       let modified = false;
 
       for (const link of links) {
@@ -696,7 +699,7 @@ async function fixBrokenLinks(brokenLinks) {
       }
 
       if (modified) {
-        await fs.writeFile(filepath, content);
+        await writeFile(filepath, content);
       }
     } catch (error) {
       results.failed.push({

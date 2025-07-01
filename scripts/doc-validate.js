@@ -1,5 +1,6 @@
 // doc-validate.js - Validate documentation for completeness and accuracy
-import { promises as fs } from "fs";
+import { readFile, writeFile, pathExists, listFiles, getFileStats } from "../modules/file-ops.js";
+import { promises as fs } from "fs"; // Still need for mkdir
 import path from "path";
 import { execSync } from "child_process";
 
@@ -97,7 +98,7 @@ async function validateMarkdownFiles(modules) {
 
 async function validateMarkdownFile(filePath) {
   const issues = [];
-  const content = await fs.readFile(filePath, "utf8");
+  const content = await readFile(filePath);
   const lines = content.split("\n");
 
   // Check for required sections in README
@@ -203,7 +204,7 @@ async function validateLinks(modules) {
   const markdownFiles = await findMarkdownFiles();
 
   for (const file of markdownFiles) {
-    const content = await fs.readFile(file, "utf8");
+    const content = await readFile(file);
     const linkIssues = await validateFileLinks(file, content);
     issues.push(...linkIssues);
   }
@@ -290,7 +291,7 @@ async function validateCodeBlocks(modules) {
   const markdownFiles = await findMarkdownFiles();
 
   for (const file of markdownFiles) {
-    const content = await fs.readFile(file, "utf8");
+    const content = await readFile(file);
     const codeIssues = await validateFileCodeBlocks(file, content);
     issues.push(...codeIssues);
   }
@@ -421,7 +422,7 @@ async function validateCoverage(modules) {
   // Find documented commands
   const docFiles = await findMarkdownFiles();
   for (const file of docFiles) {
-    const content = await fs.readFile(file, "utf8");
+    const content = await readFile(file);
     for (const [command] of Object.entries(registry)) {
       if (content.includes(`\`${command}\``)) {
         documentedCommands.add(command);
@@ -449,7 +450,7 @@ async function validatePath(targetPath, modules) {
   const issues = [];
 
   try {
-    const stat = await fs.stat(targetPath);
+    const stat = await getFileStats(targetPath);
 
     if (stat.isDirectory()) {
       const files = await findMarkdownFiles(targetPath);
@@ -487,7 +488,7 @@ async function applyFixes(issues, modules) {
   // Apply fixes per file
   for (const [file, fileIssues] of Object.entries(issuesByFile)) {
     try {
-      const content = await fs.readFile(file, "utf8");
+      const content = await readFile(file);
       let updated = content;
 
       for (const issue of fileIssues) {
@@ -506,7 +507,7 @@ async function applyFixes(issues, modules) {
       }
 
       if (updated !== content) {
-        await fs.writeFile(file, updated);
+        await writeFile(file, updated);
       }
     } catch (error) {
       console.error(
@@ -523,7 +524,8 @@ async function findMarkdownFiles(dir = ".") {
   const files = [];
 
   async function scan(directory) {
-    const entries = await fs.readdir(directory, { withFileTypes: true });
+    const fileList = await listFiles(directory, { includeDirectories: true });
+    const entries = fileList;
 
     for (const entry of entries) {
       const fullPath = path.join(directory, entry.name);
@@ -547,7 +549,8 @@ async function findMarkdownFiles(dir = ".") {
 
 async function fileExists(filePath) {
   try {
-    await fs.access(filePath);
+    const exists = await pathExists(filePath);
+    if (!exists) throw new Error("File not found");
     return true;
   } catch {
     return false;

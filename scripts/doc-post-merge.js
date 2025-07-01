@@ -1,6 +1,7 @@
 // doc-post-merge.js - Post-merge documentation tasks
 import { execSync } from "child_process";
-import { promises as fs } from "fs";
+import { readFile, writeFile, pathExists, listFiles } from "../modules/file-ops.js";
+import { promises as fs } from "fs"; // Still need for mkdir
 import path from "path";
 
 export async function run(args = {}) {
@@ -116,7 +117,7 @@ export async function run(args = {}) {
     if (!dryRun) {
       const reportPath = "docs/post-merge-report.md";
       await fs.mkdir(path.dirname(reportPath), { recursive: true });
-      await fs.writeFile(reportPath, report);
+      await writeFile(reportPath, report);
     }
 
     // Determine overall success
@@ -252,7 +253,7 @@ async function checkDocumentationIssues(mergeInfo) {
 
     for (const file of docFiles) {
       try {
-        const content = await fs.readFile(file, "utf8");
+        const content = await readFile(file);
 
         // Check for conflict markers
         if (content.includes("<<<<<<<") || content.includes(">>>>>>>")) {
@@ -279,7 +280,8 @@ async function checkDocumentationIssues(mergeInfo) {
       const docPath = getExpectedDocPath(codeFile);
 
       try {
-        await fs.access(docPath);
+        const docExists = await pathExists(docPath);
+        if (!docExists) throw new Error("Doc not found");
       } catch {
         issues.missing.push({
           code: codeFile,
@@ -297,8 +299,8 @@ async function checkDocumentationIssues(mergeInfo) {
       const docPath = getExpectedDocPath(codeFile);
 
       try {
-        const codeStats = await fs.stat(codeFile);
-        const docStats = await fs.stat(docPath);
+        const codeStats = await getFileStats(codeFile);
+        const docStats = await getFileStats(docPath);
 
         if (codeStats.mtime > docStats.mtime) {
           issues.outdated.push({
@@ -354,7 +356,7 @@ async function generateNewFileDocs(mergeInfo, modules) {
 
   for (const file of newFiles) {
     try {
-      const content = await fs.readFile(file, "utf8");
+      const content = await readFile(file);
       const lines = content.split("\n").length;
 
       // Only document files with substantial content
@@ -363,7 +365,7 @@ async function generateNewFileDocs(mergeInfo, modules) {
         const docContent = generateBasicDoc(file, content);
 
         await fs.mkdir(path.dirname(docPath), { recursive: true });
-        await fs.writeFile(docPath, docContent);
+        await writeFile(docPath, docContent);
 
         result.generated.push({
           source: file,
@@ -507,7 +509,7 @@ async function updateReadmeIfNeeded(mergeInfo, modules) {
   // Basic README update
   try {
     const readmePath = "README.md";
-    let content = await fs.readFile(readmePath, "utf8");
+    let content = await readFile(readmePath);
 
     // Update last modified date if present
     const dateRegex = /Last (?:Modified|Updated):\s*\d{4}-\d{2}-\d{2}/i;
@@ -534,7 +536,7 @@ async function updateReadmeIfNeeded(mergeInfo, modules) {
     }
 
     if (result.sections.length > 0) {
-      await fs.writeFile(readmePath, content);
+      await writeFile(readmePath, content);
       result.updated = true;
     }
   } catch (error) {

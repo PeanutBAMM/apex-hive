@@ -1,6 +1,7 @@
 // ci-status.js - Check CI status across different platforms
 import { execSync } from "child_process";
-import { promises as fs } from "fs";
+import { readFile, pathExists, listFiles } from "../modules/file-ops.js";
+import { promises as fs } from "fs"; // Still need for readdir in some cases
 import path from "path";
 
 export async function run(args = {}) {
@@ -111,7 +112,8 @@ async function detectCIPlatform() {
 
   for (const { file, platform } of configChecks) {
     try {
-      await fs.access(file);
+      const exists = await pathExists(file);
+      if (!exists) throw new Error("File not found");
       return platform;
     } catch {
       // File doesn't exist
@@ -210,7 +212,8 @@ async function getGitHubStatus(options) {
       // Check for workflow files
       const workflowsDir = ".github/workflows";
       try {
-        const workflows = await fs.readdir(workflowsDir);
+        const workflowList = await listFiles(workflowsDir);
+        const workflows = workflowList.map(f => f.name);
         status.workflows = workflows.filter(
           (f) => f.endsWith(".yml") || f.endsWith(".yaml"),
         );
@@ -251,7 +254,8 @@ async function getGitLabStatus(options) {
 
   try {
     // Check if gitlab-ci.yml exists
-    await fs.access(".gitlab-ci.yml");
+    const gitlabExists = await pathExists(".gitlab-ci.yml");
+    if (!gitlabExists) throw new Error("GitLab CI config not found");
 
     // Try using GitLab CLI if available
     try {
@@ -320,7 +324,8 @@ async function getJenkinsStatus(options) {
 
   try {
     // Check for Jenkinsfile
-    await fs.access("Jenkinsfile");
+    const jenkinsExists = await pathExists("Jenkinsfile");
+    if (!jenkinsExists) throw new Error("Jenkinsfile not found");
     status.summary.status = "configured";
     status.message =
       "Jenkins configured, but status requires Jenkins API access";
@@ -355,7 +360,8 @@ async function getCircleCIStatus(options) {
 
   try {
     // Check for config
-    await fs.access(".circleci/config.yml");
+    const circleExists = await pathExists(".circleci/config.yml");
+    if (!circleExists) throw new Error("CircleCI config not found");
     status.summary.status = "configured";
 
     // Try using CircleCI CLI if available
@@ -398,7 +404,8 @@ async function getTravisStatus(options) {
 
   try {
     // Check for .travis.yml
-    await fs.access(".travis.yml");
+    const travisExists = await pathExists(".travis.yml");
+    if (!travisExists) throw new Error("Travis config not found");
     status.summary.status = "configured";
 
     // Try using Travis CLI if available
@@ -462,7 +469,7 @@ async function getLocalStatus(options) {
 
   try {
     // Check package.json for test scripts
-    const pkg = JSON.parse(await fs.readFile("package.json", "utf8"));
+    const pkg = JSON.parse(await readFile("package.json"));
 
     if (pkg.scripts) {
       // Check for test script
