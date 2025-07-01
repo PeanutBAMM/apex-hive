@@ -4,11 +4,12 @@ Troubleshooting and FAQs
 
 ## Documents
 
-- [detect-issues-scripts](./detect-issues-scripts.md)
+- [Troubleshooting](./README.md)
+- [Detect-issues Scripts](./scripts-detect-issues-scripts.md)
 
 ## Overview
 
-This category contains 1 document.
+This category contains 2 documents.
 
 ## Navigation
 

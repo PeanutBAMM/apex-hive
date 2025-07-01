@@ -6,10 +6,12 @@ Installation and setup guides
 
 - [Documentation](./README.md)
 - [README](./README.md)
+- [Documentation](./README.md)
+- [Apex Hive Restructuring Documentation](./restructuring-README.md)
 
 ## Overview
 
-This category contains 2 documents.
+This category contains 4 documents.
 
 ## Navigation
 

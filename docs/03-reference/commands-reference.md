@@ -1,6 +1,6 @@
 # Commands Reference
 
-Complete reference for all 60+ Apex Hive commands.
+Complete reference for all 62+ Apex Hive commands.
 
 ## 📋 Command Categories
 
@@ -101,10 +101,12 @@ Complete reference for all 60+ Apex Hive commands.
 | `fix-detected` | Fix detected issues | `apex fix-detected` |
 | `report` | Generate status report | `apex report` |
 
-### Cache Management (3)
+### Cache Management (5)
 | Command | Description | Example |
 |---------|-------------|---------|
 | `cache:warm-readmes` | Pre-cache README files | `apex cache:warm-readmes` |
+| `cache:warm-docs` | Pre-cache high-value documentation | `apex cache:warm-docs` |
+| `cache:warm-all` | Pre-cache READMEs + documentation | `apex cache:warm-all` |
 | `cache:clear` | Clear all caches | `apex cache:clear` |
 | `cache:status` | Display cache statistics and status | `apex cache:status --detailed` |
 
