@@ -2,6 +2,7 @@
 
 ## 2025-07-01
 
+- [Batch 4 migration completed - Git and Backlog scripts](2025-07-01-23-24-59-batch-4-migration-completed-git-and-backlog-script.md) - `cache`, `migration`, `file-ops`, `batch-4`, `testing`
 - [Cached file operations migration - Phase 4-5 completed, batch migration ongoing](2025-07-01-23-09-29-cached-file-operations-migration-phase-4-5-complet.md) - `cache`, `file-ops`, `migration`, `mcp-fix`, `performance`
 - [Implemented cached file operations for 70-80% token reduction](2025-07-01-21-59-13-implemented-cached-file-operations-for-70-80-token.md) - `performance`, `cache`, `file-ops`, `optimization`
 - [Improved detect-issues with intelligent grouping](2025-07-01-21-07-08-improved-detect-issues-with-intelligent-grouping.md) - `detect-issues`, `grouping`, `optimization`, `cleanup`
