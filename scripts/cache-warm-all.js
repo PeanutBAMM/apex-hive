@@ -90,7 +90,7 @@ export async function run(args = {}) {
     results.conversations = await warmConversations({
       dryRun,
       verbose,
-      limit: 50  // Warm last 50 conversations
+      limit: 5   // Warm last 5 conversations (reduced for size)
     });
 
     if (!results.conversations.success) {

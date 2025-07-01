@@ -83,4 +83,14 @@ export default [
     match: /cache.*status|show.*cache/i,
     command: "cache:status",
   },
+  {
+    name: "save-conversation",
+    match: /save.*conversation|save.*chat|save.*this.*conversation/i,
+    command: "save-conversation",
+  },
+  {
+    name: "remember-this",
+    match: /remember.*this|save.*session|keep.*this/i,
+    command: "save-conversation",
+  },
 ];

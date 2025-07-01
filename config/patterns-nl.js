@@ -88,4 +88,14 @@ export default [
     match: /cache.*status|toon.*cache/i,
     command: "cache:status",
   },
+  {
+    name: "sla-gesprek-op-nl",
+    match: /sla.*gesprek.*op|bewaar.*gesprek|bewaar.*conversatie|save.*conversation/i,
+    command: "save-conversation",
+  },
+  {
+    name: "onthoud-dit-nl",
+    match: /onthoud.*dit|remember.*this|bewaar.*dit/i,
+    command: "save-conversation",
+  },
 ];
