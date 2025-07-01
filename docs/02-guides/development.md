@@ -197,44 +197,105 @@ In `config/patterns.js`:
 
 ## 🧪 Testing
 
-### Unit Tests
-```javascript
-// test/my-command.test.js
-import { test } from 'node:test';
-import assert from 'node:assert';
-import { execute } from '../scripts/my-awesome-command.js';
+### Running Tests
 
-test('my awesome command works', async () => {
-  const result = await execute({ option: 'value' });
-  assert.strictEqual(result.success, true);
-  assert.strictEqual(result.data.awesome, true);
-});
-```javascript
+Apex Hive uses **Jest** for testing with full ES module support. See our comprehensive [Testing Guide](./testing.md) for detailed information about writing and running tests.
 
-### Integration Tests
-```javascript
-// test-integration.js
-const tests = [
-  {
-    name: 'My command via router',
-    command: 'my:awesome',
-    args: { option: 'value' },
-    expect: { success: true }
-  }
-];
-```javascript
-
-### Run Tests
+#### Quick Test Commands
 ```bash
-# Unit tests
+# Run all tests
 npm test
 
-# Integration tests
-node test-integration.js
+# Run tests in watch mode
+npm test:watch
 
-# Specific test
-node --test test/my-command.test.js
+# Run with coverage report
+npm test:coverage
+
+# Run specific test file
+npm test test/cache/unified-cache.test.js
+```
+
+#### GitHub Actions Integration
+
+Tests run automatically on:
+- Every push to master/main branch
+- All pull requests
+- Multiple Node.js versions (18.x, 20.x)
+
+See `.github/workflows/test.yml` for the complete CI configuration.
+
+### Writing Tests
+
+#### Unit Test Example
 ```javascript
+// test/cache/my-module.test.js
+import { MyModule } from '../../modules/my-module.js';
+import { setupTestCache, cleanupTestCache } from '../setup.js';
+
+describe('MyModule', () => {
+  let module;
+
+  beforeAll(() => {
+    setupTestCache();
+  });
+
+  beforeEach(() => {
+    module = new MyModule();
+  });
+
+  afterAll(() => {
+    cleanupTestCache();
+  });
+
+  test('processes input correctly', async () => {
+    const result = await module.process('test-input');
+    expect(result).toEqual({ processed: 'test-input' });
+  });
+});
+```
+
+#### Command Test Example
+```javascript
+// test/scripts/my-command.test.js
+import { execute } from '../../scripts/my-awesome-command.js';
+
+describe('my:awesome command', () => {
+  test('executes successfully with valid args', async () => {
+    const result = await execute({ option: 'value' });
+    
+    expect(result.success).toBe(true);
+    expect(result.data.awesome).toBe(true);
+  });
+
+  test('handles errors gracefully', async () => {
+    const result = await execute({ invalid: true });
+    
+    expect(result.success).toBe(false);
+    expect(result.error).toBeDefined();
+    expect(result.suggestion).toBeDefined();
+  });
+});
+```
+
+### Test Structure
+
+```
+test/
+├── cache/              # Cache system tests
+├── modules/            # Module tests
+├── scripts/            # Command tests
+├── integration/        # End-to-end tests
+└── setup.js           # Test utilities
+```
+
+For more details on:
+- Jest configuration for ES modules
+- Test utilities and helpers
+- Coverage reports
+- Troubleshooting
+
+See the complete [Testing Guide](./testing.md).
 
 ## 📏 Code Standards
 

@@ -25,6 +25,9 @@ export async function run(args = {}) {
       total: 0,
       totalSize: 0
     };
+    
+    // Declare clear results in outer scope
+    let fileClear, convClear, cmdClear, searchClear;
 
     // Get stats before clearing
     const statsBefore = await Promise.all([
@@ -46,11 +49,16 @@ export async function run(args = {}) {
     }
 
     if (!dryRun) {
-      // Clear all caches
-      results.files = await fileCache.clear();
-      results.conversations = await conversationCache.clear();
-      results.commands = await commandCache.clear();
-      results.search = await searchCache.clear();
+      // Clear all caches - now returns {cleared, errors, totalSize}
+      fileClear = await fileCache.clear();
+      convClear = await conversationCache.clear();
+      cmdClear = await commandCache.clear();
+      searchClear = await searchCache.clear();
+      
+      results.files = fileClear.cleared;
+      results.conversations = convClear.cleared;
+      results.commands = cmdClear.cleared;
+      results.search = searchClear.cleared;
       
       results.total = results.files + results.conversations + results.commands + results.search;
 
@@ -75,12 +83,13 @@ export async function run(args = {}) {
       dryRun,
       data: {
         cleared: {
-          files: results.files,
-          conversations: results.conversations,
-          commands: results.commands,
-          search: results.search,
+          files: dryRun ? results.files : fileClear,
+          conversations: dryRun ? results.conversations : convClear,
+          commands: dryRun ? results.commands : cmdClear,
+          search: dryRun ? results.search : searchClear,
           total: results.total
         },
+        totalCleared: results.total,
         size: formatBytes(results.totalSize),
         locations: [
           "~/.apex-cache/files",

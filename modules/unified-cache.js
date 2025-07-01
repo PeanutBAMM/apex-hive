@@ -8,10 +8,14 @@ import crypto from 'crypto';
 export class UnifiedCache {
   constructor(namespace, options = {}) {
     this.namespace = namespace;
-    this.cacheDir = path.join(os.homedir(), '.apex-cache', namespace);
+    // Allow override for testing
+    const baseDir = process.env.APEX_CACHE_DIR || path.join(os.homedir(), '.apex-cache');
+    this.cacheDir = path.join(baseDir, namespace);
     this.ttl = options.ttl || 15 * 60 * 1000; // 15 minutes default
     this.maxSize = options.maxSize || 100 * 1024 * 1024; // 100MB default
     this.encoding = options.encoding || 'utf8';
+    // Track hits and misses for accurate hit rate
+    this._attempts = { hits: 0, misses: 0 };
   }
 
   getCachePath(key) {
@@ -49,8 +53,10 @@ export class UnifiedCache {
       meta.hits = (meta.hits || 0) + 1;
       await fs.writeFile(metaPath, JSON.stringify(meta, null, 2));
 
+      this._attempts.hits++;
       return JSON.parse(content);
     } catch (error) {
+      this._attempts.misses++;
       if (error.code === 'ENOENT') {
         return null; // Not in cache
       }
@@ -67,7 +73,7 @@ export class UnifiedCache {
       const metaPath = this.getMetaPath(key);
       
       const content = JSON.stringify(value);
-      const ttl = options.ttl || this.ttl;
+      const ttl = options.ttl !== undefined ? options.ttl : this.ttl;
       
       // Check size limit
       const size = Buffer.byteLength(content, this.encoding);
@@ -87,13 +93,17 @@ export class UnifiedCache {
         hits: 0
       };
 
-      // Write files atomically
-      await fs.writeFile(cachePath + '.tmp', content, this.encoding);
-      await fs.writeFile(metaPath + '.tmp', JSON.stringify(meta, null, 2));
+      // Write files atomically with unique temp names
+      const tempId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const tempCachePath = `${cachePath}.${tempId}.tmp`;
+      const tempMetaPath = `${metaPath}.${tempId}.tmp`;
+      
+      await fs.writeFile(tempCachePath, content, this.encoding);
+      await fs.writeFile(tempMetaPath, JSON.stringify(meta, null, 2));
       
       // Rename atomically
-      await fs.rename(cachePath + '.tmp', cachePath);
-      await fs.rename(metaPath + '.tmp', metaPath);
+      await fs.rename(tempCachePath, cachePath);
+      await fs.rename(tempMetaPath, metaPath);
 
       return true;
     } catch (error) {
@@ -112,8 +122,16 @@ export class UnifiedCache {
       const cachePath = this.getCachePath(key);
       const metaPath = this.getMetaPath(key);
       
-      await fs.unlink(cachePath).catch(() => {});
-      await fs.unlink(metaPath).catch(() => {});
+      // Check if files exist first
+      try {
+        await fs.access(cachePath);
+        await fs.access(metaPath);
+      } catch {
+        return false; // Files don't exist
+      }
+      
+      await fs.unlink(cachePath);
+      await fs.unlink(metaPath);
       
       return true;
     } catch (error) {
@@ -125,18 +143,29 @@ export class UnifiedCache {
     try {
       const files = await fs.readdir(this.cacheDir);
       let cleared = 0;
+      let errors = 0;
+      let totalSize = 0;
+      
+      // Count cache entries (not individual files)
+      const cacheEntries = files.filter(f => f.endsWith('.cache')).length;
       
       for (const file of files) {
         if (file.endsWith('.cache') || file.endsWith('.meta')) {
-          await fs.unlink(path.join(this.cacheDir, file));
-          cleared++;
+          try {
+            const filePath = path.join(this.cacheDir, file);
+            const stats = await fs.stat(filePath);
+            totalSize += stats.size;
+            await fs.unlink(filePath);
+          } catch (e) {
+            errors++;
+          }
         }
       }
       
-      return cleared;
+      return { cleared: cacheEntries, errors, totalSize };
     } catch (error) {
       if (error.code === 'ENOENT') {
-        return 0; // Directory doesn't exist
+        return { cleared: 0, errors: 0, totalSize: 0 }; // Directory doesn't exist
       }
       throw error;
     }
@@ -146,10 +175,22 @@ export class UnifiedCache {
     try {
       const files = await fs.readdir(this.cacheDir);
       let count = 0;
+      const now = Date.now();
       
+      // Only count non-expired entries
       for (const file of files) {
-        if (file.endsWith('.cache')) {
-          count++;
+        if (file.endsWith('.meta')) {
+          try {
+            const metaPath = path.join(this.cacheDir, file);
+            const metaContent = await fs.readFile(metaPath, 'utf8');
+            const meta = JSON.parse(metaContent);
+            
+            if (now <= meta.expires) {
+              count++;
+            }
+          } catch (e) {
+            // Skip invalid meta files
+          }
         }
       }
       
@@ -183,7 +224,9 @@ export class UnifiedCache {
                 size: meta.size,
                 hits: meta.hits || 0,
                 age: Date.now() - meta.created,
-                lastAccess: Date.now() - meta.lastAccess
+                lastAccess: Date.now() - meta.lastAccess,
+                created: meta.created,
+                expires: meta.expires
               });
               totalSize += meta.size;
               totalHits += meta.hits || 0;
@@ -200,22 +243,40 @@ export class UnifiedCache {
         await this.delete(key);
       }
 
+      // Sort by hits and get newest/oldest
+      const sortedByHits = active.sort((a, b) => b.hits - a.hits);
+      const sortedByAge = [...active].sort((a, b) => a.created - b.created);
+      
+      // Calculate hit rate from tracked attempts
+      const totalAttempts = this._attempts.hits + this._attempts.misses;
+      const hitRate = totalAttempts > 0 ? this._attempts.hits / totalAttempts : 0;
+      
       return {
         namespace: this.namespace,
-        items,
         totalSize,
+        entries: sortedByHits.slice(0, 10), // Top 10 by hits
+        count: items,
+        hitRate: parseFloat(hitRate.toFixed(2)),
+        oldestEntry: sortedByAge[0] || null,
+        newestEntry: sortedByAge[sortedByAge.length - 1] || null,
+        // Legacy properties for backward compatibility
+        items,
         totalHits,
-        hitRate: items > 0 ? (totalHits / items).toFixed(2) : 0,
         expired: expired.length,
-        active: active.sort((a, b) => b.hits - a.hits).slice(0, 10) // Top 10 by hits
+        active: sortedByHits.slice(0, 10)
       };
     } catch (error) {
       return {
         namespace: this.namespace,
-        items: 0,
         totalSize: 0,
-        totalHits: 0,
+        entries: [],
+        count: 0,
         hitRate: 0,
+        oldestEntry: null,
+        newestEntry: null,
+        // Legacy properties
+        items: 0,
+        totalHits: 0,
         expired: 0,
         active: []
       };

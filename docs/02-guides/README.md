@@ -5,7 +5,7 @@ How-to guides and examples
 ## Documents
 
 - [Architecture Guide](./architecture.md)
-- [Caching Guide](./caching.md)
+- [Unified Cache System Complete](./unified-cache-system-complete.md)
 - [Development Guide](./development.md)
 - [MCP Integration Guide](./mcp-integration.md)
 - [Natural Language Guide](./natural-language.md)
