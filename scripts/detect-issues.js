@@ -1,6 +1,6 @@
 // detect-issues.js - Detect various issues in the codebase
 import { execSync } from "child_process";
-import { promises as fs } from "fs";
+import { readFile, writeFile, batchRead, batchWrite, pathExists } from "../modules/file-ops.js";
 import path from "path";
 
 export async function run(args = {}) {
@@ -80,7 +80,7 @@ export async function run(args = {}) {
       reportContent = generateReport(filteredIssues);
 
       if (!dryRun) {
-        await fs.writeFile("issues-report.md", reportContent);
+        await writeFile("issues-report.md", reportContent);
       }
     }
 
@@ -283,7 +283,7 @@ async function detectCodeIssues() {
 
     for (const file of jsFiles) {
       try {
-        const content = await fs.readFile(file, "utf8");
+        const content = await readFile(file);
         const lines = content.split("\n");
 
         let inFunction = false;
@@ -464,7 +464,10 @@ async function detectDocumentationIssues() {
 
   // Check for missing README
   try {
-    await fs.access("README.md");
+    const readmeExists = await pathExists("README.md");
+    if (!readmeExists) {
+      throw new Error("README.md not found");
+    }
   } catch {
     issues.push({
       type: "missing-documentation",
@@ -491,7 +494,7 @@ async function detectDocumentationIssues() {
 
     for (const file of jsFiles) {
       try {
-        const content = await fs.readFile(file, "utf8");
+        const content = await readFile(file);
         const lines = content.split("\n");
 
         for (let i = 0; i < lines.length; i++) {
@@ -602,14 +605,11 @@ async function detectTestingIssues() {
       const testFile = srcFile.replace(/\.js$/, ".test.js");
       const specFile = srcFile.replace(/\.js$/, ".spec.js");
 
-      try {
-        await fs.access(testFile);
-      } catch {
-        try {
-          await fs.access(specFile);
-        } catch {
-          missingTestFiles.push(srcFile.replace("./", ""));
-        }
+      const testExists = await pathExists(testFile);
+      const specExists = await pathExists(specFile);
+      
+      if (!testExists && !specExists) {
+        missingTestFiles.push(srcFile.replace("./", ""));
       }
     }
 
@@ -658,14 +658,14 @@ async function attemptFix(issue) {
             lines.splice(lineNum - 1, 1);
           }
 
-          await fs.writeFile(issue.file, lines.join("\n"));
+          await writeFile(issue.file, lines.join("\n"));
           return true;
         } else {
           // Handle single console.log (legacy)
           const content = await fs.readFile(issue.file, "utf8");
           const lines = content.split("\n");
           lines.splice(issue.line - 1, 1);
-          await fs.writeFile(issue.file, lines.join("\n"));
+          await writeFile(issue.file, lines.join("\n"));
           return true;
         }
 
@@ -682,7 +682,7 @@ async function attemptFix(issue) {
       case "missing-documentation":
         // Create basic README
         if (issue.file === "README.md") {
-          const pkg = JSON.parse(await fs.readFile("package.json", "utf8"));
+          const pkg = JSON.parse(await readFile("package.json"));
           const readme = `# ${pkg.name}
 
 ${pkg.description || "Project description"}
@@ -703,7 +703,7 @@ npm start
 
 ${pkg.license || "MIT"}
 `;
-          await fs.writeFile("README.md", readme);
+          await writeFile("README.md", readme);
           return true;
         }
         break;

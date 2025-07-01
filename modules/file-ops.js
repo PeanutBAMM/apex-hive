@@ -4,6 +4,33 @@ import { promises as fs } from "fs";
 import path from "path";
 import { fileCache } from "./unified-cache.js";
 
+// File locking mechanism
+const activeLocks = new Map();
+const MAX_WAIT_TIME = 5000; // 5 seconds
+
+/**
+ * Acquire a lock for a file path
+ */
+async function acquireLock(filePath) {
+  const startTime = Date.now();
+  
+  while (activeLocks.has(filePath)) {
+    if (Date.now() - startTime > MAX_WAIT_TIME) {
+      throw new Error(`Lock timeout for ${filePath}`);
+    }
+    await new Promise(resolve => setTimeout(resolve, 10));
+  }
+  
+  activeLocks.set(filePath, Date.now());
+}
+
+/**
+ * Release a lock for a file path
+ */
+function releaseLock(filePath) {
+  activeLocks.delete(filePath);
+}
+
 /**
  * Read file with caching
  */
@@ -47,17 +74,25 @@ export async function readFile(filePath, options = {}) {
 export async function writeFile(filePath, content) {
   const absolutePath = path.resolve(filePath);
 
-  // Ensure directory exists
-  const dir = path.dirname(absolutePath);
-  await fs.mkdir(dir, { recursive: true });
+  // Acquire lock before writing
+  await acquireLock(absolutePath);
 
-  // Write file
-  await fs.writeFile(absolutePath, content, "utf8");
+  try {
+    // Ensure directory exists
+    const dir = path.dirname(absolutePath);
+    await fs.mkdir(dir, { recursive: true });
 
-  // Update cache
-  await fileCache.set(absolutePath, content);
+    // Write file
+    await fs.writeFile(absolutePath, content, "utf8");
 
-  return absolutePath;
+    // Update cache
+    await fileCache.set(absolutePath, content);
+
+    return absolutePath;
+  } finally {
+    // Always release lock
+    releaseLock(absolutePath);
+  }
 }
 
 /**
@@ -176,4 +211,90 @@ export async function deleteFile(filePath) {
   await fileCache.delete(absolutePath);
 
   return true;
+}
+
+/**
+ * Batch read multiple files with caching
+ * @param {string[]} filePaths - Array of file paths to read
+ * @param {Object} options - Read options
+ * @returns {Object} Object with results and errors
+ */
+export async function batchRead(filePaths, options = {}) {
+  const results = {};
+  const errors = {};
+  
+  // Process files in parallel for better performance
+  await Promise.all(
+    filePaths.map(async (filePath) => {
+      try {
+        results[filePath] = await readFile(filePath, options);
+      } catch (error) {
+        errors[filePath] = error.message;
+      }
+    })
+  );
+  
+  return { results, errors };
+}
+
+/**
+ * Batch write multiple files with caching
+ * @param {Object} fileMap - Object mapping file paths to content
+ * @param {Object} options - Write options
+ * @returns {Object} Object with successful writes and errors
+ */
+export async function batchWrite(fileMap, options = {}) {
+  const results = [];
+  const errors = {};
+  
+  // Process files sequentially to avoid lock contention
+  for (const [filePath, content] of Object.entries(fileMap)) {
+    try {
+      await writeFile(filePath, content);
+      results.push(filePath);
+    } catch (error) {
+      errors[filePath] = error.message;
+    }
+  }
+  
+  return { results, errors };
+}
+
+/**
+ * Chunk array into smaller arrays
+ * @private
+ */
+function chunkArray(array, size) {
+  const chunks = [];
+  for (let i = 0; i < array.length; i += size) {
+    chunks.push(array.slice(i, i + size));
+  }
+  return chunks;
+}
+
+/**
+ * Batch read with memory protection for large file sets
+ * @param {string[]} filePaths - Array of file paths to read
+ * @param {Object} options - Read options including chunkSize
+ * @returns {Object} Object with results and errors
+ */
+export async function batchReadSafe(filePaths, options = {}) {
+  const { chunkSize = 50, ...readOptions } = options;
+  
+  if (filePaths.length <= chunkSize) {
+    return batchRead(filePaths, readOptions);
+  }
+  
+  // Process in chunks to avoid memory issues
+  const chunks = chunkArray(filePaths, chunkSize);
+  const allResults = {};
+  const allErrors = {};
+  
+  for (const chunk of chunks) {
+    const { results, errors } = await batchRead(chunk, readOptions);
+    Object.assign(allResults, results);
+    Object.assign(allErrors, errors);
+  }
+  
+  return { results: allResults, errors: allErrors };
 }

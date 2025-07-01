@@ -3,6 +3,7 @@ import { promises as fs } from "fs";
 import { execSync } from "child_process";
 import path from "path";
 import os from "os";
+import { readFile, getFileStats, pathExists, batchRead } from "../modules/file-ops.js";
 import { fileCache } from "../modules/unified-cache.js";
 
 export async function run(args = {}) {
@@ -57,7 +58,7 @@ export async function run(args = {}) {
     // Process each README
     for (const file of readmeFiles) {
       try {
-        const stats = await fs.stat(file);
+        const stats = await getFileStats(file);
 
         // Skip files that are too large
         if (stats.size > maxSize) {
@@ -68,14 +69,14 @@ export async function run(args = {}) {
           continue;
         }
 
-        // Read file content
-        const content = await fs.readFile(file, encoding);
+        // Read file content (already uses cache)
+        const content = await readFile(file);
 
         // Cache metadata
         const metadata = {
           path: file,
           size: stats.size,
-          mtime: stats.mtime.toISOString(),
+          mtime: stats.modified.toISOString(),
           encoding,
           lines: content.split("\n").length,
           hasToC: detectTableOfContents(content),
@@ -174,8 +175,10 @@ async function findReadmeFiles(directory, options) {
     // Verify files exist and are readable
     for (const file of foundFiles) {
       try {
-        await fs.access(file, fs.constants.R_OK);
-        files.push(file);
+        const exists = await pathExists(file);
+        if (exists) {
+          files.push(file);
+        }
       } catch {
         // Skip inaccessible files
       }

@@ -1,5 +1,5 @@
 // quality-console-clean.js - Remove console.log statements from code
-import { promises as fs } from "fs";
+import { readFile, writeFile, batchRead, batchWrite } from "../modules/file-ops.js";
 import path from "path";
 import { execSync } from "child_process";
 
@@ -31,13 +31,25 @@ export async function run(args = {}) {
       files: [],
     };
 
-    for (const file of files) {
-      if (!file || file.includes("node_modules")) continue;
+    // Filter valid files
+    const validFiles = files.filter(f => f && !f.includes("node_modules"));
+    results.scanned = validFiles.length;
 
-      results.scanned++;
+    // Batch read all files
+    const { results: fileContents, errors: readErrors } = await batchRead(validFiles);
+    
+    // Report read errors
+    for (const [file, error] of Object.entries(readErrors)) {
+      console.error(`[QUALITY-CONSOLE-CLEAN] Error reading ${file}:`, error);
+    }
+
+    const filesToWrite = {};
+
+    for (const file of validFiles) {
+      if (!fileContents[file]) continue;
 
       try {
-        const content = await fs.readFile(file, "utf8");
+        const content = fileContents[file];
         const lines = content.split("\n");
         let modified = false;
         let removedInFile = 0;
@@ -81,7 +93,7 @@ export async function run(args = {}) {
         });
 
         if (modified && !dryRun) {
-          await fs.writeFile(file, newLines.join("\n"));
+          filesToWrite[file] = newLines.join("\n");
           results.removed += removedInFile;
           results.files.push({
             file,
@@ -95,6 +107,16 @@ export async function run(args = {}) {
           `[QUALITY-CONSOLE-CLEAN] Error processing ${file}:`,
           error.message,
         );
+      }
+    }
+
+    // Batch write all modified files
+    if (!dryRun && Object.keys(filesToWrite).length > 0) {
+      const { errors: writeErrors } = await batchWrite(filesToWrite);
+      
+      // Report write errors
+      for (const [file, error] of Object.entries(writeErrors)) {
+        console.error(`[QUALITY-CONSOLE-CLEAN] Error writing ${file}:`, error);
       }
     }
 
