@@ -1,17 +1,17 @@
 # Issues Report
 
-Generated: 2025-07-01T19:08:39.717Z
+Generated: 2025-07-01T20:31:14.763Z
 
 ## Summary
 
-- Total Issues: 171
+- Total Issues: 175
 - Critical: 0
 - High: 0
-- Medium: 50
+- Medium: 54
 - Low: 121
 - Info: 0
 
-## 🟡 MEDIUM (50)
+## 🟡 MEDIUM (54)
 
 ### console-log
 - **Category**: code
@@ -70,7 +70,7 @@ Generated: 2025-07-01T19:08:39.717Z
 ### console-log
 - **Category**: code
 - **File**: scripts/detect-issues.js:167
-- **Message**: 6 console.log statements found (lines: 167, 196, 198, 646, 648, 662)
+- **Message**: 6 console.log statements found (lines: 167, 196, 198, 648, 650, 664)
 - **Fixable**: Yes - Remove console.log statements
 
 ### console-log
@@ -100,7 +100,7 @@ Generated: 2025-07-01T19:08:39.717Z
 ### console-log
 - **Category**: code
 - **File**: scripts/quality-console-clean.js:1
-- **Message**: 8 console.log statements found (lines: 1, 14, 51, 56, 57, 106, 107, 114)
+- **Message**: 8 console.log statements found (lines: 1, 14, 63, 68, 69, 128, 129, 136)
 - **Fixable**: Yes - Remove console.log statements
 
 ### console-log
@@ -135,6 +135,24 @@ Generated: 2025-07-01T19:08:39.717Z
 
 ### console-log
 - **Category**: code
+- **File**: test-cache-performance.js:8
+- **Message**: 24 console.log statements found (lines: 8, 11, 12, 18, 24, 25, 31, 37, 38, 42, 45, 46, 47, 48, 55, 56, 62, 67, 68, 69, 70, 71, 72, 73)
+- **Fixable**: Yes - Remove console.log statements
+
+### console-log
+- **Category**: code
+- **File**: test-error-handling.js:7
+- **Message**: 10 console.log statements found (lines: 7, 10, 13, 15, 19, 23, 26, 30, 36, 41)
+- **Fixable**: Yes - Remove console.log statements
+
+### console-log
+- **Category**: code
+- **File**: test-file-ops.js:7
+- **Message**: 15 console.log statements found (lines: 7, 10, 21, 22, 26, 27, 28, 29, 32, 39, 40, 44, 45, 46, 47)
+- **Fixable**: Yes - Remove console.log statements
+
+### console-log
+- **Category**: code
 - **File**: test-integration.js:165
 - **Message**: 9 console.log statements found (lines: 165, 176, 179, 183, 188, 189, 190, 191, 192)
 - **Fixable**: Yes - Remove console.log statements
@@ -153,6 +171,12 @@ Generated: 2025-07-01T19:08:39.717Z
 
 ### console-log
 - **Category**: code
+- **File**: test-mtime-cache.js:8
+- **Message**: 14 console.log statements found (lines: 8, 13, 18, 21, 25, 29, 32, 38, 39, 42, 46, 50, 51, 55)
+- **Fixable**: Yes - Remove console.log statements
+
+### console-log
+- **Category**: code
 - **File**: test-scripts.js:23
 - **Message**: 17 console.log statements found (lines: 23, 48, 51, 55, 70, 129, 173, 264, 271, 277, 281, 282, 283, 284, 285, 286, 306)
 - **Fixable**: Yes - Remove console.log statements
@@ -165,12 +189,12 @@ Generated: 2025-07-01T19:08:39.717Z
 
 ### unsafe-regex
 - **Category**: security
-- **File**: modules/file-ops.js:82
+- **File**: modules/file-ops.js:165
 - **Message**: Dynamic RegExp construction (potential ReDoS)
 
 ### unsafe-regex
 - **Category**: security
-- **File**: scripts/detect-issues.js:370
+- **File**: scripts/detect-issues.js:371
 - **Message**: Dynamic RegExp construction (potential ReDoS)
 
 ### unsafe-regex
@@ -255,12 +279,12 @@ Generated: 2025-07-01T19:08:39.717Z
 
 ### outdated-dependency
 - **Category**: dependencies
-- **Message**: eslint: 8.57.1 → 9.30.0
+- **Message**: eslint: 8.57.1 → 9.30.1
 - **Fixable**: Yes
 
 ### sync-operation
 - **Category**: performance
-- **File**: scripts/detect-issues.js:547
+- **File**: scripts/detect-issues.js:551
 - **Message**: Synchronous operation 'readFileSync' found
 
 ### sync-operation
@@ -270,7 +294,7 @@ Generated: 2025-07-01T19:08:39.717Z
 
 ### sync-operation
 - **Category**: performance
-- **File**: scripts/detect-issues.js:548
+- **File**: scripts/detect-issues.js:552
 - **Message**: Synchronous operation 'writeFileSync' found
 
 ### sync-operation
@@ -280,12 +304,12 @@ Generated: 2025-07-01T19:08:39.717Z
 
 ### sync-operation
 - **Category**: performance
-- **File**: scripts/detect-issues.js:549
+- **File**: scripts/detect-issues.js:553
 - **Message**: Synchronous operation 'appendFileSync' found
 
 ### sync-operation
 - **Category**: performance
-- **File**: scripts/detect-issues.js:550
+- **File**: scripts/detect-issues.js:554
 - **Message**: Synchronous operation 'mkdirSync' found
 
 ## 🔵 LOW (121)
@@ -502,7 +526,7 @@ Generated: 2025-07-01T19:08:39.717Z
 
 ### todo-comment
 - **Category**: code
-- **File**: scripts/detect-issues.js:234
+- **File**: scripts/detect-issues.js:235
 - **Message**: // Skip code that's checking/counting/reporting TODOs
 
 ### todo-comment
@@ -612,7 +636,7 @@ Generated: 2025-07-01T19:08:39.717Z
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/cache-warm-readmes.js:8
+- **File**: scripts/cache-warm-readmes.js:9
 - **Message**: 1 function missing JSDoc: run
 
 ### missing-jsdoc
@@ -687,7 +711,7 @@ Generated: 2025-07-01T19:08:39.717Z
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/doc-generate-changed.js:6
+- **File**: scripts/doc-generate-changed.js:7
 - **Message**: 1 function missing JSDoc: run
 
 ### missing-jsdoc
@@ -757,7 +781,7 @@ Generated: 2025-07-01T19:08:39.717Z
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/git-commit.js:5
+- **File**: scripts/git-commit.js:4
 - **Message**: 1 function missing JSDoc: run
 
 ### missing-jsdoc
@@ -893,5 +917,5 @@ Generated: 2025-07-01T19:08:39.717Z
 ### missing-tests
 - **Category**: testing
 - **File**: multiple
-- **Message**: 92 files missing tests (showing first 10: apex-router.js, config/patterns-nl.js, config/patterns.js, config/registry.js, generate-claude-md.js, index.js, install-mcp.js, jest.config.js, mcp-server-debug.js, mcp-server-fixed.js, and 82 more)
+- **Message**: 96 files missing tests (showing first 10: apex-router.js, config/patterns-nl.js, config/patterns.js, config/registry.js, generate-claude-md.js, index.js, install-mcp.js, jest.config.js, mcp-server-debug.js, mcp-server-fixed.js, and 86 more)
 

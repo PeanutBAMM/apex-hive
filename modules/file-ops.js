@@ -39,24 +39,63 @@ export async function readFile(filePath, options = {}) {
 
   // Check cache first
   if (!options.noCache) {
-    const cached = await fileCache.get(absolutePath);
+    let cached = null;
+    try {
+      cached = await fileCache.get(absolutePath);
+    } catch (cacheError) {
+      // If cache fails, continue without cache
+      console.error(`[FILE-OPS] Cache get failed for ${filePath}:`, cacheError.message);
+    }
     if (cached !== null) {
-      // Handle both direct content and structured cache data
-      if (typeof cached === "string") {
+      // Check if file was modified since cache
+      try {
+        const stats = await fs.stat(absolutePath);
+        const cacheTime = cached.timestamp || 0;
+        
+        // If file is newer than cache, invalidate
+        if (stats.mtime.getTime() > cacheTime) {
+          try {
+            await fileCache.delete(absolutePath);
+          } catch (deleteError) {
+            // If delete fails, just continue
+            console.error(`[FILE-OPS] Cache delete failed for ${filePath}:`, deleteError.message);
+          }
+        } else {
+          // Handle both direct content and structured cache data
+          if (typeof cached === "string") {
+            return cached;
+          } else if (cached.content) {
+            return cached.content;
+          }
+          return cached;
+        }
+      } catch (statError) {
+        // If we can't stat the file, assume cache is valid
+        if (typeof cached === "string") {
+          return cached;
+        } else if (cached.content) {
+          return cached.content;
+        }
         return cached;
-      } else if (cached.content) {
-        return cached.content;
       }
-      return cached;
     }
   }
 
   try {
     const content = await fs.readFile(absolutePath, "utf8");
 
-    // Cache the content
+    // Cache the content with timestamp
     if (!options.noCache) {
-      await fileCache.set(absolutePath, content);
+      try {
+        const stats = await fs.stat(absolutePath);
+        await fileCache.set(absolutePath, {
+          content,
+          timestamp: stats.mtime.getTime()
+        });
+      } catch (cacheError) {
+        // If cache fails, just log and continue
+        console.error(`[FILE-OPS] Cache set failed for ${filePath}:`, cacheError.message);
+      }
     }
 
     return content;
@@ -85,8 +124,17 @@ export async function writeFile(filePath, content) {
     // Write file
     await fs.writeFile(absolutePath, content, "utf8");
 
-    // Update cache
-    await fileCache.set(absolutePath, content);
+    // Update cache with timestamp
+    try {
+      const stats = await fs.stat(absolutePath);
+      await fileCache.set(absolutePath, {
+        content,
+        timestamp: stats.mtime.getTime()
+      });
+    } catch (cacheError) {
+      // If cache fails, just log and continue
+      console.error(`[FILE-OPS] Cache set failed for ${filePath}:`, cacheError.message);
+    }
 
     return absolutePath;
   } finally {
