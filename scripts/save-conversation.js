@@ -8,13 +8,23 @@ import crypto from "crypto";
 export async function run(args = {}) {
   const {
     title,
-    tags = [],
+    tags: inputTags = [],
     format = "markdown",
     directory = "conversations",
     autoCommit = false,
     dryRun = false,
     modules = {},
   } = args;
+
+  // Ensure tags is always an array (handle string input from MCP)
+  let tags;
+  if (typeof inputTags === 'string') {
+    tags = inputTags.split(',').map(t => t.trim()).filter(Boolean);
+  } else if (Array.isArray(inputTags)) {
+    tags = inputTags;
+  } else {
+    tags = [];
+  }
 
   console.error("[SAVE-CONVERSATION] Saving conversation context...");
 
