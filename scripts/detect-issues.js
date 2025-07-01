@@ -173,16 +173,31 @@ async function detectCodeIssues() {
 
     if (output.trim()) {
       const lines = output.trim().split("\n");
+      const fileGroups = {};
+      
+      // Group by file
       for (const line of lines) {
         const [file, lineNum] = line.split(":");
+        const cleanFile = file.replace("./", "");
+        if (!fileGroups[cleanFile]) {
+          fileGroups[cleanFile] = [];
+        }
+        fileGroups[cleanFile].push(parseInt(lineNum));
+      }
+      
+      // Create one issue per file with count
+      for (const [file, lineNumbers] of Object.entries(fileGroups)) {
+        const count = lineNumbers.length;
         issues.push({
           type: "console-log",
           severity: "medium",
-          file: file.replace("./", ""),
-          line: parseInt(lineNum),
-          message: "Console.log statement found",
+          file: file,
+          line: lineNumbers[0], // First occurrence
+          message: `${count} console.log statement${count > 1 ? 's' : ''} found (lines: ${lineNumbers.join(', ')})`,
           fixable: true,
-          fix: "Remove console.log statement",
+          fix: "Remove console.log statements",
+          count: count,
+          lines: lineNumbers
         });
       }
     }
@@ -205,18 +220,33 @@ async function detectCodeIssues() {
 
         // Skip false positives - code that's checking for TODOs/FIXMEs
         const isFalsePositive =
-          (content.includes("grep") && content.includes("TODO")) ||
-          (content.includes("grep") && content.includes("FIXME")) ||
+          // Skip grep commands and regex patterns
+          (content.includes("grep") && (content.includes("TODO") || content.includes("FIXME"))) ||
+          content.includes("TODO\\\\|FIXME") ||
+          content.includes("TODO\\|FIXME") ||
+          // Skip string literals and code references
           content.includes('"TODO') ||
           content.includes("'TODO") ||
           content.includes('"FIXME') ||
           content.includes("'FIXME") ||
+          content.includes("`TODO") ||
+          content.includes("`FIXME") ||
+          // Skip code that's checking/counting/reporting TODOs
           content.includes("Check for TODO") ||
           content.includes("Count TODO") ||
           content.includes("TODO/FIXME") ||
-          content.includes("TODO\\\\|FIXME") ||
+          content.includes("TODOs:") ||
+          content.includes("FIXMEs:") ||
           content.includes("Found ${count} TODO") ||
-          content.includes("No TODO/FIXME");
+          content.includes("No TODO/FIXME") ||
+          content.includes("todo-comment") ||
+          content.includes("TODO comments") ||
+          content.includes("FIXME comments") ||
+          content.includes("Skip false positives") ||
+          // Skip console.error messages about TODOs
+          content.includes("console.error") ||
+          // Skip report generation
+          content.includes("report +=");
 
         if (isFalsePositive) {
           continue;
@@ -456,6 +486,8 @@ async function detectDocumentationIssues() {
       .split("\n")
       .filter((f) => f);
 
+    const missingJsDocByFile = {};
+    
     for (const file of jsFiles) {
       try {
         const content = await fs.readFile(file, "utf8");
@@ -469,13 +501,13 @@ async function detectDocumentationIssues() {
             const prevLine = i > 0 ? lines[i - 1] : "";
             if (!prevLine.includes("*/")) {
               const funcName = line.match(/function\s+(\w+)/)?.[1];
-              issues.push({
-                type: "missing-jsdoc",
-                severity: "low",
-                file: file.replace("./", ""),
+              const cleanFile = file.replace("./", "");
+              if (!missingJsDocByFile[cleanFile]) {
+                missingJsDocByFile[cleanFile] = [];
+              }
+              missingJsDocByFile[cleanFile].push({
                 line: i + 1,
-                message: `Function '${funcName}' missing JSDoc`,
-                fixable: false,
+                function: funcName
               });
             }
           }
@@ -483,6 +515,22 @@ async function detectDocumentationIssues() {
       } catch {
         // Skip file
       }
+    }
+    
+    // Create one issue per file with missing JSDoc
+    for (const [file, functions] of Object.entries(missingJsDocByFile)) {
+      const count = functions.length;
+      const funcNames = functions.map(f => f.function).join(', ');
+      issues.push({
+        type: "missing-jsdoc",
+        severity: "low",
+        file: file,
+        line: functions[0].line,
+        message: `${count} function${count > 1 ? 's' : ''} missing JSDoc: ${funcNames}`,
+        fixable: false,
+        count: count,
+        functions: functions
+      });
     }
   } catch {
     // Ignore errors
@@ -547,6 +595,8 @@ async function detectTestingIssues() {
       .split("\n")
       .filter((f) => f);
 
+    const missingTestFiles = [];
+    
     for (const srcFile of srcFiles) {
       const testFile = srcFile.replace(/\.js$/, ".test.js");
       const specFile = srcFile.replace(/\.js$/, ".spec.js");
@@ -557,15 +607,30 @@ async function detectTestingIssues() {
         try {
           await fs.access(specFile);
         } catch {
-          issues.push({
-            type: "missing-tests",
-            severity: "low",
-            file: srcFile.replace("./", ""),
-            message: "No test file found",
-            fixable: false,
-          });
+          missingTestFiles.push(srcFile.replace("./", ""));
         }
       }
+    }
+    
+    // Group missing test files into a single issue
+    if (missingTestFiles.length > 0) {
+      // Show first 10 files in the message
+      const displayFiles = missingTestFiles.slice(0, 10);
+      const remainingCount = missingTestFiles.length - displayFiles.length;
+      const fileList = displayFiles.join(', ');
+      const message = remainingCount > 0 
+        ? `${missingTestFiles.length} files missing tests (showing first 10: ${fileList}, and ${remainingCount} more)`
+        : `${missingTestFiles.length} files missing tests: ${fileList}`;
+        
+      issues.push({
+        type: "missing-tests",
+        severity: "low",
+        file: "multiple",
+        message: message,
+        fixable: false,
+        count: missingTestFiles.length,
+        files: missingTestFiles
+      });
     }
   } catch {
     // Ignore errors
@@ -578,12 +643,29 @@ async function attemptFix(issue) {
   try {
     switch (issue.type) {
       case "console-log":
-        // Remove console.log line
-        const content = await fs.readFile(issue.file, "utf8");
-        const lines = content.split("\n");
-        lines.splice(issue.line - 1, 1);
-        await fs.writeFile(issue.file, lines.join("\n"));
-        return true;
+        // Remove console.log lines
+        if (issue.lines && issue.lines.length > 0) {
+          // Handle grouped console.log issues
+          const content = await fs.readFile(issue.file, "utf8");
+          const lines = content.split("\n");
+          
+          // Sort line numbers in descending order to avoid index shifting
+          const sortedLines = [...issue.lines].sort((a, b) => b - a);
+          
+          for (const lineNum of sortedLines) {
+            lines.splice(lineNum - 1, 1);
+          }
+          
+          await fs.writeFile(issue.file, lines.join("\n"));
+          return true;
+        } else {
+          // Handle single console.log (legacy)
+          const content = await fs.readFile(issue.file, "utf8");
+          const lines = content.split("\n");
+          lines.splice(issue.line - 1, 1);
+          await fs.writeFile(issue.file, lines.join("\n"));
+          return true;
+        }
 
       case "outdated-dependency":
         // Update package

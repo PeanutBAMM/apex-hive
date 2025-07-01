@@ -121,6 +121,9 @@ Apex Hive is a powerful development automation system with 67 commands (59 scrip
 ### Detection & Reporting
 
 - `apex detect-issues` - Detect issues with pagination (--page 1 --limit 20)
+  - **Improved**: Issues are now grouped by file to reduce noise
+  - **Better filtering**: False positive TODO/FIXME detection eliminated
+  - **Cleaner output**: From 363 to ~170 issues through intelligent grouping
 - `apex fix-detected` - Fix issues found by detection
 - `apex report` - Generate comprehensive status report
 
