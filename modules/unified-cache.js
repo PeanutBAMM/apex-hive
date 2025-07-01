@@ -1,31 +1,32 @@
 // unified-cache.js - Unified file-based cache for persistence across MCP calls
 
-import { promises as fs } from 'fs';
-import path from 'path';
-import os from 'os';
-import crypto from 'crypto';
+import { promises as fs } from "fs";
+import path from "path";
+import os from "os";
+import crypto from "crypto";
 
 export class UnifiedCache {
   constructor(namespace, options = {}) {
     this.namespace = namespace;
     // Allow override for testing
-    const baseDir = process.env.APEX_CACHE_DIR || path.join(os.homedir(), '.apex-cache');
+    const baseDir =
+      process.env.APEX_CACHE_DIR || path.join(os.homedir(), ".apex-cache");
     this.cacheDir = path.join(baseDir, namespace);
     this.ttl = options.ttl || 15 * 60 * 1000; // 15 minutes default
     this.maxSize = options.maxSize || 100 * 1024 * 1024; // 100MB default
-    this.encoding = options.encoding || 'utf8';
+    this.encoding = options.encoding || "utf8";
     // Track hits and misses for accurate hit rate
     this._attempts = { hits: 0, misses: 0 };
   }
 
   getCachePath(key) {
     // Create safe filename from key
-    const hash = crypto.createHash('md5').update(key).digest('hex');
-    return path.join(this.cacheDir, hash + '.cache');
+    const hash = crypto.createHash("md5").update(key).digest("hex");
+    return path.join(this.cacheDir, hash + ".cache");
   }
 
   getMetaPath(key) {
-    return this.getCachePath(key) + '.meta';
+    return this.getCachePath(key) + ".meta";
   }
 
   async ensureDir() {
@@ -35,7 +36,7 @@ export class UnifiedCache {
   async get(key) {
     try {
       const metaPath = this.getMetaPath(key);
-      const metaContent = await fs.readFile(metaPath, 'utf8');
+      const metaContent = await fs.readFile(metaPath, "utf8");
       const meta = JSON.parse(metaContent);
 
       // Check if expired
@@ -57,7 +58,7 @@ export class UnifiedCache {
       return JSON.parse(content);
     } catch (error) {
       this._attempts.misses++;
-      if (error.code === 'ENOENT') {
+      if (error.code === "ENOENT") {
         return null; // Not in cache
       }
       console.error(`[CACHE] Error reading ${key}:`, error.message);
@@ -71,10 +72,10 @@ export class UnifiedCache {
 
       const cachePath = this.getCachePath(key);
       const metaPath = this.getMetaPath(key);
-      
+
       const content = JSON.stringify(value);
       const ttl = options.ttl !== undefined ? options.ttl : this.ttl;
-      
+
       // Check size limit
       const size = Buffer.byteLength(content, this.encoding);
       if (size > this.maxSize) {
@@ -90,17 +91,17 @@ export class UnifiedCache {
         expires: Date.now() + ttl,
         lastAccess: Date.now(),
         size,
-        hits: 0
+        hits: 0,
       };
 
       // Write files atomically with unique temp names
       const tempId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       const tempCachePath = `${cachePath}.${tempId}.tmp`;
       const tempMetaPath = `${metaPath}.${tempId}.tmp`;
-      
+
       await fs.writeFile(tempCachePath, content, this.encoding);
       await fs.writeFile(tempMetaPath, JSON.stringify(meta, null, 2));
-      
+
       // Rename atomically
       await fs.rename(tempCachePath, cachePath);
       await fs.rename(tempMetaPath, metaPath);
@@ -121,7 +122,7 @@ export class UnifiedCache {
     try {
       const cachePath = this.getCachePath(key);
       const metaPath = this.getMetaPath(key);
-      
+
       // Check if files exist first
       try {
         await fs.access(cachePath);
@@ -129,10 +130,10 @@ export class UnifiedCache {
       } catch {
         return false; // Files don't exist
       }
-      
+
       await fs.unlink(cachePath);
       await fs.unlink(metaPath);
-      
+
       return true;
     } catch (error) {
       return false;
@@ -145,12 +146,12 @@ export class UnifiedCache {
       let cleared = 0;
       let errors = 0;
       let totalSize = 0;
-      
+
       // Count cache entries (not individual files)
-      const cacheEntries = files.filter(f => f.endsWith('.cache')).length;
-      
+      const cacheEntries = files.filter((f) => f.endsWith(".cache")).length;
+
       for (const file of files) {
-        if (file.endsWith('.cache') || file.endsWith('.meta')) {
+        if (file.endsWith(".cache") || file.endsWith(".meta")) {
           try {
             const filePath = path.join(this.cacheDir, file);
             const stats = await fs.stat(filePath);
@@ -161,10 +162,10 @@ export class UnifiedCache {
           }
         }
       }
-      
+
       return { cleared: cacheEntries, errors, totalSize };
     } catch (error) {
-      if (error.code === 'ENOENT') {
+      if (error.code === "ENOENT") {
         return { cleared: 0, errors: 0, totalSize: 0 }; // Directory doesn't exist
       }
       throw error;
@@ -176,15 +177,15 @@ export class UnifiedCache {
       const files = await fs.readdir(this.cacheDir);
       let count = 0;
       const now = Date.now();
-      
+
       // Only count non-expired entries
       for (const file of files) {
-        if (file.endsWith('.meta')) {
+        if (file.endsWith(".meta")) {
           try {
             const metaPath = path.join(this.cacheDir, file);
-            const metaContent = await fs.readFile(metaPath, 'utf8');
+            const metaContent = await fs.readFile(metaPath, "utf8");
             const meta = JSON.parse(metaContent);
-            
+
             if (now <= meta.expires) {
               count++;
             }
@@ -193,7 +194,7 @@ export class UnifiedCache {
           }
         }
       }
-      
+
       return count;
     } catch (error) {
       return 0;
@@ -210,12 +211,12 @@ export class UnifiedCache {
       const active = [];
 
       for (const file of files) {
-        if (file.endsWith('.meta')) {
+        if (file.endsWith(".meta")) {
           try {
             const metaPath = path.join(this.cacheDir, file);
-            const metaContent = await fs.readFile(metaPath, 'utf8');
+            const metaContent = await fs.readFile(metaPath, "utf8");
             const meta = JSON.parse(metaContent);
-            
+
             if (Date.now() > meta.expires) {
               expired.push(meta.key);
             } else {
@@ -226,7 +227,7 @@ export class UnifiedCache {
                 age: Date.now() - meta.created,
                 lastAccess: Date.now() - meta.lastAccess,
                 created: meta.created,
-                expires: meta.expires
+                expires: meta.expires,
               });
               totalSize += meta.size;
               totalHits += meta.hits || 0;
@@ -246,11 +247,12 @@ export class UnifiedCache {
       // Sort by hits and get newest/oldest
       const sortedByHits = active.sort((a, b) => b.hits - a.hits);
       const sortedByAge = [...active].sort((a, b) => a.created - b.created);
-      
+
       // Calculate hit rate from tracked attempts
       const totalAttempts = this._attempts.hits + this._attempts.misses;
-      const hitRate = totalAttempts > 0 ? this._attempts.hits / totalAttempts : 0;
-      
+      const hitRate =
+        totalAttempts > 0 ? this._attempts.hits / totalAttempts : 0;
+
       return {
         namespace: this.namespace,
         totalSize,
@@ -263,7 +265,7 @@ export class UnifiedCache {
         items,
         totalHits,
         expired: expired.length,
-        active: sortedByHits.slice(0, 10)
+        active: sortedByHits.slice(0, 10),
       };
     } catch (error) {
       return {
@@ -278,26 +280,28 @@ export class UnifiedCache {
         items: 0,
         totalHits: 0,
         expired: 0,
-        active: []
+        active: [],
       };
     }
   }
 }
 
 // Export singleton instances for each cache type
-export const commandCache = new UnifiedCache('commands', { ttl: 5 * 60 * 1000 });
-export const fileCache = new UnifiedCache('files', { ttl: 10 * 60 * 1000 });
-export const searchCache = new UnifiedCache('search', { ttl: 30 * 60 * 1000 });
-export const conversationCache = new UnifiedCache('conversations', {
+export const commandCache = new UnifiedCache("commands", {
+  ttl: 5 * 60 * 1000,
+});
+export const fileCache = new UnifiedCache("files", { ttl: 10 * 60 * 1000 });
+export const searchCache = new UnifiedCache("search", { ttl: 30 * 60 * 1000 });
+export const conversationCache = new UnifiedCache("conversations", {
   ttl: 7 * 24 * 60 * 60 * 1000, // 7 days
-  maxSize: 10 * 1024 * 1024      // 10MB
+  maxSize: 10 * 1024 * 1024, // 10MB
 });
 
 // Helper to format bytes
 export function formatBytes(bytes) {
-  if (bytes === 0) return '0 B';
+  if (bytes === 0) return "0 B";
   const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const sizes = ["B", "KB", "MB", "GB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 }

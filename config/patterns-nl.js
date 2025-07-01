@@ -90,7 +90,8 @@ export default [
   },
   {
     name: "sla-gesprek-op-nl",
-    match: /sla.*gesprek.*op|bewaar.*gesprek|bewaar.*conversatie|save.*conversation/i,
+    match:
+      /sla.*gesprek.*op|bewaar.*gesprek|bewaar.*conversatie|save.*conversation/i,
     command: "save-conversation",
   },
   {

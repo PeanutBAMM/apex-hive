@@ -6,13 +6,13 @@ import { fileCache } from "../modules/unified-cache.js";
 // High-value documentation files prioritized for caching
 const HIGH_VALUE_DOCS = [
   "docs/03-reference/commands-reference.md",
-  "docs/02-guides/architecture.md", 
+  "docs/02-guides/architecture.md",
   "docs/02-guides/troubleshooting.md",
   "docs/02-guides/development.md",
   "docs/02-guides/unified-cache-system-complete.md",
   "docs/02-guides/natural-language.md",
   "docs/02-guides/recipes.md",
-  "docs/99-misc/getting-started.md"
+  "docs/99-misc/getting-started.md",
 ];
 
 export async function run(args = {}) {
@@ -32,7 +32,9 @@ export async function run(args = {}) {
     const failed = [];
 
     if (verbose) {
-      console.error(`[CACHE-WARM-DOCS] Processing ${files.length} high-value documentation files`);
+      console.error(
+        `[CACHE-WARM-DOCS] Processing ${files.length} high-value documentation files`,
+      );
     }
 
     // Process each documentation file
@@ -44,7 +46,7 @@ export async function run(args = {}) {
         } catch {
           failed.push({
             file,
-            error: "File not found or not readable"
+            error: "File not found or not readable",
           });
           continue;
         }
@@ -55,7 +57,7 @@ export async function run(args = {}) {
         if (stats.size > maxSize) {
           skipped.push({
             file,
-            reason: `File too large (${formatSize(stats.size)} > ${formatSize(maxSize)})`
+            reason: `File too large (${formatSize(stats.size)} > ${formatSize(maxSize)})`,
           });
           continue;
         }
@@ -74,24 +76,26 @@ export async function run(args = {}) {
           hasToC: detectTableOfContents(content),
           sections: extractSections(content),
           cached: new Date().toISOString(),
-          category: determineCategory(file)
+          category: determineCategory(file),
         };
 
         if (verbose) {
-          console.error(`[CACHE-WARM-DOCS] Processing ${file} (${formatSize(stats.size)}, ${metadata.lines} lines)`);
+          console.error(
+            `[CACHE-WARM-DOCS] Processing ${file} (${formatSize(stats.size)}, ${metadata.lines} lines)`,
+          );
         }
 
         if (!dryRun) {
           // Cache content with metadata using unified cache
           const cacheData = {
             content,
-            metadata
+            metadata,
           };
-          
+
           const cacheSuccess = await fileCache.set(file, cacheData, {
-            ttl: 24 * 60 * 60 * 1000 // 24 hours for documentation files
+            ttl: 24 * 60 * 60 * 1000, // 24 hours for documentation files
           });
-          
+
           if (!cacheSuccess) {
             throw new Error("Failed to cache file");
           }
@@ -101,13 +105,12 @@ export async function run(args = {}) {
           file,
           size: stats.size,
           sections: metadata.sections.length,
-          category: metadata.category
+          category: metadata.category,
         });
-
       } catch (error) {
         failed.push({
           file,
-          error: error.message
+          error: error.message,
         });
       }
     }
@@ -139,19 +142,18 @@ export async function run(args = {}) {
         failed: failed.length,
         totalSize: formatSize(totalSize),
         categoryStats,
-        examples: cached.slice(0, 3).map(c => c.file)
+        examples: cached.slice(0, 3).map((c) => c.file),
       },
       message: dryRun
         ? `Would cache ${cached.length} documentation files (${formatSize(totalSize)})`
-        : `Cached ${cached.length} high-value documentation files (${formatSize(totalSize)})`
+        : `Cached ${cached.length} high-value documentation files (${formatSize(totalSize)})`,
     };
-
   } catch (error) {
     console.error("[CACHE-WARM-DOCS] Error:", error.message);
     return {
       success: false,
       error: error.message,
-      message: "Failed to warm documentation cache"
+      message: "Failed to warm documentation cache",
     };
   }
 }
@@ -164,10 +166,10 @@ function detectTableOfContents(content) {
     /^#+\s*toc/im,
     /^\*\*Table of Contents\*\*/im,
     /^## <a name="toc">/im,
-    /<!-- TOC -->/im
+    /<!-- TOC -->/im,
   ];
 
-  return tocPatterns.some(pattern => pattern.test(content));
+  return tocPatterns.some((pattern) => pattern.test(content));
 }
 
 function extractSections(content) {
@@ -183,7 +185,7 @@ function extractSections(content) {
       sections.push({
         level: match[1].length,
         title: match[2].trim(),
-        line: i + 1
+        line: i + 1,
       });
     }
   }

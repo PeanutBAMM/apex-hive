@@ -1,5 +1,11 @@
 // cache-status.js - Display cache statistics and status
-import { commandCache, fileCache, searchCache, conversationCache, formatBytes } from "../modules/unified-cache.js";
+import {
+  commandCache,
+  fileCache,
+  searchCache,
+  conversationCache,
+  formatBytes,
+} from "../modules/unified-cache.js";
 
 export async function run(args = {}) {
   const {
@@ -16,30 +22,30 @@ export async function run(args = {}) {
       commands: commandCache,
       files: fileCache,
       search: searchCache,
-      conversations: conversationCache
+      conversations: conversationCache,
     };
 
     // If specific namespace requested
     if (namespace && caches[namespace]) {
       const cache = caches[namespace];
-      
+
       if (clear) {
         const cleared = await cache.clear();
         return {
           success: true,
           data: {
             namespace,
-            cleared
+            cleared,
           },
-          message: `Cleared ${cleared} items from ${namespace} cache`
+          message: `Cleared ${cleared} items from ${namespace} cache`,
         };
       }
-      
+
       const stats = await cache.stats();
       return {
         success: true,
         data: stats,
-        message: `Cache status for ${namespace}`
+        message: `Cache status for ${namespace}`,
       };
     }
 
@@ -63,8 +69,9 @@ export async function run(args = {}) {
       totalItems,
       totalSize: formatBytes(totalSize),
       totalHits,
-      averageHitRate: totalItems > 0 ? (totalHits / totalItems).toFixed(2) : "0.00",
-      caches: {}
+      averageHitRate:
+        totalItems > 0 ? (totalHits / totalItems).toFixed(2) : "0.00",
+      caches: {},
     };
 
     // Add cache-specific summaries
@@ -74,28 +81,34 @@ export async function run(args = {}) {
         size: formatBytes(stats.totalSize),
         hits: stats.totalHits,
         hitRate: stats.hitRate,
-        expired: stats.expired
+        expired: stats.expired,
       };
 
       if (detailed) {
-        summary.caches[name].topItems = stats.active.map(item => {
+        summary.caches[name].topItems = stats.active.map((item) => {
           let displayKey = item.key;
-          
+
           // Special formatting for conversation keys
-          if (name === 'conversations' && item.key.startsWith('conversation-')) {
+          if (
+            name === "conversations" &&
+            item.key.startsWith("conversation-")
+          ) {
             // Extract date and ID from key like "conversation-2025-01-01-abc123"
-            const parts = item.key.split('-');
+            const parts = item.key.split("-");
             if (parts.length >= 4) {
-              displayKey = `${parts[1]}-${parts[2]}-${parts[3]} (${parts.slice(4).join('-')})`;
+              displayKey = `${parts[1]}-${parts[2]}-${parts[3]} (${parts.slice(4).join("-")})`;
             }
           }
-          
+
           return {
-            key: displayKey.length > 50 ? displayKey.substring(0, 47) + "..." : displayKey,
+            key:
+              displayKey.length > 50
+                ? displayKey.substring(0, 47) + "..."
+                : displayKey,
             hits: item.hits,
             size: formatBytes(item.size),
             age: formatDuration(item.age),
-            lastAccess: formatDuration(item.lastAccess) + " ago"
+            lastAccess: formatDuration(item.lastAccess) + " ago",
           };
         });
       }
@@ -104,14 +117,14 @@ export async function run(args = {}) {
     return {
       success: true,
       data: summary,
-      message: `Cache system status: ${totalItems} items, ${formatBytes(totalSize)}, ${totalHits} hits`
+      message: `Cache system status: ${totalItems} items, ${formatBytes(totalSize)}, ${totalHits} hits`,
     };
   } catch (error) {
     console.error("[CACHE-STATUS] Error:", error.message);
     return {
       success: false,
       error: error.message,
-      message: "Failed to get cache status"
+      message: "Failed to get cache status",
     };
   }
 }

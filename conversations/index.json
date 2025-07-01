@@ -1,5 +1,30 @@
 [
   {
+    "file": "2025-07-01-16-47-43-complete-jest-testing-setup-and-documentation-rest.md",
+    "title": "Complete Jest testing setup and documentation restoration",
+    "timestamp": "2025-07-01T14:47:32.419Z",
+    "tags": [
+      "testing",
+      "jest",
+      "documentation",
+      "ci-cd",
+      "cache"
+    ],
+    "summary": [
+      "apex",
+      "router",
+      "patterns",
+      "registry",
+      "generate",
+      "claude",
+      "install",
+      "jest.config",
+      "server",
+      "debug"
+    ],
+    "narrativeSummary": "## Conversation Summary\n\nToday's development session focused on the **apex-hive** project on the `master` branch.\n\n### What We Accomplished\n\nThroughout this session, we made significant progress on se..."
+  },
+  {
     "file": "2025-07-01-15-58-32-cache-system-complete-jest-testing-performance-fix.md",
     "title": "Cache System Complete - Jest Testing & Performance Fixes",
     "timestamp": "2025-07-01T13:58:23.079Z",
