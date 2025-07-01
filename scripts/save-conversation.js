@@ -2,6 +2,8 @@
 import { promises as fs } from "fs";
 import path from "path";
 import { execSync } from "child_process";
+import { conversationCache } from "../modules/unified-cache.js";
+import crypto from "crypto";
 
 export async function run(args = {}) {
   const {
@@ -12,6 +14,8 @@ export async function run(args = {}) {
     autoCommit = false,
     summary = true,
     dryRun = false,
+    useCache = true,  // New option to use cache instead of file system
+    conversationSummary = null,  // Direct summary from Claude
     modules = {},
   } = args;
 
@@ -64,10 +68,57 @@ export async function run(args = {}) {
         extension = "md";
     }
 
+    // Generate unique ID (needed for both cache and result)
+    const timestamp = new Date().toISOString();
+    const id = crypto
+      .createHash('md5')
+      .update(`${timestamp}-${conversationData.title}`)
+      .digest('hex')
+      .substring(0, 12);
+
+    // Save to cache if enabled
+    if (useCache && conversationSummary) {
+
+      // Create cache entry
+      const cacheEntry = {
+        id,
+        title: conversationData.title,
+        summary: conversationSummary,
+        keywords: tags,
+        timestamp: conversationData.timestamp,
+        context: conversationData.context,
+        metadata: conversationData.metadata,
+        wordCount: conversationSummary.split(/\s+/).length,
+        characterCount: conversationSummary.length,
+      };
+
+      // Generate cache key
+      const datePrefix = conversationData.timestamp.split('T')[0];
+      const cacheKey = `conversation-${datePrefix}-${id}`;
+
+      // Save to cache
+      const saved = await conversationCache.set(cacheKey, cacheEntry);
+
+      if (!saved && !dryRun) {
+        console.error("[SAVE-CONVERSATION] Warning: Failed to save to cache");
+      }
+
+      // Also save a quick access key for recent conversations
+      const recentKey = `recent-${Date.now()}-${id}`;
+      await conversationCache.set(recentKey, {
+        id,
+        title: conversationData.title,
+        timestamp: conversationData.timestamp,
+        cacheKey
+      }, { ttl: 24 * 60 * 60 * 1000 }); // 24 hours for recent list
+
+      console.error(`[SAVE-CONVERSATION] Cached conversation: ${conversationData.title} (${id})`);
+    }
+
     // Save file
     const filepath = path.join(directory, `${filename}.${extension}`);
 
-    if (!dryRun) {
+    if (!dryRun && (!useCache || !conversationSummary)) {
       // Create directory if needed
       await fs.mkdir(directory, { recursive: true });
 
@@ -96,21 +147,33 @@ export async function run(args = {}) {
       }
     }
 
-    return {
+    const result = {
       success: true,
       dryRun,
       data: {
-        file: filepath,
         title: conversationData.title,
         tags,
         size: content.length,
         format,
-        committed: autoCommit && !dryRun,
       },
-      message: dryRun
-        ? `Would save conversation to ${filepath}`
-        : `Saved conversation to ${filepath}`,
+      message: ""
     };
+
+    if (useCache && conversationSummary) {
+      result.data.cacheKey = `conversation-${conversationData.timestamp.split('T')[0]}-${id}`;
+      result.data.cached = true;
+      result.message = dryRun 
+        ? `Would cache conversation: ${conversationData.title}`
+        : `Cached conversation: ${conversationData.title}`;
+    } else {
+      result.data.file = filepath;
+      result.data.committed = autoCommit && !dryRun;
+      result.message = dryRun
+        ? `Would save conversation to ${filepath}`
+        : `Saved conversation to ${filepath}`;
+    }
+
+    return result;
   } catch (error) {
     console.error("[SAVE-CONVERSATION] Error:", error.message);
     return {
@@ -512,4 +575,57 @@ async function updateConversationIndex(directory, conversationData) {
   }
 
   await fs.writeFile(path.join(directory, "README.md"), mdIndex);
+}
+
+// Helper function to retrieve recent conversations from cache
+export async function getRecentConversations(limit = 10) {
+  const conversations = [];
+  
+  try {
+    // Get cache stats to find conversation keys
+    const stats = await conversationCache.stats();
+    
+    // Filter for conversation keys and sort by timestamp
+    const conversationKeys = stats.active
+      .filter(item => item.key.startsWith('conversation-'))
+      .sort((a, b) => b.lastAccess - a.lastAccess)
+      .slice(0, limit);
+    
+    // Retrieve each conversation
+    for (const item of conversationKeys) {
+      const conversation = await conversationCache.get(item.key);
+      if (conversation) {
+        conversations.push({
+          ...conversation,
+          cacheKey: item.key,
+          hits: item.hits
+        });
+      }
+    }
+  } catch (error) {
+    console.error("[SAVE-CONVERSATION] Error retrieving conversations:", error.message);
+  }
+  
+  return conversations;
+}
+
+// Helper to extract keywords from summary
+export function extractKeywords(summary, count = 10) {
+  // Simple keyword extraction based on frequency
+  const words = summary
+    .toLowerCase()
+    .replace(/[^\w\s]/g, ' ')
+    .split(/\s+/)
+    .filter(word => word.length > 4); // Skip short words
+
+  const frequency = {};
+  words.forEach(word => {
+    frequency[word] = (frequency[word] || 0) + 1;
+  });
+
+  // Return top N most frequent words
+  return Object.entries(frequency)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, count)
+    .map(([word]) => word);
 }

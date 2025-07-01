@@ -227,6 +227,10 @@ export class UnifiedCache {
 export const commandCache = new UnifiedCache('commands', { ttl: 5 * 60 * 1000 });
 export const fileCache = new UnifiedCache('files', { ttl: 10 * 60 * 1000 });
 export const searchCache = new UnifiedCache('search', { ttl: 30 * 60 * 1000 });
+export const conversationCache = new UnifiedCache('conversations', {
+  ttl: 7 * 24 * 60 * 60 * 1000, // 7 days
+  maxSize: 10 * 1024 * 1024      // 10MB
+});
 
 // Helper to format bytes
 export function formatBytes(bytes) {
