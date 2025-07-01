@@ -10,16 +10,18 @@ Apex Hive uses a unified file-based cache system that provides persistent, high-
 - **Base Directory**: `~/.apex-cache/`
 - **Namespace Directories**:
   - `~/.apex-cache/commands/` - Command execution results
-  - `~/.apex-cache/files/` - File contents
+  - `~/.apex-cache/files/` - File contents (READMEs, docs)
   - `~/.apex-cache/search/` - Search results
+  - `~/.apex-cache/conversations/` - Conversation summaries
 
 ### Cache Namespaces
 
 | Namespace | TTL | Purpose | Size Limit |
 |-----------|-----|---------|------------|
 | commands | 5 minutes | Command outputs | 100MB |
-| files | 10 minutes | File contents | 100MB |
+| files | 24 hours | README and doc files | 100MB |
 | search | 30 minutes | Search results | 100MB |
+| conversations | 7 days | Conversation summaries | 10MB |
 
 ### Key Features
 - **Persistence**: Survives MCP restarts and Claude sessions
@@ -78,24 +80,40 @@ apex cache:warm-docs
 # - getting-started.md
 ```
 
+#### Conversation Cache
+Warm recent conversation summaries:
+
+```bash
+apex cache:warm-conversations
+
+# Caches last 5 conversation summaries
+# Provides quick access to recent context
+```
+
 #### Complete Cache Warming
-Warm both READMEs and documentation (recommended):
+Warm READMEs, documentation, and conversations:
 
 ```bash
 apex cache:warm-all
 
-# Combines both README and documentation warming
+# Combines all cache warming:
+# - 13+ README files
+# - 8 high-value documentation files
+# - Last 5 conversation summaries
 # Used by automated daily cron job at 08:00 CET
 ```
 
 ### Clear Cache
 
 ```bash
-# Clear all caches
+# Clear all unified caches
 apex cache:clear
 
-# Clear specific namespace (future feature)
-apex cache:clear --namespace search
+# This clears ALL namespaces:
+# - files (READMEs, docs)
+# - conversations (summaries)
+# - commands (results)
+# - search (results)
 ```
 
 ## 🕰️ Automated Cache System
@@ -281,6 +299,30 @@ rm -rf ~/.apex-cache/
 
 # Cache will recreate automatically
 apex cache:status
+```
+
+## 🕰️ Automated Cache Management
+
+### Daily Cron Job
+The cache is automatically warmed every day at 08:00 CET:
+
+```bash
+# Crontab entry (automatically installed)
+0 8 * * * cd /path/to/apex-hive && node scripts/cache-warm-all.js >> ~/.apex-cache/cron.log 2>&1
+```
+
+### What Gets Cached Daily
+1. **README Files**: All project READMEs (excluding node_modules)
+2. **Documentation**: 8 high-value docs for development
+3. **Conversations**: Last 5 conversation summaries
+
+### Manual Cache Refresh
+```bash
+# Refresh everything manually
+apex cache:clear && apex cache:warm-all
+
+# Check cron log
+tail -f ~/.apex-cache/cron.log
 ```
 
 ## 📋 Best Practices

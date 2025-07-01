@@ -20,9 +20,12 @@ Begin your work day with all necessary updates and checks.
 apex start-day
 ```javascript
 **Steps:**
-1. `git:pull` - Get latest changes
-2. `ci:status` - Check CI health
-3. `backlog:display` - Show current tasks
+1. `cache:clear` - Clear all caches for fresh start
+2. `cache:warm-all` - Warm cache with latest data
+3. `git:pull` - Get latest changes
+4. `test` - Run test suite
+5. `backlog:display` - Show current tasks
+6. `ci:status` - Check CI health
 
 #### `end-day`
 Wrap up your work day properly.

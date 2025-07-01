@@ -1,6 +1,6 @@
 # Commands Reference
 
-Complete reference for all 62+ Apex Hive commands.
+Complete reference for all 70 Apex Hive commands.
 
 ## 📋 Command Categories
 
@@ -83,7 +83,7 @@ Complete reference for all 62+ Apex Hive commands.
 | `test:run` | Run test suite (alias) | `apex test:run` |
 | `test:setup` | Setup test environment | `apex test:setup` |
 | `search` | Search codebase using ripgrep | `apex search "pattern"` |
-| `save-conversation` | Save AI conversation | `apex save-conversation` |
+| `save-conversation` | Save AI conversation with narrative summary | `apex save-conversation --title "Feature X" --tags "feature,api"` |
 | `code` | Generate code stubs | `apex code` |
 
 ### Deployment (4)
@@ -101,13 +101,14 @@ Complete reference for all 62+ Apex Hive commands.
 | `fix-detected` | Fix detected issues | `apex fix-detected` |
 | `report` | Generate status report | `apex report` |
 
-### Cache Management (5)
+### Cache Management (6)
 | Command | Description | Example |
 |---------|-------------|---------|
 | `cache:warm-readmes` | Pre-cache README files | `apex cache:warm-readmes` |
 | `cache:warm-docs` | Pre-cache high-value documentation | `apex cache:warm-docs` |
-| `cache:warm-all` | Pre-cache READMEs + documentation | `apex cache:warm-all` |
-| `cache:clear` | Clear all caches | `apex cache:clear` |
+| `cache:warm-conversations` | Warm cache with recent conversation summaries (max 5) | `apex cache:warm-conversations --limit 5` |
+| `cache:warm-all` | Pre-cache READMEs, docs, and conversations | `apex cache:warm-all` |
+| `cache:clear` | Clear all unified caches (files, conversations, commands, search) | `apex cache:clear` |
 | `cache:status` | Display cache statistics and status | `apex cache:status --detailed` |
 
 ### Aliases & Helpers (3)
@@ -155,4 +156,4 @@ apex "generate missing documentation"
 
 ---
 
-*Total Commands: 66*
+*Total Commands: 70*

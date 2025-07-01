@@ -2,7 +2,7 @@
 
 ## 🚀 Overview
 
-Apex Hive is a powerful development automation system with 64+ scripts for CI/CD, documentation, quality control, conversation memory, and more. This guide helps Claude understand and use all available commands.
+Apex Hive is a powerful development automation system with 60+ scripts for CI/CD, documentation, quality control, and more. This guide helps Claude understand and use all available commands.
 
 ## 📋 Available Commands
 
@@ -124,16 +124,10 @@ Apex Hive is a powerful development automation system with 64+ scripts for CI/CD
 
 - `apex cache:warm-readmes` - Pre-cache README files for performance
 - `apex cache:warm-docs` - Pre-cache high-value documentation files
-- `apex cache:warm-conversations` - Pre-cache recent conversation summaries
+- `apex cache:warm-conversations` - Warm cache with recent conversation summaries (max 5)
 - `apex cache:warm-all` - Pre-cache READMEs, documentation, and conversations (used by cron)
-- `apex cache:clear` - Clear all caches
+- `apex cache:clear` - Clear all unified caches (files, conversations, commands, search)
 - `apex cache:status` - Display cache statistics and status
-
-### Conversation Memory
-
-- `apex save-conversation` - Save conversation with detailed narrative summary
-- `apex cache:warm-conversations` - Warm cache with recent conversations from disk
-- Natural language: "sla dit gesprek op", "save this conversation"
 
 ### Aliases & Helpers
 
@@ -173,9 +167,6 @@ apex doc:generate-missing
 
 # Fix all quality issues
 apex quality:fix-all
-
-# Warm documentation cache
-apex cache:warm-all
 ```
 
 ### Natural Language
@@ -240,7 +231,7 @@ The unified cache system automatically warms READMEs, documentation, and convers
 - **Coverage**: 
   - Project READMEs (excluding node_modules)
   - 8 high-value documentation files
-  - Last 50 conversation summaries
+  - Last 5 conversation summaries
 - **Storage**: All cached data stored in `~/.apex-cache/` with namespaces:
   - `~/.apex-cache/files/` - README and documentation files
   - `~/.apex-cache/conversations/` - Conversation summaries
@@ -256,7 +247,7 @@ The unified cache system automatically warms READMEs, documentation, and convers
 ### Cache Details:
 - Uses unified persistent file-based cache with TTL support
 - Automatically filters out node_modules, .git, dist, and build directories
-- Supports 21+ files with ~95KB total cache size
+- Supports 23+ files with ~100KB total cache size
 - TTL: 24 hours for documentation, 7 days for conversations
 - Hash-based storage for collision-free caching
 
@@ -272,7 +263,7 @@ apex save-conversation \
   --tags "cache,performance,optimization"
 
 # Warm conversation cache
-apex cache:warm-conversations --limit 30
+apex cache:warm-conversations --limit 5
 
 # Check conversation cache status
 apex cache:status conversations --detailed
@@ -281,7 +272,7 @@ apex cache:status conversations --detailed
 ### Features:
 - Stores conversation summaries up to 7 days
 - Keywords automatically extracted from summaries
-- Quick access to recent conversations
+- Quick access to recent conversations (max 5 cached)
 - Integrated with unified cache system
 - Performance-optimized for Claude's needs
 
@@ -295,5 +286,5 @@ If a command fails:
 
 ---
 
-*Generated: 2025-07-01*
-*Total Commands: 69*
+*Generated: 2025-07-01T11:17:26.453Z*
+*Total Commands: 70*
