@@ -1,5 +1,29 @@
 [
   {
+    "file": "2025-07-01-20-41-05-fixed-backlog-system-and-updated-documentation.md",
+    "title": "Fixed backlog system and updated documentation",
+    "timestamp": "2025-07-01T18:40:54.975Z",
+    "tags": [
+      "backlog",
+      "documentation",
+      "public-repo",
+      "github-actions"
+    ],
+    "summary": [
+      "apex",
+      "router",
+      "patterns",
+      "registry",
+      "generate",
+      "claude",
+      "install",
+      "jest.config",
+      "server",
+      "debug"
+    ],
+    "narrativeSummary": "## Conversation Summary\n\nToday's development session focused on the **apex-hive** project on the `master` branch.\n\n### What We Accomplished\n\nThroughout this session, we made significant progress on se..."
+  },
+  {
     "file": "2025-07-01-16-47-43-complete-jest-testing-setup-and-documentation-rest.md",
     "title": "Complete Jest testing setup and documentation restoration",
     "timestamp": "2025-07-01T14:47:32.419Z",

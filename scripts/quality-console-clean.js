@@ -15,9 +15,8 @@ export async function run(args = {}) {
 
   try {
     // Find all JavaScript files
-    const excludePattern = exclude.map((e) => `--exclude="${e}"`).join(" ");
     const files = execSync(
-      `find . -name "*.js" -type f ${excludePattern} | grep -v node_modules`,
+      `find . -name "*.js" -type f -not -path "./node_modules/*" -not -path "./test/*" -not -path "./tests/*" | grep -v ".test.js"`,
       {
         encoding: "utf8",
       },
