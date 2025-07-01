@@ -1,5 +1,29 @@
 [
   {
+    "file": "2025-07-01-21-07-08-improved-detect-issues-with-intelligent-grouping.md",
+    "title": "Improved detect-issues with intelligent grouping",
+    "timestamp": "2025-07-01T19:06:57.685Z",
+    "tags": [
+      "detect-issues",
+      "grouping",
+      "optimization",
+      "cleanup"
+    ],
+    "summary": [
+      "apex",
+      "router",
+      "patterns",
+      "registry",
+      "generate",
+      "claude",
+      "install",
+      "jest.config",
+      "server",
+      "debug"
+    ],
+    "narrativeSummary": "## Conversation Summary\n\nToday's development session focused on the **apex-hive** project on the `master` branch.\n\n### What We Accomplished\n\nThroughout this session, we made significant progress on se..."
+  },
+  {
     "file": "2025-07-01-20-41-05-fixed-backlog-system-and-updated-documentation.md",
     "title": "Fixed backlog system and updated documentation",
     "timestamp": "2025-07-01T18:40:54.975Z",

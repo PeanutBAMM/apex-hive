@@ -2,6 +2,7 @@
 
 ## 2025-07-01
 
+- [Improved detect-issues with intelligent grouping](2025-07-01-21-07-08-improved-detect-issues-with-intelligent-grouping.md) - `detect-issues`, `grouping`, `optimization`, `cleanup`
 - [Fixed backlog system and updated documentation](2025-07-01-20-41-05-fixed-backlog-system-and-updated-documentation.md) - `backlog`, `documentation`, `public-repo`, `github-actions`
 - [Complete Jest testing setup and documentation restoration](2025-07-01-16-47-43-complete-jest-testing-setup-and-documentation-rest.md) - `testing`, `jest`, `documentation`, `ci-cd`, `cache`
 - [Cache System Complete - Jest Testing & Performance Fixes](2025-07-01-15-58-32-cache-system-complete-jest-testing-performance-fix.md) - `cache`, `testing`, `jest`, `performance`, `documentation`

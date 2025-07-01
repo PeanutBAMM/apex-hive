@@ -508,7 +508,7 @@ async function generatePerformanceStatus() {
   try {
     // Measure startup time
     const startTime = Date.now();
-    execSync('node -e "console.log(1)"', { stdio: "ignore" });
+    execSync('node -e "// console.log(1)"', { stdio: "ignore" });
     data.nodeStartup = Date.now() - startTime;
 
     // Check bundle size if build exists

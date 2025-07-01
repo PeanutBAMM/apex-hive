@@ -174,7 +174,7 @@ async function detectCodeIssues() {
     if (output.trim()) {
       const lines = output.trim().split("\n");
       const fileGroups = {};
-      
+
       // Group by file
       for (const line of lines) {
         const [file, lineNum] = line.split(":");
@@ -184,7 +184,7 @@ async function detectCodeIssues() {
         }
         fileGroups[cleanFile].push(parseInt(lineNum));
       }
-      
+
       // Create one issue per file with count
       for (const [file, lineNumbers] of Object.entries(fileGroups)) {
         const count = lineNumbers.length;
@@ -193,11 +193,11 @@ async function detectCodeIssues() {
           severity: "medium",
           file: file,
           line: lineNumbers[0], // First occurrence
-          message: `${count} console.log statement${count > 1 ? 's' : ''} found (lines: ${lineNumbers.join(', ')})`,
+          message: `${count} console.log statement${count > 1 ? "s" : ""} found (lines: ${lineNumbers.join(", ")})`,
           fixable: true,
           fix: "Remove console.log statements",
           count: count,
-          lines: lineNumbers
+          lines: lineNumbers,
         });
       }
     }
@@ -221,7 +221,8 @@ async function detectCodeIssues() {
         // Skip false positives - code that's checking for TODOs/FIXMEs
         const isFalsePositive =
           // Skip grep commands and regex patterns
-          (content.includes("grep") && (content.includes("TODO") || content.includes("FIXME"))) ||
+          (content.includes("grep") &&
+            (content.includes("TODO") || content.includes("FIXME"))) ||
           content.includes("TODO\\\\|FIXME") ||
           content.includes("TODO\\|FIXME") ||
           // Skip string literals and code references
@@ -487,7 +488,7 @@ async function detectDocumentationIssues() {
       .filter((f) => f);
 
     const missingJsDocByFile = {};
-    
+
     for (const file of jsFiles) {
       try {
         const content = await fs.readFile(file, "utf8");
@@ -507,7 +508,7 @@ async function detectDocumentationIssues() {
               }
               missingJsDocByFile[cleanFile].push({
                 line: i + 1,
-                function: funcName
+                function: funcName,
               });
             }
           }
@@ -516,20 +517,20 @@ async function detectDocumentationIssues() {
         // Skip file
       }
     }
-    
+
     // Create one issue per file with missing JSDoc
     for (const [file, functions] of Object.entries(missingJsDocByFile)) {
       const count = functions.length;
-      const funcNames = functions.map(f => f.function).join(', ');
+      const funcNames = functions.map((f) => f.function).join(", ");
       issues.push({
         type: "missing-jsdoc",
         severity: "low",
         file: file,
         line: functions[0].line,
-        message: `${count} function${count > 1 ? 's' : ''} missing JSDoc: ${funcNames}`,
+        message: `${count} function${count > 1 ? "s" : ""} missing JSDoc: ${funcNames}`,
         fixable: false,
         count: count,
-        functions: functions
+        functions: functions,
       });
     }
   } catch {
@@ -596,7 +597,7 @@ async function detectTestingIssues() {
       .filter((f) => f);
 
     const missingTestFiles = [];
-    
+
     for (const srcFile of srcFiles) {
       const testFile = srcFile.replace(/\.js$/, ".test.js");
       const specFile = srcFile.replace(/\.js$/, ".spec.js");
@@ -611,17 +612,18 @@ async function detectTestingIssues() {
         }
       }
     }
-    
+
     // Group missing test files into a single issue
     if (missingTestFiles.length > 0) {
       // Show first 10 files in the message
       const displayFiles = missingTestFiles.slice(0, 10);
       const remainingCount = missingTestFiles.length - displayFiles.length;
-      const fileList = displayFiles.join(', ');
-      const message = remainingCount > 0 
-        ? `${missingTestFiles.length} files missing tests (showing first 10: ${fileList}, and ${remainingCount} more)`
-        : `${missingTestFiles.length} files missing tests: ${fileList}`;
-        
+      const fileList = displayFiles.join(", ");
+      const message =
+        remainingCount > 0
+          ? `${missingTestFiles.length} files missing tests (showing first 10: ${fileList}, and ${remainingCount} more)`
+          : `${missingTestFiles.length} files missing tests: ${fileList}`;
+
       issues.push({
         type: "missing-tests",
         severity: "low",
@@ -629,7 +631,7 @@ async function detectTestingIssues() {
         message: message,
         fixable: false,
         count: missingTestFiles.length,
-        files: missingTestFiles
+        files: missingTestFiles,
       });
     }
   } catch {
@@ -648,14 +650,14 @@ async function attemptFix(issue) {
           // Handle grouped console.log issues
           const content = await fs.readFile(issue.file, "utf8");
           const lines = content.split("\n");
-          
+
           // Sort line numbers in descending order to avoid index shifting
           const sortedLines = [...issue.lines].sort((a, b) => b - a);
-          
+
           for (const lineNum of sortedLines) {
             lines.splice(lineNum - 1, 1);
           }
-          
+
           await fs.writeFile(issue.file, lines.join("\n"));
           return true;
         } else {

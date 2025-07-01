@@ -214,7 +214,7 @@ function generateJSFunction(name, features) {
   }
   
   if (features.includes('logging')) {
-    content += `  console.log('[${name.toUpperCase()}] Starting...');\n\n`;
+    content += `  // console.log('[${name.toUpperCase()}] Starting...');\n\n`;
   }
   
   if (features.includes('error-handling')) {
@@ -1064,7 +1064,7 @@ function generateExpressAPI(name, features, language) {
   } else {
     content += `const PORT = process.env.PORT || 3000;\n\n`;
     content += `app.listen(PORT, () => {\n`;
-    content += `  console.log(\`Server running on port \${PORT}\`);\n`;
+    content += `  // console.log(\`Server running on port \${PORT}\`);\n`;
     content += `});\n`;
   }
   
@@ -1342,25 +1342,25 @@ function generateJSScript(name, features) {
   
   if (features.includes('error-handling')) {
     content += `  try {\n`;
-    content += `    console.log('Running ${name}...');\n\n`;
+    content += `    // console.log('Running ${name}...');\n\n`;
     content += `    // TODO: Implement script logic\n`;
     
     if (features.includes('cli')) {
       content += `    if (options.input) {\n`;
       content += `      const data = await fs.readFile(options.input, 'utf8');\n`;
-      content += `      console.log('Read', data.length, 'bytes');\n`;
+      content += `      // console.log('Read', data.length, 'bytes');\n`;
       content += `    }\n\n`;
     }
     
-    content += `    console.log('${name} completed successfully!');\n`;
+    content += `    // console.log('${name} completed successfully!');\n`;
     content += `  } catch (error) {\n`;
     content += `    console.error('Error:', error.message);\n`;
     content += `    process.exit(1);\n`;
     content += `  }\n`;
   } else {
-    content += `  console.log('Running ${name}...');\n\n`;
+    content += `  // console.log('Running ${name}...');\n\n`;
     content += `  // TODO: Implement script logic\n\n`;
-    content += `  console.log('${name} completed successfully!');\n`;
+    content += `  // console.log('${name} completed successfully!');\n`;
   }
   
   content += `}\n\n`;

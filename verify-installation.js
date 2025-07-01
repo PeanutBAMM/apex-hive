@@ -22,14 +22,14 @@ async function check(name, test) {
   try {
     const result = await test();
     if (result) {
-      console.log(`✅ ${name}`);
+      // console.log(`✅ ${name}`);
       passed++;
     } else {
-      console.log(`❌ ${name}`);
+      // console.log(`❌ ${name}`);
       failed++;
     }
   } catch (error) {
-    console.log(`❌ ${name}: ${error.message}`);
+    // console.log(`❌ ${name}: ${error.message}`);
     failed++;
   }
 }

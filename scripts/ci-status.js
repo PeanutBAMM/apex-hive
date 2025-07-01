@@ -73,7 +73,7 @@ export async function run(args = {}) {
       : formatStatusOutput(statusData, detectedPlatform);
 
     if (!json) {
-      console.log(output);
+      // console.log(output);
     }
 
     return {

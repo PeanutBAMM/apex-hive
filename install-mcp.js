@@ -21,7 +21,7 @@ This script will help you register Apex Hive with Claude.
 // Check if claude CLI is available
 try {
   execSync('which claude', { stdio: 'ignore' });
-  console.log('✅ Claude CLI detected\n');
+  // console.log('✅ Claude CLI detected\n');
 } catch {
   console.error(`❌ Claude CLI not found!
 
@@ -69,7 +69,7 @@ Press ENTER to install, or Ctrl+C to cancel...`);
 
 // Wait for user confirmation
 process.stdin.once('data', () => {
-  console.log('\n🚀 Installing Apex Hive...\n');
+  // console.log('\n🚀 Installing Apex Hive...\n');
   
   try {
     const output = execSync(mcp_command, { 

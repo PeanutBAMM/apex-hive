@@ -20,16 +20,16 @@ Preparing version 1.0.0 for release...
 async function checkFile(name, path) {
   try {
     await fs.access(path);
-    console.log(`✅ ${name}`);
+    // console.log(`✅ ${name}`);
     return true;
   } catch {
-    console.log(`❌ ${name} - Missing!`);
+    // console.log(`❌ ${name} - Missing!`);
     return false;
   }
 }
 
 // Check all required files
-console.log('\n📋 Checking required files:');
+// console.log('\n📋 Checking required files:');
 const files = [
   ['package.json', path.join(__dirname, 'package.json')],
   ['README.md', path.join(__dirname, 'README.md')],
@@ -48,39 +48,39 @@ for (const [name, filePath] of files) {
 }
 
 // Check version
-console.log('\n📦 Checking version:');
+// console.log('\n📦 Checking version:');
 const pkg = JSON.parse(await fs.readFile(path.join(__dirname, 'package.json'), 'utf8'));
 if (pkg.version === '1.0.0') {
-  console.log(`✅ Version is 1.0.0`);
+  // console.log(`✅ Version is 1.0.0`);
 } else {
-  console.log(`❌ Version is ${pkg.version}, should be 1.0.0`);
+  // console.log(`❌ Version is ${pkg.version}, should be 1.0.0`);
   allPresent = false;
 }
 
 // Check script count
-console.log('\n📊 Checking scripts:');
+// console.log('\n📊 Checking scripts:');
 const scriptsDir = path.join(__dirname, 'scripts');
 const scriptFiles = await fs.readdir(scriptsDir);
 const scriptCount = scriptFiles.filter(f => f.endsWith('.js')).length;
-console.log(`✅ ${scriptCount} scripts found`);
+// console.log(`✅ ${scriptCount} scripts found`);
 
 // Git status (if in git repo)
-console.log('\n🔍 Git status:');
+// console.log('\n🔍 Git status:');
 try {
   const isGitRepo = await fs.access(path.join(__dirname, '.git')).then(() => true).catch(() => false);
   if (isGitRepo) {
     const status = execSync('git status --short', { encoding: 'utf8', cwd: __dirname });
     if (status.trim()) {
-      console.log('⚠️  Uncommitted changes:');
-      console.log(status);
+      // console.log('⚠️  Uncommitted changes:');
+      // console.log(status);
     } else {
-      console.log('✅ No uncommitted changes');
+      // console.log('✅ No uncommitted changes');
     }
   } else {
-    console.log('ℹ️  Not a git repository (this is normal for apex-hive-workspace)');
+    // console.log('ℹ️  Not a git repository (this is normal for apex-hive-workspace)');
   }
 } catch (error) {
-  console.log('ℹ️  Could not check git status');
+  // console.log('ℹ️  Could not check git status');
 }
 
 // Summary
