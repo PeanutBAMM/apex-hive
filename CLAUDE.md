@@ -2,7 +2,9 @@
 
 ## 🚀 Overview
 
-Apex Hive is a powerful development automation system with 60+ scripts for CI/CD, documentation, quality control, and more. This guide helps Claude understand and use all available commands.
+Apex Hive is a powerful development automation system with 67 commands (59 scripts + 8 recipes) for CI/CD, documentation, quality control, and more. This guide helps Claude understand and use all available commands.
+
+**Note**: This is now a public repository, which provides free GitHub Actions CI/CD minutes.
 
 ## 📋 Available Commands
 
@@ -78,6 +80,8 @@ Apex Hive is a powerful development automation system with 60+ scripts for CI/CD
 - `apex backlog:sync` - Sync backlog with project management tools
 - `apex backlog:display` - Display backlog in visual format
 - `apex backlog:table` - Show backlog as a formatted table
+
+**Note**: The backlog system now reads real items from `BACKLOG.md` instead of using hardcoded sample data. It automatically parses markdown structure, detects priorities from headers, and estimates effort/value for each item.
 
 ### XML Processing
 
@@ -316,5 +320,5 @@ If a command fails:
 
 ---
 
-*Generated: 2025-07-01T11:17:26.453Z*
-*Total Commands: 70*
+*Generated: 2025-07-01*
+*Total Commands: 67 (59 scripts + 8 recipes)*

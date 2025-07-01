@@ -4,6 +4,8 @@ Installation and setup guides
 
 ## Documents
 
+- [Misc](./99-misc-README.md)
+- [GitHub Actions Setup Guide](./github-actions-setup.md)
 - [Documentation](./README.md)
 - [README](./README.md)
 - [Documentation](./README.md)
@@ -11,7 +13,7 @@ Installation and setup guides
 
 ## Overview
 
-This category contains 4 documents.
+This category contains 6 documents.
 
 ## Navigation
 

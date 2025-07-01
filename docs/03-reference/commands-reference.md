@@ -1,6 +1,6 @@
 # Commands Reference
 
-Complete reference for all 70 Apex Hive commands.
+Complete reference for all 67 Apex Hive commands (59 scripts + 8 recipes).
 
 ## 📋 Command Categories
 
@@ -49,11 +49,13 @@ Complete reference for all 70 Apex Hive commands.
 ### Backlog Management (5)
 | Command | Description | Example |
 |---------|-------------|---------|
-| `backlog:analyze` | Analyze backlog items and priorities | `apex backlog:analyze` |
-| `backlog:score` | Score backlog items by importance | `apex backlog:score` |
+| `backlog:analyze` | Analyze backlog items from BACKLOG.md | `apex backlog:analyze` |
+| `backlog:score` | Score items by value/effort ratio | `apex backlog:score` |
 | `backlog:sync` | Sync backlog with project tools | `apex backlog:sync` |
-| `backlog:display` | Display backlog in visual format | `apex backlog:display` |
-| `backlog:table` | Show backlog as formatted table | `apex backlog:table` |
+| `backlog:display` | Display backlog items with scores | `apex backlog:display` |
+| `backlog:table` | Show backlog in table format | `apex backlog:table` |
+
+**Note**: The backlog system now parses real items from `BACKLOG.md` instead of using hardcoded sample data.
 
 ### XML Processing (3)
 | Command | Description | Example |
@@ -181,4 +183,4 @@ Now returns detailed statistics:
 
 ---
 
-*Total Commands: 70*
+*Total Commands: 67 (59 scripts + 8 recipes)*

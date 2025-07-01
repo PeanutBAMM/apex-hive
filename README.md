@@ -2,6 +2,8 @@
 
 Smart command system with natural language support.
 
+**Note**: This is a public repository with free GitHub Actions CI/CD.
+
 ## Installation
 
 ```bash
@@ -27,13 +29,15 @@ apex help
 
 ## Features
 
-- 🚀 67 built-in scripts for common tasks
+- 🚀 67 built-in commands (59 scripts + 8 recipes)
 - 🌍 Natural language support (English & Dutch)
 - 🔍 Fast search with ripgrep integration
 - 🤖 CI/CD automation with self-healing
 - 📚 Smart documentation generation
 - 🔧 Extensible recipe system
 - 💾 Persistent caching that survives restarts
+- 📋 Real backlog management from BACKLOG.md
+- 💬 Conversation memory system with narrative summaries
 
 ## Available Commands
 
