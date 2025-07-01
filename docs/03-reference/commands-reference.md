@@ -97,7 +97,7 @@ Complete reference for all 70 Apex Hive commands.
 ### Detection & Reporting (3)
 | Command | Description | Example |
 |---------|-------------|---------|
-| `detect-issues` | Detect all types of issues | `apex detect-issues` |
+| `detect-issues` | Detect all types of issues with pagination | `apex detect-issues --page 1 --limit 20` |
 | `fix-detected` | Fix detected issues | `apex fix-detected` |
 | `report` | Generate status report | `apex report` |
 
@@ -108,7 +108,7 @@ Complete reference for all 70 Apex Hive commands.
 | `cache:warm-docs` | Pre-cache high-value documentation | `apex cache:warm-docs` |
 | `cache:warm-conversations` | Warm cache with recent conversation summaries (max 5) | `apex cache:warm-conversations --limit 5` |
 | `cache:warm-all` | Pre-cache READMEs, docs, and conversations | `apex cache:warm-all` |
-| `cache:clear` | Clear all unified caches (files, conversations, commands, search) | `apex cache:clear` |
+| `cache:clear` | Clear all caches with detailed statistics per namespace | `apex cache:clear` |
 | `cache:status` | Display cache statistics and status | `apex cache:status --detailed` |
 
 ### Aliases & Helpers (3)
@@ -152,7 +152,32 @@ apex deploy --force
 apex "fix the CI"
 apex "search for user authentication"
 apex "generate missing documentation"
-```javascript
+```
+
+## 📝 Command Parameters
+
+### detect-issues
+- `--page <number>` - Page number for pagination (default: 1)
+- `--limit <number>` - Issues per page (default: 20)
+- `--severity <level>` - Filter by severity: all, critical, high, medium, low
+- `--categories <list>` - Categories to check: code, security, dependencies, documentation
+- `--fix` - Attempt to auto-fix issues
+- `--report` - Generate issues report
+
+### cache:clear
+Now returns detailed statistics:
+```json
+{
+  "cleared": {
+    "files": { "cleared": 21, "errors": 0, "totalSize": 107644 },
+    "conversations": { "cleared": 5, "errors": 0, "totalSize": 12963 },
+    "commands": { "cleared": 0, "errors": 0, "totalSize": 0 },
+    "search": { "cleared": 0, "errors": 0, "totalSize": 0 }
+  },
+  "totalCleared": 26,
+  "size": "112.89 KB"
+}
+```
 
 ---
 

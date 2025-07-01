@@ -10,6 +10,8 @@ export async function run(args = {}) {
     fix = false,
     report = true,
     dryRun = false,
+    page = 1,
+    limit = 20,
     modules = {},
   } = args;
 
@@ -82,12 +84,36 @@ export async function run(args = {}) {
       }
     }
 
-    // Auto-fix if requested
+    // Apply pagination
+    const allIssues = Object.values(filteredIssues).flat();
+    const totalCount = allIssues.length;
+    const totalPages = Math.ceil(totalCount / limit);
+    const currentPage = Math.min(Math.max(1, page), totalPages || 1);
+    const startIndex = (currentPage - 1) * limit;
+    const endIndex = startIndex + limit;
+    
+    // Paginate issues
+    const paginatedIssues = allIssues.slice(startIndex, endIndex);
+    
+    // Rebuild issues object with paginated results
+    const paginatedFilteredIssues = {
+      critical: [],
+      high: [],
+      medium: [],
+      low: [],
+      info: []
+    };
+    
+    for (const issue of paginatedIssues) {
+      if (paginatedFilteredIssues[issue.severity]) {
+        paginatedFilteredIssues[issue.severity].push(issue);
+      }
+    }
+
+    // Auto-fix if requested (only for current page)
     let fixedCount = 0;
     if (fix && !dryRun) {
-      const fixableIssues = Object.values(filteredIssues)
-        .flat()
-        .filter((issue) => issue.fixable);
+      const fixableIssues = paginatedIssues.filter((issue) => issue.fixable);
 
       for (const issue of fixableIssues) {
         if (await attemptFix(issue)) {
@@ -100,18 +126,30 @@ export async function run(args = {}) {
       success: true,
       dryRun,
       data: {
-        issues: filteredIssues,
-        total: totalIssues,
-        critical: filteredIssues.critical?.length || 0,
-        high: filteredIssues.high?.length || 0,
-        medium: filteredIssues.medium?.length || 0,
-        low: filteredIssues.low?.length || 0,
+        issues: paginatedFilteredIssues,
+        pagination: {
+          page: currentPage,
+          limit: limit,
+          totalPages: totalPages,
+          totalItems: totalCount,
+          hasNext: currentPage < totalPages,
+          hasPrev: currentPage > 1,
+          showing: `${startIndex + 1}-${Math.min(endIndex, totalCount)} of ${totalCount}`
+        },
+        summary: {
+          total: totalIssues,
+          critical: filteredIssues.critical?.length || 0,
+          high: filteredIssues.high?.length || 0,
+          medium: filteredIssues.medium?.length || 0,
+          low: filteredIssues.low?.length || 0,
+          info: filteredIssues.info?.length || 0,
+        },
         fixed: fixedCount,
         report: report && !dryRun ? "issues-report.md" : null,
       },
       message: dryRun
-        ? `Would detect ${totalIssues} issues`
-        : `Found ${totalIssues} issues${fixedCount > 0 ? `, fixed ${fixedCount}` : ""}`,
+        ? `Would detect ${totalIssues} issues (page ${currentPage}/${totalPages})`
+        : `Found ${totalIssues} issues (showing ${paginatedIssues.length} on page ${currentPage}/${totalPages})${fixedCount > 0 ? `, fixed ${fixedCount}` : ""}`,
     };
   } catch (error) {
     console.error("[DETECT-ISSUES] Error:", error.message);

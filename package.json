@@ -5,7 +5,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "node --test",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
+    "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
     "lint": "eslint .",
     "build": "node scripts/build.js",
     "apex": "apex",
@@ -29,7 +31,9 @@
     "lru-cache": "^10.1.0"
   },
   "devDependencies": {
-    "eslint": "^8.57.0"
+    "@types/jest": "^30.0.0",
+    "eslint": "^8.57.0",
+    "jest": "^30.0.3"
   },
   "engines": {
     "node": ">=18.0.0"

@@ -108,7 +108,7 @@ cache infrastructure. We solved this by...
 
 ### Automatic Warming
 
-The cache is automatically warmed daily at 08:00 CET with the last 5 conversations:
+The cache can be warmed on-demand with the last 5 conversations:
 
 ```bash
 # Manual warm (last 5 conversations)

@@ -11,7 +11,6 @@ Other documentation
 - [Implementation Plan - Apex Hive](./restructuring-10-implementation-plan.md)
 - [Apex Hive Implementation Progress](./restructuring-17-apex-hive-implementation-progress.md)
 - [Backlog Scripts](./scripts-backlog-scripts.md)
-- [Cache Scripts](./scripts-cache-scripts.md)
 - [Changelog Scripts](./scripts-changelog-scripts.md)
 - [Ci Scripts](./scripts-ci-scripts.md)
 - [Code Scripts](./scripts-code-scripts.md)
@@ -30,7 +29,7 @@ Other documentation
 
 ## Overview
 
-This category contains 23 documents.
+This category contains 22 documents.
 
 ## Navigation
 

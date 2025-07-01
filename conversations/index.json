@@ -1,5 +1,102 @@
 [
   {
+    "file": "2025-07-01-15-58-32-cache-system-complete-jest-testing-performance-fix.md",
+    "title": "Cache System Complete - Jest Testing & Performance Fixes",
+    "timestamp": "2025-07-01T13:58:23.079Z",
+    "tags": [
+      "cache",
+      "testing",
+      "jest",
+      "performance",
+      "documentation"
+    ],
+    "summary": [
+      "apex",
+      "router",
+      "patterns",
+      "registry",
+      "block",
+      "navigation",
+      "prettify",
+      "sorter",
+      "generate",
+      "claude"
+    ],
+    "narrativeSummary": "## Conversation Summary\n\nToday's development session focused on the **apex-hive** project on the `master` branch.\n\n### What We Accomplished\n\nThroughout this session, we made significant progress on se..."
+  },
+  {
+    "file": "2025-07-01-15-13-25-test-conversation.md",
+    "title": "Test conversation",
+    "timestamp": "2025-07-01T13:13:14.467Z",
+    "tags": [
+      "test",
+      "cache"
+    ],
+    "summary": [
+      "apex",
+      "router",
+      "patterns",
+      "registry",
+      "block",
+      "navigation",
+      "prettify",
+      "sorter",
+      "generate",
+      "claude"
+    ],
+    "narrativeSummary": "## Conversation Summary\n\nToday's development session focused on the **apex-hive** project on the `master` branch.\n\n### What We Accomplished\n\nThroughout this session, we made significant progress on se..."
+  },
+  {
+    "file": "2025-07-01-14-27-52-cache-system-complete-documentation-and-consolidat.md",
+    "title": "Cache System Complete Documentation and Consolidation",
+    "timestamp": "2025-07-01T12:27:45.289Z",
+    "tags": [
+      "cache",
+      "documentation",
+      "cleanup",
+      "consolidation",
+      "test-plan"
+    ],
+    "summary": [
+      "apex",
+      "router",
+      "patterns",
+      "registry",
+      "generate",
+      "claude",
+      "install",
+      "server",
+      "debug",
+      "fixed"
+    ],
+    "narrativeSummary": "## Conversation Summary\n\nToday's development session focused on the **apex-hive** project on the `master` branch.\n\n### What We Accomplished\n\nThroughout this session, we made significant progress on se..."
+  },
+  {
+    "file": "2025-07-01-13-24-44-cache-system-fix-and-documentation-update.md",
+    "title": "Cache System Fix and Documentation Update",
+    "timestamp": "2025-07-01T11:24:39.411Z",
+    "tags": [
+      "cache",
+      "unified-cache",
+      "conversation-memory",
+      "documentation",
+      "bugfix"
+    ],
+    "summary": [
+      "apex",
+      "router",
+      "patterns",
+      "registry",
+      "generate",
+      "claude",
+      "install",
+      "server",
+      "debug",
+      "fixed"
+    ],
+    "narrativeSummary": "## Conversation Summary\n\nToday's development session focused on the **apex-hive** project on the `master` branch.\n\n### What We Accomplished\n\nThroughout this session, we made significant progress on se..."
+  },
+  {
     "file": "2025-07-01-12-28-58-test-after-restart-narrative-summary-working.md",
     "title": "Test After Restart - Narrative Summary Working",
     "timestamp": "2025-07-01T10:28:53.549Z",

@@ -171,6 +171,67 @@ apex git:status
 apex detect-issues
 ```javascript
 
+## 📝 Working with Large Output Commands
+
+### The Token Limit Challenge
+
+Some commands like `detect-issues` can generate output exceeding Claude's 25,000 token limit, causing errors. Use pagination and filters to manage output size.
+
+### Using Pagination
+
+The `detect-issues` command supports pagination to limit output:
+
+```javascript
+// Get first 10 issues
+apex detect-issues --page 1 --limit 10
+
+// Get next 10 issues
+apex detect-issues --page 2 --limit 10
+
+// With MCP tool
+mcp__apex-hive__apex command="detect-issues" args={"limit": 10, "page": 1}
+```
+
+### Using Severity Filters
+
+Filter by severity to see only critical issues:
+
+```javascript
+// Only high severity issues
+apex detect-issues --severity high
+
+// Medium and above
+apex detect-issues --severity medium
+
+// With MCP tool
+mcp__apex-hive__apex command="detect-issues" args={"severity": "high"}
+```
+
+### Combining Filters
+
+Use multiple filters together:
+
+```javascript
+// High severity issues, page 1, limit 5
+apex detect-issues --severity high --page 1 --limit 5
+
+// With MCP tool
+mcp__apex-hive__apex command="detect-issues" args={
+  "severity": "high",
+  "limit": 5,
+  "page": 1
+}
+```
+
+### Tips for Managing Large Outputs
+
+1. **Start Small**: Begin with `--limit 5` to assess the volume
+2. **Use Severity**: Focus on high-priority issues first
+3. **Page Through**: Process issues in batches
+4. **Natural Language**: Try "show me the first 5 critical issues"
+
+⚠️ **Warning**: Without pagination, `detect-issues` on large codebases can exceed token limits and fail to display results.
+
 ## 🛠️ Troubleshooting
 
 ### MCP Not Working?

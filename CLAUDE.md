@@ -116,7 +116,7 @@ Apex Hive is a powerful development automation system with 60+ scripts for CI/CD
 
 ### Detection & Reporting
 
-- `apex detect-issues` - Detect all types of issues in codebase
+- `apex detect-issues` - Detect issues with pagination (--page 1 --limit 20)
 - `apex fix-detected` - Fix issues found by detection
 - `apex report` - Generate comprehensive status report
 
@@ -125,8 +125,8 @@ Apex Hive is a powerful development automation system with 60+ scripts for CI/CD
 - `apex cache:warm-readmes` - Pre-cache README files for performance
 - `apex cache:warm-docs` - Pre-cache high-value documentation files
 - `apex cache:warm-conversations` - Warm cache with recent conversation summaries (max 5)
-- `apex cache:warm-all` - Pre-cache READMEs, documentation, and conversations (used by cron)
-- `apex cache:clear` - Clear all unified caches (files, conversations, commands, search)
+- `apex cache:warm-all` - Pre-cache READMEs, documentation, and conversations
+- `apex cache:clear` - Clear all caches with detailed statistics per namespace
 - `apex cache:status` - Display cache statistics and status
 
 ### Aliases & Helpers
@@ -221,13 +221,13 @@ All commands return structured JSON:
 3. **Dry run** first to preview changes
 4. **Check CI** before pushing changes
 5. **Generate docs** after code changes
-6. **Cache warming** happens automatically daily at 08:00 CET
+6. **Cache warming** available on-demand with `apex cache:warm-all`
 
-## 🕰️ Automated Cache System
+## 🗄️ Unified Cache System
 
-The unified cache system automatically warms READMEs, documentation, and conversation summaries:
+The unified cache system provides on-demand caching of READMEs, documentation, and conversation summaries:
 
-- **Schedule**: Every day at 08:00 CET
+- **On-Demand**: Use `apex cache:warm-all` to warm all caches
 - **Coverage**: 
   - Project READMEs (excluding node_modules)
   - 8 high-value documentation files
@@ -241,7 +241,6 @@ The unified cache system automatically warms READMEs, documentation, and convers
   - 80-90% cache hit rate for development queries
   - Quick access to recent conversation context
   - Improved Claude response times
-- **Logging**: Cache operations logged to `~/.apex-cache/cron.log`
 - **Manual trigger**: `apex cache:warm-all` to refresh immediately
 
 ### Cache Details:
@@ -280,13 +279,40 @@ apex cache:status conversations --detailed
 - Integrated with unified cache system
 - Performance-optimized for Claude's needs
 
+## 🧪 Testing
+
+Run tests with Jest:
+```bash
+# Run all tests
+npm test
+
+# Run in watch mode
+npm test:watch
+
+# Run with coverage
+npm test:coverage
+
+# Run specific test file
+npm test test/cache/unified-cache.test.js
+```
+
+Tests run automatically on GitHub Actions for:
+- Push to master/main
+- Pull requests
+- Multiple Node.js versions (18.x, 20.x)
+
 ## 🆘 Troubleshooting
 
 If a command fails:
-1. Check with `apex detect-issues`
+1. Check with `apex detect-issues --page 1 --limit 10`
 2. View detailed logs with `--verbose`
 3. Try `apex ci:heal` for CI issues
 4. Use `apex quality:fix-all` for code issues
+
+### Performance Tips
+- Cache operations: <1ms for hits, ~5s for warming
+- Concurrent access supported
+- Use `apex cache:status` to monitor performance
 
 ---
 
