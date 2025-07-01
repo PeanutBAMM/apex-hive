@@ -21,17 +21,17 @@ This category contains 8 scripts.
 
 ```bash
 apex git:commit
-```javascript
+```
 
 ### git:push
 
 ```bash
 apex git:push
-```javascript
+```
 
 ### git:status
 
 ```bash
 apex git:status
-```javascript
+```
 

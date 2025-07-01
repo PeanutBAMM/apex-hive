@@ -1,5 +1,5 @@
 // backlog-display.js - Display backlog in various formats
-import { promises as fs } from "fs";
+import { readFile } from "../modules/file-ops.js";
 import { loadBacklogItems } from "../modules/backlog-parser.js";
 
 export async function run(args = {}) {
@@ -19,7 +19,7 @@ export async function run(args = {}) {
     let items = [];
     try {
       const scoreData = JSON.parse(
-        await fs.readFile("backlog-scores.json", "utf8"),
+        await readFile("backlog-scores.json"),
       );
       items = scoreData.items;
     } catch {

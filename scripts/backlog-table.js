@@ -1,5 +1,5 @@
 // backlog-table.js - Generate table view of backlog items
-import { promises as fs } from "fs";
+import { writeFile } from "../modules/file-ops.js";
 
 export async function run(args = {}) {
   const {
@@ -60,22 +60,22 @@ export async function run(args = {}) {
         case "markdown":
         case "md":
           const mdTable = generateMarkdownTable(items, columns);
-          await fs.writeFile(`${filename}.md`, mdTable);
+          await writeFile(`${filename}.md`, mdTable);
           table = mdTable;
           break;
 
         case "csv":
           const csvTable = generateCSVTable(items, columns);
-          await fs.writeFile(`${filename}.csv`, csvTable);
+          await writeFile(`${filename}.csv`, csvTable);
           break;
 
         case "html":
           const htmlTable = generateHTMLTable(items, columns);
-          await fs.writeFile(`${filename}.html`, htmlTable);
+          await writeFile(`${filename}.html`, htmlTable);
           break;
 
         case "json":
-          await fs.writeFile(
+          await writeFile(
             `${filename}.json`,
             JSON.stringify(items, null, 2),
           );
@@ -83,7 +83,7 @@ export async function run(args = {}) {
 
         default:
           // ASCII table already generated
-          await fs.writeFile(`${filename}.txt`, table);
+          await writeFile(`${filename}.txt`, table);
       }
     }
 

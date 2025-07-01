@@ -1,5 +1,30 @@
 [
   {
+    "file": "2025-07-01-23-09-29-cached-file-operations-migration-phase-4-5-complet.md",
+    "title": "Cached file operations migration - Phase 4-5 completed, batch migration ongoing",
+    "timestamp": "2025-07-01T21:09:22.794Z",
+    "tags": [
+      "cache",
+      "file-ops",
+      "migration",
+      "mcp-fix",
+      "performance"
+    ],
+    "summary": [
+      "apex",
+      "router",
+      "patterns",
+      "registry",
+      "generate",
+      "claude",
+      "install",
+      "jest.config",
+      "server",
+      "debug"
+    ],
+    "narrativeSummary": "## Conversation Summary\n\nToday's development session focused on the **apex-hive** project on the `feature/cached-file-operations` branch.\n\n### What We Accomplished\n\nThroughout this session, we made si..."
+  },
+  {
     "file": "2025-07-01-21-59-13-implemented-cached-file-operations-for-70-80-token.md",
     "title": "Implemented cached file operations for 70-80% token reduction",
     "timestamp": "2025-07-01T19:59:02.847Z",

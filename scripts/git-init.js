@@ -1,6 +1,7 @@
 // git-init.js - Initialize a new git repository
 import { execSync } from "child_process";
-import { promises as fs } from "fs";
+import { writeFile } from "../modules/file-ops.js";
+import { promises as fs } from "fs"; // Still needed for fs.access and fs.mkdir
 import path from "path";
 
 export async function run(args = {}) {
@@ -74,7 +75,7 @@ export async function run(args = {}) {
       const gitignoreContent = generateGitignore();
 
       if (!dryRun) {
-        await fs.writeFile(gitignorePath, gitignoreContent);
+        await writeFile(gitignorePath, gitignoreContent);
       }
       tasks.push("Created .gitignore");
     }
@@ -86,7 +87,7 @@ export async function run(args = {}) {
       const readmeContent = generateReadme(projectName);
 
       if (!dryRun) {
-        await fs.writeFile(readmePath, readmeContent);
+        await writeFile(readmePath, readmeContent);
       }
       tasks.push("Created README.md");
     }
@@ -98,7 +99,7 @@ export async function run(args = {}) {
 
       if (licenseContent) {
         if (!dryRun) {
-          await fs.writeFile(licensePath, licenseContent);
+          await writeFile(licensePath, licenseContent);
         }
         tasks.push(`Created ${license} LICENSE`);
       }

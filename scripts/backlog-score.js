@@ -1,5 +1,5 @@
 // backlog-score.js - Score and prioritize backlog items
-import { promises as fs } from "fs";
+import { writeFile } from "../modules/file-ops.js";
 import { loadBacklogItems } from "../modules/backlog-parser.js";
 
 export async function run(args = {}) {
@@ -76,7 +76,7 @@ export async function run(args = {}) {
         })),
       };
 
-      await fs.writeFile(
+      await writeFile(
         "backlog-scores.json",
         JSON.stringify(scoreData, null, 2),
       );

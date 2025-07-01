@@ -1,0 +1,216 @@
+{
+  "timestamp": "2025-07-01T21:22:50.614Z",
+  "criteria": "value-effort",
+  "items": [
+    {
+      "id": "6",
+      "title": "Undo system",
+      "score": 144,
+      "details": {
+        "value": 15,
+        "effort": 4,
+        "ratio": 125
+      }
+    },
+    {
+      "id": "2",
+      "title": "Enhanced doc:organize",
+      "score": 114,
+      "details": {
+        "value": 24,
+        "effort": 10,
+        "ratio": 80
+      }
+    },
+    {
+      "id": "4",
+      "title": "Missing sections generator",
+      "score": 102.66666666666666,
+      "details": {
+        "value": 24,
+        "effort": 12,
+        "ratio": 66.66666666666666
+      }
+    },
+    {
+      "id": "1",
+      "title": "doc:fix-all command",
+      "score": 95.14285714285714,
+      "details": {
+        "value": 24,
+        "effort": 14,
+        "ratio": 57.14285714285714
+      }
+    },
+    {
+      "id": "3",
+      "title": "Smart link fixer",
+      "score": 95.14285714285714,
+      "details": {
+        "value": 24,
+        "effort": 14,
+        "ratio": 57.14285714285714
+      }
+    },
+    {
+      "id": "12",
+      "title": "Intelligent Test Generation System",
+      "score": 88,
+      "details": {
+        "value": 9,
+        "effort": 4,
+        "ratio": 75
+      }
+    },
+    {
+      "id": "14",
+      "title": "Auto-Updating Test Infrastructure",
+      "score": 88,
+      "details": {
+        "value": 9,
+        "effort": 4,
+        "ratio": 75
+      }
+    },
+    {
+      "id": "20",
+      "title": "Metadata enrichment",
+      "score": 88,
+      "details": {
+        "value": 9,
+        "effort": 4,
+        "ratio": 75
+      }
+    },
+    {
+      "id": "7",
+      "title": "Preview mode",
+      "score": 68.66666666666667,
+      "details": {
+        "value": 15,
+        "effort": 12,
+        "ratio": 41.66666666666667
+      }
+    },
+    {
+      "id": "8",
+      "title": "Doc templates",
+      "score": 68.66666666666667,
+      "details": {
+        "value": 15,
+        "effort": 12,
+        "ratio": 41.66666666666667
+      }
+    },
+    {
+      "id": "5",
+      "title": "Batch operations",
+      "score": 64.71428571428572,
+      "details": {
+        "value": 15,
+        "effort": 14,
+        "ratio": 35.714285714285715
+      }
+    },
+    {
+      "id": "15",
+      "title": "Test Performance Optimization",
+      "score": 64.71428571428572,
+      "details": {
+        "value": 15,
+        "effort": 14,
+        "ratio": 35.714285714285715
+      }
+    },
+    {
+      "id": "11",
+      "title": "CI integration",
+      "score": 49,
+      "details": {
+        "value": 9,
+        "effort": 10,
+        "ratio": 30
+      }
+    },
+    {
+      "id": "18",
+      "title": "Auto determination voor High Value Docs bij end-day recipe",
+      "score": 49,
+      "details": {
+        "value": 9,
+        "effort": 10,
+        "ratio": 30
+      }
+    },
+    {
+      "id": "9",
+      "title": "Doc metrics",
+      "score": 46,
+      "details": {
+        "value": 9,
+        "effort": 12,
+        "ratio": 25
+      }
+    },
+    {
+      "id": "13",
+      "title": "Smart Test Selection for CI/CD",
+      "score": 46,
+      "details": {
+        "value": 9,
+        "effort": 12,
+        "ratio": 25
+      }
+    },
+    {
+      "id": "19",
+      "title": "Smart markdown parser",
+      "score": 46,
+      "details": {
+        "value": 9,
+        "effort": 12,
+        "ratio": 25
+      }
+    },
+    {
+      "id": "21",
+      "title": "Unified backlog format",
+      "score": 46,
+      "details": {
+        "value": 9,
+        "effort": 12,
+        "ratio": 25
+      }
+    },
+    {
+      "id": "10",
+      "title": "Auto-commit",
+      "score": 44.42857142857143,
+      "details": {
+        "value": 9,
+        "effort": 14,
+        "ratio": 21.428571428571427
+      }
+    },
+    {
+      "id": "16",
+      "title": "Cache High Value docs omzetten naar Apex Hive High Value Docs",
+      "score": 44.42857142857143,
+      "details": {
+        "value": 9,
+        "effort": 14,
+        "ratio": 21.428571428571427
+      }
+    },
+    {
+      "id": "17",
+      "title": "Project Specific High Value Docs toevoegen aan cache warming",
+      "score": 44.42857142857143,
+      "details": {
+        "value": 9,
+        "effort": 14,
+        "ratio": 21.428571428571427
+      }
+    }
+  ]
+}

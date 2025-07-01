@@ -6,14 +6,16 @@ Installation and setup guides
 
 - [Misc](./99-misc-README.md)
 - [GitHub Actions Setup Guide](./github-actions-setup.md)
-- [Documentation](./README.md)
-- [README](./README.md)
+- [install-mcp.js](./install-mcp.md)
+- [Getting Started](./README.md)
+- [Misc](./README.md)
 - [Documentation](./README.md)
 - [Apex Hive Restructuring Documentation](./restructuring-README.md)
+- [verify-installation.js](./verify-installation.md)
 
 ## Overview
 
-This category contains 6 documents.
+This category contains 8 documents.
 
 ## Navigation
 

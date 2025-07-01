@@ -4,6 +4,9 @@ Other documentation
 
 ## Documents
 
+- [backlog-system](./backlog-system.md)
+- [cache-system-verification-results](./cache-system-verification-results.md)
+- [conversation-memory](./conversation-memory.md)
 - [Getting Started with Apex Hive](./getting-started.md)
 - [Documentation Index](./index.md)
 - [Recipes and Workflows](./restructuring-07-recipes-workflows.md)
@@ -29,7 +32,7 @@ Other documentation
 
 ## Overview
 
-This category contains 22 documents.
+This category contains 25 documents.
 
 ## Navigation
 
