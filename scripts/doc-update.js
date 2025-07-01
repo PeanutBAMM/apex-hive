@@ -1,5 +1,6 @@
 // doc-update.js - Update existing documentation
-import { promises as fs } from "fs";
+import { readFile, writeFile, listFiles, pathExists } from "../modules/file-ops.js";
+import { promises as fs } from "fs"; // Still need for readdir in some cases
 import path from "path";
 
 export async function run(args) {
@@ -82,7 +83,7 @@ async function updateReadme(dryRun, modules) {
       return null;
     }
 
-    const content = await fs.readFile(readmePath, "utf8");
+    const content = await readFile(readmePath);
     const updated = await updateReadmeContent(content, modules);
 
     if (content === updated) {
@@ -91,7 +92,7 @@ async function updateReadme(dryRun, modules) {
     }
 
     if (!dryRun) {
-      await fs.writeFile(readmePath, updated);
+      await writeFile(readmePath, updated);
     }
 
     return {
@@ -170,7 +171,7 @@ async function updateChangelog(dryRun, modules) {
       const content = await createChangelog(modules);
 
       if (!dryRun) {
-        await fs.writeFile(changelogPath, content);
+        await writeFile(changelogPath, content);
       }
 
       return {
@@ -181,7 +182,7 @@ async function updateChangelog(dryRun, modules) {
     }
 
     // Update existing changelog
-    const content = await fs.readFile(changelogPath, "utf8");
+    const content = await readFile(changelogPath);
     const updated = await updateChangelogContent(content, modules);
 
     if (content === updated) {
@@ -190,7 +191,7 @@ async function updateChangelog(dryRun, modules) {
     }
 
     if (!dryRun) {
-      await fs.writeFile(changelogPath, updated);
+      await writeFile(changelogPath, updated);
     }
 
     return {
@@ -290,7 +291,8 @@ async function updateAPIDocs(dryRun, modules) {
       return updates;
     }
 
-    const files = await fs.readdir(apiDir);
+    const fileList = await listFiles(apiDir);
+    const files = fileList.map(f => f.name);
 
     for (const file of files) {
       if (file.endsWith(".md")) {
@@ -311,7 +313,7 @@ async function updateAPIDocs(dryRun, modules) {
 
 async function updateAPIDoc(docPath, dryRun, modules) {
   try {
-    const content = await fs.readFile(docPath, "utf8");
+    const content = await readFile(docPath);
     const moduleName = path.basename(docPath, ".md");
     const modulePath = `./modules/${moduleName}.js`;
 
@@ -321,7 +323,7 @@ async function updateAPIDoc(docPath, dryRun, modules) {
     }
 
     // Re-generate documentation for the module
-    const moduleSource = await fs.readFile(modulePath, "utf8");
+    const moduleSource = await readFile(modulePath);
     const updated = await generateUpdatedAPIDoc(
       content,
       moduleSource,
@@ -333,7 +335,7 @@ async function updateAPIDoc(docPath, dryRun, modules) {
     }
 
     if (!dryRun) {
-      await fs.writeFile(docPath, updated);
+      await writeFile(docPath, updated);
     }
 
     return {
@@ -357,7 +359,7 @@ async function updateSpecificDoc(target, dryRun, modules) {
     throw new Error("Can only update markdown files");
   }
 
-  const content = await fs.readFile(target, "utf8");
+  const content = await readFile(target);
   let updated = content;
 
   // Update based on file type
@@ -381,7 +383,7 @@ async function updateSpecificDoc(target, dryRun, modules) {
   }
 
   if (!dryRun) {
-    await fs.writeFile(target, updated);
+    await writeFile(target, updated);
   }
 
   return {
@@ -482,7 +484,8 @@ async function generateUpdatedAPIDoc(content, moduleSource, moduleName) {
 
 async function fileExists(filePath) {
   try {
-    await fs.access(filePath);
+    const exists = await pathExists(filePath);
+    if (!exists) throw new Error(`File not found: ${filePath}`);
     return true;
   } catch {
     return false;

@@ -1,5 +1,6 @@
 // test-setup.js - Setup test environment and configuration
-import { promises as fs } from "fs";
+import { readFile, writeFile, pathExists } from "../modules/file-ops.js";
+import { promises as fs } from "fs"; // Still need for mkdir
 import { execSync } from "child_process";
 import path from "path";
 
@@ -68,7 +69,7 @@ export async function run(args = {}) {
 
     if (!dryRun) {
       for (const config of configResult.configs) {
-        await fs.writeFile(config.path, config.content);
+        await writeFile(config.path, config.content);
         configs.push(config.path);
       }
     }
@@ -171,7 +172,8 @@ async function detectExistingSetup() {
   const testDirs = ["test", "tests", "__tests__", "spec"];
   for (const dir of testDirs) {
     try {
-      await fs.access(dir);
+      const exists = await pathExists(dir);
+      if (!exists) throw new Error("Directory not found");
       setup.hasTests = true;
       break;
     } catch {
@@ -191,7 +193,8 @@ async function detectExistingSetup() {
   for (const [framework, files] of Object.entries(configFiles)) {
     for (const file of files) {
       try {
-        await fs.access(file);
+        const exists = await pathExists(file);
+        if (!exists) throw new Error("File not found");
         setup.framework = framework;
         setup.configs.push(file);
         setup.hasTests = true;
@@ -205,7 +208,7 @@ async function detectExistingSetup() {
 
   // Check package.json for test script
   try {
-    const pkg = JSON.parse(await fs.readFile("package.json", "utf8"));
+    const pkg = JSON.parse(await readFile("package.json"));
     if (pkg.scripts?.test && !pkg.scripts.test.includes("no test")) {
       setup.hasTests = true;
 
@@ -235,7 +238,7 @@ async function installTestFramework(framework, options) {
 
         // Add React testing if React is detected
         try {
-          const pkg = JSON.parse(await fs.readFile("package.json", "utf8"));
+          const pkg = JSON.parse(await readFile("package.json"));
           if (pkg.dependencies?.react) {
             packages.push(
               "@testing-library/react",
@@ -563,7 +566,7 @@ async function updatePackageScripts(framework, options) {
   // Update package.json
   Object.assign(pkg.scripts, scripts);
 
-  await fs.writeFile("package.json", JSON.stringify(pkg, null, 2) + "\n");
+  await writeFile("package.json", JSON.stringify(pkg, null, 2) + "\n");
 
   return { scripts };
 }
@@ -665,26 +668,26 @@ async function createSampleTests(framework, options) {
   // Create setup file
   const setupContent = generateSetupFile(framework);
   const setupPath = path.join(testDir, "setup.js");
-  await fs.writeFile(setupPath, setupContent);
+  await writeFile(setupPath, setupContent);
   files.push(setupPath);
 
   // Create sample unit test
   const unitTestContent = generateSampleUnitTest(framework);
   const unitTestPath = path.join(testDir, "unit", "example.test.js");
-  await fs.writeFile(unitTestPath, unitTestContent);
+  await writeFile(unitTestPath, unitTestContent);
   files.push(unitTestPath);
 
   // Create sample integration test
   const integrationTestContent = generateSampleIntegrationTest(framework);
   const integrationTestPath = path.join(testDir, "integration", "api.test.js");
-  await fs.writeFile(integrationTestPath, integrationTestContent);
+  await writeFile(integrationTestPath, integrationTestContent);
   files.push(integrationTestPath);
 
   // Create E2E test if requested
   if (options.e2e) {
     const e2eContent = generateSampleE2ETest();
     const e2ePath = "e2e/example.spec.js";
-    await fs.writeFile(e2ePath, e2eContent);
+    await writeFile(e2ePath, e2eContent);
     files.push(e2ePath);
   }
 
@@ -997,7 +1000,7 @@ jobs:
 `;
 
   const workflowPath = path.join(workflowDir, "tests.yml");
-  await fs.writeFile(workflowPath, workflowContent);
+  await writeFile(workflowPath, workflowContent);
   files.push(workflowPath);
 
   // Create codecov.yml
@@ -1016,7 +1019,7 @@ comment:
   behavior: default
 `;
 
-  await fs.writeFile("codecov.yml", codecovContent);
+  await writeFile("codecov.yml", codecovContent);
   files.push("codecov.yml");
 
   return { files };
