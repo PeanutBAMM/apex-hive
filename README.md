@@ -37,6 +37,81 @@ apex help
 ## Available Commands
 
 ### Ci Commands
+- `ci:monitor`
+- `ci:parse`
+- `ci:fix`
+- `ci:heal`
+- `ci:watch`
+- `ci:smart-push`
+- ...and 1 more
+
+### Doc Commands
+- `doc:generate`
+- `doc:generate-changed`
+- `doc:generate-missing`
+- `doc:update`
+- `doc:update-readme`
+- `doc:validate`
+- ...and 9 more
+
+### Quality Commands
+- `quality:lint`
+- `quality:fix-versions`
+- `quality:console-clean`
+- `quality:fix-all`
+- `quality:validate`
+- `quality:format`
+- ...and 2 more
+
+### Backlog Commands
+- `backlog:analyze`
+- `backlog:score`
+- `backlog:sync`
+- `backlog:display`
+- `backlog:table`
+
+### Xml Commands
+- `xml:validate`
+- `xml:add`
+- `xml:clean`
+
+### Git Commands
+- `git:commit`
+- `git:push`
+- `git:status`
+- `git:pull`
+- `git:tag`
+- `git:push-tags`
+- ...and 2 more
+
+### Core Commands
+- `init`
+- `build`
+- `test`
+- `search`
+- `save-conversation`
+- `code`
+- ...and 7 more
+
+### Test Commands
+- `test:run`
+- `test:setup`
+
+### Version Commands
+- `version:bump`
+
+### Changelog Commands
+- `changelog:generate`
+
+### Cache Commands
+- `cache:warm-readmes`
+- `cache:warm-docs`
+- `cache:warm-conversations`
+- `cache:warm-all`
+- `cache:clear`
+- `cache:status`
+
+### Ci Commands
 - `apex ci:monitor`
 - `apex ci:parse`
 - `apex ci:fix`

@@ -115,14 +115,13 @@ async function findAllDocs(sourceDir) {
 
   async function scan(dir, base = "") {
     try {
-      const fileList = await listFiles(dir, { includeDirectories: true });
-      const entries = fileList;
+      const entries = await listFiles(dir, { withFileTypes: true, includeDirectories: true });
 
       for (const entry of entries) {
         const relativePath = path.join(base, entry.name);
         const fullPath = path.join(dir, entry.name);
 
-        if (entry.isDirectory() && !entry.name.startsWith(".")) {
+        if ((typeof entry.isDirectory === "function" ? entry.isDirectory() : entry._isDirectory) && !entry.name.startsWith(".")) {
           await scan(fullPath, relativePath);
         } else if (entry.name.endsWith(".md")) {
           docs.push({
@@ -405,8 +404,7 @@ function formatCategoryName(category) {
 
 async function cleanEmptyDirs(dir) {
   try {
-    const fileList = await listFiles(dir);
-    const entries = fileList;
+    const entries = await listFiles(dir, { withFileTypes: true, includeDirectories: true });
 
     if (entries.length === 0) {
       await fs.rmdir(dir);

@@ -337,7 +337,7 @@ async function findMarkdownFiles(dir) {
       const fullPath = path.join(directory, entry.name);
 
       if (
-        entry.isDirectory() &&
+        (typeof entry.isDirectory === "function" ? entry.isDirectory() : entry._isDirectory) &&
         !entry.name.startsWith(".") &&
         entry.name !== "node_modules"
       ) {

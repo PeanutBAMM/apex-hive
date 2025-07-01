@@ -152,12 +152,26 @@ export async function listFiles(dirPath, options = {}) {
   try {
     const entries = await fs.readdir(absolutePath, { withFileTypes: true });
 
+    // If withFileTypes option is true, convert to serializable format
+    if (options.withFileTypes) {
+      return entries.map(entry => ({
+        name: entry.name,
+        path: entry.path || entry.parentPath,
+        isFile: () => entry.isFile(),
+        isDirectory: () => entry.isDirectory(),
+        // Store the actual values for MCP serialization
+        _isFile: entry.isFile(),
+        _isDirectory: entry.isDirectory()
+      }));
+    }
+
     let files = entries
       .filter((entry) => options.includeDirectories || entry.isFile())
       .map((entry) => ({
         name: entry.name,
         path: path.join(absolutePath, entry.name),
-        isDirectory: entry.isDirectory(),
+        isFile: () => entry.isFile(),
+        isDirectory: () => entry.isDirectory(),
       }));
 
     // Apply pattern filter if provided

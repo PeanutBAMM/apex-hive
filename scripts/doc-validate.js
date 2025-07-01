@@ -535,7 +535,7 @@ async function findMarkdownFiles(dir = ".") {
         continue;
       }
 
-      if (entry.isDirectory()) {
+      if ((typeof entry.isDirectory === "function" ? entry.isDirectory() : entry._isDirectory)) {
         await scan(fullPath);
       } else if (entry.name.endsWith(".md")) {
         files.push(fullPath);
