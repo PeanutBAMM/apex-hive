@@ -87,13 +87,13 @@ export async function run(args = {}) {
           // Cache content with metadata using unified cache
           const cacheData = {
             content,
-            metadata
+            metadata,
           };
-          
+
           const cacheSuccess = await fileCache.set(file, cacheData, {
-            ttl: 24 * 60 * 60 * 1000 // 24 hours for README files
+            ttl: 24 * 60 * 60 * 1000, // 24 hours for README files
           });
-          
+
           if (!cacheSuccess) {
             throw new Error("Failed to cache file");
           }
@@ -189,7 +189,6 @@ async function findReadmeFiles(directory, options) {
 
   return files;
 }
-
 
 function detectTableOfContents(content) {
   // Check for common ToC patterns

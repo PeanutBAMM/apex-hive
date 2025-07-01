@@ -1,17 +1,17 @@
 # Issues Report
 
-Generated: 2025-07-01T13:29:10.776Z
+Generated: 2025-07-01T15:08:32.391Z
 
 ## Summary
 
 - Total Issues: 389
 - Critical: 0
-- High: 12
-- Medium: 147
+- High: 19
+- Medium: 140
 - Low: 230
 - Info: 0
 
-## 🟠 HIGH (12)
+## 🟠 HIGH (19)
 
 ### todo-comment
 - **Category**: code
@@ -25,7 +25,42 @@ Generated: 2025-07-01T13:29:10.776Z
 
 ### todo-comment
 - **Category**: code
-- **File**: scripts/detect-issues.js:205
+- **File**: scripts/detect-issues.js:206
+- **Message**: // Skip false positives - code that's checking for TODOs/FIXMEs
+
+### todo-comment
+- **Category**: code
+- **File**: scripts/detect-issues.js:209
+- **Message**: (content.includes("grep") && content.includes("FIXME")) ||
+
+### todo-comment
+- **Category**: code
+- **File**: scripts/detect-issues.js:212
+- **Message**: content.includes('"FIXME') ||
+
+### todo-comment
+- **Category**: code
+- **File**: scripts/detect-issues.js:213
+- **Message**: content.includes("'FIXME") ||
+
+### todo-comment
+- **Category**: code
+- **File**: scripts/detect-issues.js:216
+- **Message**: content.includes("TODO/FIXME") ||
+
+### todo-comment
+- **Category**: code
+- **File**: scripts/detect-issues.js:217
+- **Message**: content.includes("TODO\\\\|FIXME") ||
+
+### todo-comment
+- **Category**: code
+- **File**: scripts/detect-issues.js:219
+- **Message**: content.includes("No TODO/FIXME");
+
+### todo-comment
+- **Category**: code
+- **File**: scripts/detect-issues.js:225
 - **Message**: const severity = content.includes("FIXME") ? "high" : "low";
 
 ### todo-comment
@@ -73,41 +108,11 @@ Generated: 2025-07-01T13:29:10.776Z
 - **File**: scripts/report-status.js:617
 - **Message**: report += `- **FIXMEs**: ${data.code.patterns.fixmes}\n`;
 
-## 🟡 MEDIUM (147)
-
-### console-log
-- **Category**: code
-- **File**: coverage/lcov-report/prettify.js:2
-- **Message**: Console.log statement found
-- **Fixable**: Yes - Remove console.log statement
-
-### console-log
-- **Category**: code
-- **File**: coverage/prettify.js:2
-- **Message**: Console.log statement found
-- **Fixable**: Yes - Remove console.log statement
+## 🟡 MEDIUM (140)
 
 ### console-log
 - **Category**: code
 - **File**: generate-claude-md.js:43
-- **Message**: Console.log statement found
-- **Fixable**: Yes - Remove console.log statement
-
-### console-log
-- **Category**: code
-- **File**: generate-claude-md.js:107
-- **Message**: Console.log statement found
-- **Fixable**: Yes - Remove console.log statement
-
-### console-log
-- **Category**: code
-- **File**: generate-claude-md.js:305
-- **Message**: Console.log statement found
-- **Fixable**: Yes - Remove console.log statement
-
-### console-log
-- **Category**: code
-- **File**: generate-claude-md.js:306
 - **Message**: Console.log statement found
 - **Fixable**: Yes - Remove console.log statement
 
@@ -341,7 +346,7 @@ Generated: 2025-07-01T13:29:10.776Z
 
 ### console-log
 - **Category**: code
-- **File**: scripts/detect-issues.js:561
+- **File**: scripts/detect-issues.js:581
 - **Message**: Console.log statement found
 - **Fixable**: Yes - Remove console.log statement
 
@@ -797,22 +802,12 @@ Generated: 2025-07-01T13:29:10.776Z
 
 ### unsafe-regex
 - **Category**: security
-- **File**: coverage/lcov-report/prettify.js:2
-- **Message**: Dynamic RegExp construction (potential ReDoS)
-
-### unsafe-regex
-- **Category**: security
-- **File**: coverage/prettify.js:2
-- **Message**: Dynamic RegExp construction (potential ReDoS)
-
-### unsafe-regex
-- **Category**: security
 - **File**: modules/file-ops.js:82
 - **Message**: Dynamic RegExp construction (potential ReDoS)
 
 ### unsafe-regex
 - **Category**: security
-- **File**: scripts/detect-issues.js:320
+- **File**: scripts/detect-issues.js:340
 - **Message**: Dynamic RegExp construction (potential ReDoS)
 
 ### unsafe-regex
@@ -902,7 +897,7 @@ Generated: 2025-07-01T13:29:10.776Z
 
 ### sync-operation
 - **Category**: performance
-- **File**: scripts/detect-issues.js:479
+- **File**: scripts/detect-issues.js:499
 - **Message**: Synchronous operation 'readFileSync' found
 
 ### sync-operation
@@ -912,7 +907,7 @@ Generated: 2025-07-01T13:29:10.776Z
 
 ### sync-operation
 - **Category**: performance
-- **File**: scripts/detect-issues.js:480
+- **File**: scripts/detect-issues.js:500
 - **Message**: Synchronous operation 'writeFileSync' found
 
 ### sync-operation
@@ -922,12 +917,12 @@ Generated: 2025-07-01T13:29:10.776Z
 
 ### sync-operation
 - **Category**: performance
-- **File**: scripts/detect-issues.js:481
+- **File**: scripts/detect-issues.js:501
 - **Message**: Synchronous operation 'appendFileSync' found
 
 ### sync-operation
 - **Category**: performance
-- **File**: scripts/detect-issues.js:482
+- **File**: scripts/detect-issues.js:502
 - **Message**: Synchronous operation 'mkdirSync' found
 
 ## 🔵 LOW (230)
@@ -1159,6 +1154,36 @@ Generated: 2025-07-01T13:29:10.776Z
 
 ### todo-comment
 - **Category**: code
+- **File**: scripts/detect-issues.js:208
+- **Message**: (content.includes("grep") && content.includes("TODO")) ||
+
+### todo-comment
+- **Category**: code
+- **File**: scripts/detect-issues.js:210
+- **Message**: content.includes('"TODO') ||
+
+### todo-comment
+- **Category**: code
+- **File**: scripts/detect-issues.js:211
+- **Message**: content.includes("'TODO") ||
+
+### todo-comment
+- **Category**: code
+- **File**: scripts/detect-issues.js:214
+- **Message**: content.includes("Check for TODO") ||
+
+### todo-comment
+- **Category**: code
+- **File**: scripts/detect-issues.js:215
+- **Message**: content.includes("Count TODO") ||
+
+### todo-comment
+- **Category**: code
+- **File**: scripts/detect-issues.js:218
+- **Message**: content.includes("Found ${count} TODO") ||
+
+### todo-comment
+- **Category**: code
 - **File**: scripts/doc-generate-missing.js:375
 - **Message**: // TODO comments
 
@@ -1229,7 +1254,7 @@ Generated: 2025-07-01T13:29:10.776Z
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: modules/unified-cache.js:297
+- **File**: modules/unified-cache.js:301
 - **Message**: Function 'formatBytes' missing JSDoc
 
 ### missing-jsdoc
@@ -1269,7 +1294,7 @@ Generated: 2025-07-01T13:29:10.776Z
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/cache-status.js:4
+- **File**: scripts/cache-status.js:10
 - **Message**: Function 'run' missing JSDoc
 
 ### missing-jsdoc
@@ -1529,12 +1554,12 @@ Generated: 2025-07-01T13:29:10.776Z
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/save-conversation.js:556
+- **File**: scripts/save-conversation.js:560
 - **Message**: Function 'getRecentConversations' missing JSDoc
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/save-conversation.js:588
+- **File**: scripts/save-conversation.js:595
 - **Message**: Function 'extractKeywords' missing JSDoc
 
 ### missing-jsdoc
@@ -1615,36 +1640,6 @@ Generated: 2025-07-01T13:29:10.776Z
 ### missing-tests
 - **Category**: testing
 - **File**: config/registry.js
-- **Message**: No test file found
-
-### missing-tests
-- **Category**: testing
-- **File**: coverage/block-navigation.js
-- **Message**: No test file found
-
-### missing-tests
-- **Category**: testing
-- **File**: coverage/lcov-report/block-navigation.js
-- **Message**: No test file found
-
-### missing-tests
-- **Category**: testing
-- **File**: coverage/lcov-report/prettify.js
-- **Message**: No test file found
-
-### missing-tests
-- **Category**: testing
-- **File**: coverage/lcov-report/sorter.js
-- **Message**: No test file found
-
-### missing-tests
-- **Category**: testing
-- **File**: coverage/prettify.js
-- **Message**: No test file found
-
-### missing-tests
-- **Category**: testing
-- **File**: coverage/sorter.js
 - **Message**: No test file found
 
 ### missing-tests

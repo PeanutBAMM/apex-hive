@@ -18,8 +18,11 @@ export async function run(args = {}) {
 
   // Ensure tags is always an array (handle string input from MCP)
   let tags;
-  if (typeof inputTags === 'string') {
-    tags = inputTags.split(',').map(t => t.trim()).filter(Boolean);
+  if (typeof inputTags === "string") {
+    tags = inputTags
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
   } else if (Array.isArray(inputTags)) {
     tags = inputTags;
   } else {
@@ -58,7 +61,7 @@ export async function run(args = {}) {
     const narrativeSummary = await createTextSummary(
       conversationData.summary,
       conversationData.context,
-      conversationData.metadata
+      conversationData.metadata,
     );
 
     // Add narrative summary to conversation data
@@ -368,7 +371,7 @@ function formatAsMarkdown(data) {
     md += `**Branch**: ${data.metadata.gitBranch}\n`;
   }
   md += "\n";
-  
+
   // Add narrative summary at the top
   if (data.narrativeSummary) {
     md += data.narrativeSummary + "\n\n";
@@ -516,8 +519,9 @@ async function updateConversationIndex(directory, conversationData) {
     timestamp: conversationData.timestamp,
     tags: conversationData.tags,
     summary: conversationData.summary?.topics || [],
-    narrativeSummary: conversationData.narrativeSummary ? 
-      conversationData.narrativeSummary.substring(0, 200) + '...' : null,
+    narrativeSummary: conversationData.narrativeSummary
+      ? conversationData.narrativeSummary.substring(0, 200) + "..."
+      : null,
   });
 
   // Keep only last 100 conversations
@@ -555,17 +559,17 @@ async function updateConversationIndex(directory, conversationData) {
 // Helper function to retrieve recent conversations from cache
 export async function getRecentConversations(limit = 10) {
   const conversations = [];
-  
+
   try {
     // Get cache stats to find conversation keys
     const stats = await conversationCache.stats();
-    
+
     // Filter for conversation keys and sort by timestamp
     const conversationKeys = stats.active
-      .filter(item => item.key.startsWith('conversation-'))
+      .filter((item) => item.key.startsWith("conversation-"))
       .sort((a, b) => b.lastAccess - a.lastAccess)
       .slice(0, limit);
-    
+
     // Retrieve each conversation
     for (const item of conversationKeys) {
       const conversation = await conversationCache.get(item.key);
@@ -573,14 +577,17 @@ export async function getRecentConversations(limit = 10) {
         conversations.push({
           ...conversation,
           cacheKey: item.key,
-          hits: item.hits
+          hits: item.hits,
         });
       }
     }
   } catch (error) {
-    console.error("[SAVE-CONVERSATION] Error retrieving conversations:", error.message);
+    console.error(
+      "[SAVE-CONVERSATION] Error retrieving conversations:",
+      error.message,
+    );
   }
-  
+
   return conversations;
 }
 
@@ -589,12 +596,12 @@ export function extractKeywords(summary, count = 10) {
   // Simple keyword extraction based on frequency
   const words = summary
     .toLowerCase()
-    .replace(/[^\w\s]/g, ' ')
+    .replace(/[^\w\s]/g, " ")
     .split(/\s+/)
-    .filter(word => word.length > 4); // Skip short words
+    .filter((word) => word.length > 4); // Skip short words
 
   const frequency = {};
-  words.forEach(word => {
+  words.forEach((word) => {
     frequency[word] = (frequency[word] || 0) + 1;
   });
 
@@ -608,187 +615,250 @@ export function extractKeywords(summary, count = 10) {
 // Helper to create text summary from data
 async function createTextSummary(summaryData, context, metadata) {
   let narrative = [];
-  
+
   // Opening context
   narrative.push("## Conversation Summary");
   narrative.push("");
-  
+
   // Set the scene
   if (metadata.projectName) {
-    narrative.push(`Today's development session focused on the **${metadata.projectName}** project${metadata.gitBranch ? ` on the \`${metadata.gitBranch}\` branch` : ''}.`);
+    narrative.push(
+      `Today's development session focused on the **${metadata.projectName}** project${metadata.gitBranch ? ` on the \`${metadata.gitBranch}\` branch` : ""}.`,
+    );
   } else {
-    narrative.push(`This development session involved working on various aspects of the codebase.`);
+    narrative.push(
+      `This development session involved working on various aspects of the codebase.`,
+    );
   }
   narrative.push("");
-  
+
   // Describe the journey based on git commits
   if (summaryData && summaryData.actions && summaryData.actions.length > 0) {
     narrative.push("### What We Accomplished");
     narrative.push("");
-    narrative.push("Throughout this session, we made significant progress on several fronts:");
-    narrative.push("");
-    
-    // Group similar actions
-    const implementActions = summaryData.actions.filter(a => a.toLowerCase().includes('implement'));
-    const fixActions = summaryData.actions.filter(a => a.toLowerCase().includes('fix'));
-    const updateActions = summaryData.actions.filter(a => a.toLowerCase().includes('update'));
-    const otherActions = summaryData.actions.filter(a => 
-      !a.toLowerCase().includes('implement') && 
-      !a.toLowerCase().includes('fix') && 
-      !a.toLowerCase().includes('update')
+    narrative.push(
+      "Throughout this session, we made significant progress on several fronts:",
     );
-    
+    narrative.push("");
+
+    // Group similar actions
+    const implementActions = summaryData.actions.filter((a) =>
+      a.toLowerCase().includes("implement"),
+    );
+    const fixActions = summaryData.actions.filter((a) =>
+      a.toLowerCase().includes("fix"),
+    );
+    const updateActions = summaryData.actions.filter((a) =>
+      a.toLowerCase().includes("update"),
+    );
+    const otherActions = summaryData.actions.filter(
+      (a) =>
+        !a.toLowerCase().includes("implement") &&
+        !a.toLowerCase().includes("fix") &&
+        !a.toLowerCase().includes("update"),
+    );
+
     if (implementActions.length > 0) {
       narrative.push("**New Implementations:**");
-      implementActions.slice(0, 3).forEach(action => {
+      implementActions.slice(0, 3).forEach((action) => {
         narrative.push(`- ${action}`);
       });
       narrative.push("");
     }
-    
+
     if (fixActions.length > 0) {
       narrative.push("**Issues Resolved:**");
-      fixActions.slice(0, 3).forEach(action => {
+      fixActions.slice(0, 3).forEach((action) => {
         narrative.push(`- ${action}`);
       });
       narrative.push("");
     }
-    
+
     if (updateActions.length > 0) {
       narrative.push("**Updates & Improvements:**");
-      updateActions.slice(0, 3).forEach(action => {
+      updateActions.slice(0, 3).forEach((action) => {
         narrative.push(`- ${action}`);
       });
       narrative.push("");
     }
-    
-    if (otherActions.length > 0 && implementActions.length + fixActions.length + updateActions.length < 3) {
+
+    if (
+      otherActions.length > 0 &&
+      implementActions.length + fixActions.length + updateActions.length < 3
+    ) {
       narrative.push("**Other Changes:**");
-      otherActions.slice(0, 2).forEach(action => {
+      otherActions.slice(0, 2).forEach((action) => {
         narrative.push(`- ${action}`);
       });
       narrative.push("");
     }
   }
-  
+
   // Describe the scope of changes
   if (context.files && context.files.length > 0) {
     narrative.push("### Scope of Changes");
     narrative.push("");
-    narrative.push(`The session involved modifications to ${context.files.length} files across the codebase. Key areas of focus included:`);
-    narrative.push("");
-    
-    // Group files by directory/type
-    const scriptFiles = context.files.filter(f => f.includes('/scripts/'));
-    const configFiles = context.files.filter(f => f.includes('/config/'));
-    const moduleFiles = context.files.filter(f => f.includes('/modules/'));
-    const docFiles = context.files.filter(f => f.includes('/docs/') || f.includes('README'));
-    const otherFiles = context.files.filter(f => 
-      !f.includes('/scripts/') && 
-      !f.includes('/config/') && 
-      !f.includes('/modules/') &&
-      !f.includes('/docs/') &&
-      !f.includes('README')
+    narrative.push(
+      `The session involved modifications to ${context.files.length} files across the codebase. Key areas of focus included:`,
     );
-    
+    narrative.push("");
+
+    // Group files by directory/type
+    const scriptFiles = context.files.filter((f) => f.includes("/scripts/"));
+    const configFiles = context.files.filter((f) => f.includes("/config/"));
+    const moduleFiles = context.files.filter((f) => f.includes("/modules/"));
+    const docFiles = context.files.filter(
+      (f) => f.includes("/docs/") || f.includes("README"),
+    );
+    const otherFiles = context.files.filter(
+      (f) =>
+        !f.includes("/scripts/") &&
+        !f.includes("/config/") &&
+        !f.includes("/modules/") &&
+        !f.includes("/docs/") &&
+        !f.includes("README"),
+    );
+
     if (scriptFiles.length > 0) {
-      narrative.push(`- **Scripts** (${scriptFiles.length} files): Core functionality and automation scripts`);
+      narrative.push(
+        `- **Scripts** (${scriptFiles.length} files): Core functionality and automation scripts`,
+      );
     }
     if (configFiles.length > 0) {
-      narrative.push(`- **Configuration** (${configFiles.length} files): System configuration and settings`);
+      narrative.push(
+        `- **Configuration** (${configFiles.length} files): System configuration and settings`,
+      );
     }
     if (moduleFiles.length > 0) {
-      narrative.push(`- **Modules** (${moduleFiles.length} files): Shared modules and utilities`);
+      narrative.push(
+        `- **Modules** (${moduleFiles.length} files): Shared modules and utilities`,
+      );
     }
     if (docFiles.length > 0) {
-      narrative.push(`- **Documentation** (${docFiles.length} files): Documentation updates and improvements`);
+      narrative.push(
+        `- **Documentation** (${docFiles.length} files): Documentation updates and improvements`,
+      );
     }
     if (otherFiles.length > 0) {
-      narrative.push(`- **Other** (${otherFiles.length} files): Various other components`);
+      narrative.push(
+        `- **Other** (${otherFiles.length} files): Various other components`,
+      );
     }
     narrative.push("");
   }
-  
+
   // Add challenges and solutions if we detect patterns
-  const hasCache = context.files?.some(f => f.includes('cache')) || 
-                   summaryData?.topics?.some(t => t.includes('cache'));
-  const hasConversation = context.files?.some(f => f.includes('conversation')) || 
-                          summaryData?.topics?.some(t => t.includes('conversation'));
-  const hasFix = summaryData?.actions?.some(a => a.toLowerCase().includes('fix'));
-  
+  const hasCache =
+    context.files?.some((f) => f.includes("cache")) ||
+    summaryData?.topics?.some((t) => t.includes("cache"));
+  const hasConversation =
+    context.files?.some((f) => f.includes("conversation")) ||
+    summaryData?.topics?.some((t) => t.includes("conversation"));
+  const hasFix = summaryData?.actions?.some((a) =>
+    a.toLowerCase().includes("fix"),
+  );
+
   if (hasCache || hasConversation || hasFix) {
     narrative.push("### Challenges & Solutions");
     narrative.push("");
-    
+
     if (hasConversation && hasCache) {
-      narrative.push("One of the main challenges addressed in this session was implementing an effective conversation memory system. We explored different approaches for storing and retrieving conversation data, ultimately focusing on a unified solution that leverages both filesystem storage and caching for optimal performance.");
+      narrative.push(
+        "One of the main challenges addressed in this session was implementing an effective conversation memory system. We explored different approaches for storing and retrieving conversation data, ultimately focusing on a unified solution that leverages both filesystem storage and caching for optimal performance.",
+      );
       narrative.push("");
     } else if (hasCache) {
-      narrative.push("We worked on cache-related functionality, optimizing performance and ensuring efficient data retrieval across the system.");
+      narrative.push(
+        "We worked on cache-related functionality, optimizing performance and ensuring efficient data retrieval across the system.",
+      );
       narrative.push("");
     }
-    
+
     if (hasFix) {
-      narrative.push("Several issues were identified and resolved during this session, improving the overall stability and functionality of the codebase.");
+      narrative.push(
+        "Several issues were identified and resolved during this session, improving the overall stability and functionality of the codebase.",
+      );
       narrative.push("");
     }
   }
-  
+
   // Technical details
-  if (summaryData && summaryData.technologies && summaryData.technologies.length > 0) {
+  if (
+    summaryData &&
+    summaryData.technologies &&
+    summaryData.technologies.length > 0
+  ) {
     narrative.push("### Technical Stack");
     narrative.push("");
-    narrative.push(`This session utilized the following technologies: **${summaryData.technologies.join(', ')}**`);
+    narrative.push(
+      `This session utilized the following technologies: **${summaryData.technologies.join(", ")}**`,
+    );
     narrative.push("");
   }
-  
+
   // Command activity
   if (context.commands && context.commands.length > 0) {
-    const apexCommands = context.commands.filter(cmd => cmd.includes('apex'));
-    const gitCommands = context.commands.filter(cmd => cmd.includes('git'));
-    const npmCommands = context.commands.filter(cmd => cmd.includes('npm'));
-    
-    if (apexCommands.length > 0 || gitCommands.length > 0 || npmCommands.length > 0) {
+    const apexCommands = context.commands.filter((cmd) => cmd.includes("apex"));
+    const gitCommands = context.commands.filter((cmd) => cmd.includes("git"));
+    const npmCommands = context.commands.filter((cmd) => cmd.includes("npm"));
+
+    if (
+      apexCommands.length > 0 ||
+      gitCommands.length > 0 ||
+      npmCommands.length > 0
+    ) {
       narrative.push("### Development Workflow");
       narrative.push("");
       narrative.push("The session followed a structured development workflow:");
       narrative.push("");
-      
+
       if (apexCommands.length > 0) {
-        narrative.push(`- **Apex commands** (${apexCommands.length}): Used for automation and task execution`);
+        narrative.push(
+          `- **Apex commands** (${apexCommands.length}): Used for automation and task execution`,
+        );
       }
       if (gitCommands.length > 0) {
-        narrative.push(`- **Git operations** (${gitCommands.length}): Version control and collaboration`);
+        narrative.push(
+          `- **Git operations** (${gitCommands.length}): Version control and collaboration`,
+        );
       }
       if (npmCommands.length > 0) {
-        narrative.push(`- **NPM commands** (${npmCommands.length}): Package management and builds`);
+        narrative.push(
+          `- **NPM commands** (${npmCommands.length}): Package management and builds`,
+        );
       }
       narrative.push("");
     }
   }
-  
+
   // Key topics and focus areas
   if (summaryData && summaryData.topics && summaryData.topics.length > 0) {
     narrative.push("### Key Topics");
     narrative.push("");
-    narrative.push(`The main areas of focus during this session included: ${summaryData.topics.map(t => `**${t}**`).join(', ')}.`);
+    narrative.push(
+      `The main areas of focus during this session included: ${summaryData.topics.map((t) => `**${t}**`).join(", ")}.`,
+    );
     narrative.push("");
   }
-  
+
   // Closing summary
   narrative.push("### Summary");
   narrative.push("");
-  
+
   const changeCount = context.changes?.length || 0;
   const fileCount = context.files?.length || 0;
   const actionCount = summaryData?.actions?.length || 0;
-  
+
   if (changeCount > 0 || fileCount > 0 || actionCount > 0) {
-    narrative.push(`This was a productive session with ${actionCount} significant actions taken, affecting ${fileCount} files. The changes made today contribute to the ongoing development and improvement of the project.`);
+    narrative.push(
+      `This was a productive session with ${actionCount} significant actions taken, affecting ${fileCount} files. The changes made today contribute to the ongoing development and improvement of the project.`,
+    );
   } else {
-    narrative.push("This session involved exploration and analysis of the codebase, setting the foundation for future development work.");
+    narrative.push(
+      "This session involved exploration and analysis of the codebase, setting the foundation for future development work.",
+    );
   }
-  
+
   // Join all parts into a coherent narrative
-  return narrative.join('\n').trim();
+  return narrative.join("\n").trim();
 }

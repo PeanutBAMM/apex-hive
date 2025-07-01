@@ -24,31 +24,34 @@ export async function run(args = {}) {
         totalSize: 0,
         totalSkipped: 0,
         totalFailed: 0,
-        categories: {}
-      }
+        categories: {},
+      },
     };
 
     // Step 1: Warm README files
     if (verbose) {
       console.error("[CACHE-WARM-ALL] Phase 1: Warming README files...");
     }
-    
+
     results.readmes = await warmReadmes({
       dryRun,
       maxSize,
       encoding,
-      verbose
+      verbose,
     });
 
     if (!results.readmes.success) {
-      console.error("[CACHE-WARM-ALL] README warming failed:", results.readmes.error);
+      console.error(
+        "[CACHE-WARM-ALL] README warming failed:",
+        results.readmes.error,
+      );
       results.combined.success = false;
     } else {
       results.combined.totalCached += results.readmes.data.cached;
       results.combined.totalSkipped += results.readmes.data.skipped;
       results.combined.totalFailed += results.readmes.data.failed;
       results.combined.categories.readmes = results.readmes.data.cached;
-      
+
       // Parse size if it's a string
       const readmeSize = parseSizeString(results.readmes.data.totalSize);
       results.combined.totalSize += readmeSize;
@@ -56,28 +59,36 @@ export async function run(args = {}) {
 
     // Step 2: Warm high-value documentation
     if (verbose) {
-      console.error("[CACHE-WARM-ALL] Phase 2: Warming high-value documentation...");
+      console.error(
+        "[CACHE-WARM-ALL] Phase 2: Warming high-value documentation...",
+      );
     }
-    
+
     results.docs = await warmDocs({
       dryRun,
       maxSize,
       encoding,
-      verbose
+      verbose,
     });
 
     if (!results.docs.success) {
-      console.error("[CACHE-WARM-ALL] Documentation warming failed:", results.docs.error);
+      console.error(
+        "[CACHE-WARM-ALL] Documentation warming failed:",
+        results.docs.error,
+      );
       results.combined.success = false;
     } else {
       results.combined.totalCached += results.docs.data.cached;
       results.combined.totalSkipped += results.docs.data.skipped;
       results.combined.totalFailed += results.docs.data.failed;
-      
+
       // Merge category stats
-      Object.assign(results.combined.categories, results.docs.data.categoryStats);
-      
-      // Parse size if it's a string  
+      Object.assign(
+        results.combined.categories,
+        results.docs.data.categoryStats,
+      );
+
+      // Parse size if it's a string
       const docsSize = parseSizeString(results.docs.data.totalSize);
       results.combined.totalSize += docsSize;
     }
@@ -86,22 +97,27 @@ export async function run(args = {}) {
     if (verbose) {
       console.error("[CACHE-WARM-ALL] Phase 3: Warming conversations...");
     }
-    
+
     results.conversations = await warmConversations({
       dryRun,
       verbose,
-      limit: 5   // Warm last 5 conversations (reduced for size)
+      limit: 5, // Warm last 5 conversations (reduced for size)
     });
 
     if (!results.conversations.success) {
-      console.error("[CACHE-WARM-ALL] Conversation warming failed:", results.conversations.error);
+      console.error(
+        "[CACHE-WARM-ALL] Conversation warming failed:",
+        results.conversations.error,
+      );
       results.combined.success = false;
     } else {
       // Include both newly warmed AND already cached conversations in total
-      const conversationCount = results.conversations.data.warmed + results.conversations.data.alreadyCached;
+      const conversationCount =
+        results.conversations.data.warmed +
+        results.conversations.data.alreadyCached;
       results.combined.totalCached += conversationCount;
       results.combined.categories.conversations = conversationCount;
-      
+
       // Parse size if it's a string
       const convoSize = parseSizeString(results.conversations.data.totalSize);
       results.combined.totalSize += convoSize;
@@ -113,75 +129,88 @@ export async function run(args = {}) {
       dryRun,
       data: {
         phases: {
-          readmes: results.readmes ? {
-            success: results.readmes.success,
-            cached: results.readmes.data?.cached || 0,
-            message: results.readmes.message
-          } : null,
-          docs: results.docs ? {
-            success: results.docs.success,
-            cached: results.docs.data?.cached || 0,
-            message: results.docs.message
-          } : null,
-          conversations: results.conversations ? {
-            success: results.conversations.success,
-            cached: (results.conversations.data?.warmed || 0) + (results.conversations.data?.alreadyCached || 0),
-            message: results.conversations.message
-          } : null
+          readmes: results.readmes
+            ? {
+                success: results.readmes.success,
+                cached: results.readmes.data?.cached || 0,
+                message: results.readmes.message,
+              }
+            : null,
+          docs: results.docs
+            ? {
+                success: results.docs.success,
+                cached: results.docs.data?.cached || 0,
+                message: results.docs.message,
+              }
+            : null,
+          conversations: results.conversations
+            ? {
+                success: results.conversations.success,
+                cached:
+                  (results.conversations.data?.warmed || 0) +
+                  (results.conversations.data?.alreadyCached || 0),
+                message: results.conversations.message,
+              }
+            : null,
         },
         totals: {
           cached: results.combined.totalCached,
           skipped: results.combined.totalSkipped,
           failed: results.combined.totalFailed,
           totalSize: formatSize(results.combined.totalSize),
-          categories: results.combined.categories
-        }
+          categories: results.combined.categories,
+        },
       },
-      message: dryRun 
+      message: dryRun
         ? `Would cache ${results.combined.totalCached} items (${formatSize(results.combined.totalSize)}) across READMEs, documentation, and conversations`
-        : `Successfully cached ${results.combined.totalCached} items (${formatSize(results.combined.totalSize)}) - READMEs, high-value documentation, and conversations`
+        : `Successfully cached ${results.combined.totalCached} items (${formatSize(results.combined.totalSize)}) - READMEs, high-value documentation, and conversations`,
     };
 
     if (verbose) {
       console.error("[CACHE-WARM-ALL] Cache warming summary:");
       console.error(`  READMEs: ${results.readmes?.data?.cached || 0} files`);
-      console.error(`  Documentation: ${results.docs?.data?.cached || 0} files`);
-      console.error(`  Conversations: ${results.conversations?.data?.warmed || 0} warmed, ${results.conversations?.data?.alreadyCached || 0} already cached`);
-      console.error(`  Total: ${results.combined.totalCached} items (${formatSize(results.combined.totalSize)})`);
+      console.error(
+        `  Documentation: ${results.docs?.data?.cached || 0} files`,
+      );
+      console.error(
+        `  Conversations: ${results.conversations?.data?.warmed || 0} warmed, ${results.conversations?.data?.alreadyCached || 0} already cached`,
+      );
+      console.error(
+        `  Total: ${results.combined.totalCached} items (${formatSize(results.combined.totalSize)})`,
+      );
       console.error(`  Categories:`, results.combined.categories);
     }
 
     console.error(`[CACHE-WARM-ALL] ${summary.message}`);
 
     return summary;
-
   } catch (error) {
     console.error("[CACHE-WARM-ALL] Error:", error.message);
     return {
       success: false,
       error: error.message,
-      message: "Failed to warm cache (combined operation)"
+      message: "Failed to warm cache (combined operation)",
     };
   }
 }
 
 function parseSizeString(sizeStr) {
-  if (typeof sizeStr === 'number') return sizeStr;
-  if (!sizeStr || typeof sizeStr !== 'string') return 0;
-  
+  if (typeof sizeStr === "number") return sizeStr;
+  if (!sizeStr || typeof sizeStr !== "string") return 0;
+
   const match = sizeStr.match(/^([\d.]+)\s*(B|KB|MB|GB)$/);
   if (!match) return 0;
-  
+
   const value = parseFloat(match[1]);
   const unit = match[2];
-  
+
   const multipliers = {
-    'B': 1,
-    'KB': 1024,
-    'MB': 1024 * 1024,
-    'GB': 1024 * 1024 * 1024
+    B: 1,
+    KB: 1024,
+    MB: 1024 * 1024,
+    GB: 1024 * 1024 * 1024,
   };
-  
+
   return value * (multipliers[unit] || 1);
 }
 

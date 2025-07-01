@@ -15,7 +15,7 @@ export async function readFile(filePath, options = {}) {
     const cached = await fileCache.get(absolutePath);
     if (cached !== null) {
       // Handle both direct content and structured cache data
-      if (typeof cached === 'string') {
+      if (typeof cached === "string") {
         return cached;
       } else if (cached.content) {
         return cached.content;
