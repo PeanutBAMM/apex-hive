@@ -4,12 +4,13 @@ Deployment and operations
 
 ## Documents
 
-- [deploy-scripts](./deploy-scripts.md)
-- [release-scripts](./release-scripts.md)
+- [Deployment](./README.md)
+- [Deploy Scripts](./scripts-deploy-scripts.md)
+- [Release Scripts](./scripts-release-scripts.md)
 
 ## Overview
 
-This category contains 2 documents.
+This category contains 3 documents.
 
 ## Navigation
 

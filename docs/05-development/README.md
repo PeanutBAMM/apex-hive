@@ -4,12 +4,13 @@ Development and contribution guides
 
 ## Documents
 
-- [build-scripts](./build-scripts.md)
-- [test-scripts](./test-scripts.md)
+- [Development](./README.md)
+- [Build Scripts](./scripts-build-scripts.md)
+- [Test Scripts](./scripts-test-scripts.md)
 
 ## Overview
 
-This category contains 2 documents.
+This category contains 3 documents.
 
 ## Navigation
 

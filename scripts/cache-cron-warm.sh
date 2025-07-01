@@ -52,9 +52,15 @@ if OUTPUT=$(node apex-router.js cache:warm-all --verbose 2>&1); then
     log "Output: $OUTPUT"
     
     # Extract summary information if available
-    if echo "$OUTPUT" | grep -q "Successfully cached"; then
-        SUMMARY=$(echo "$OUTPUT" | grep "Successfully cached" | tail -1)
+    if echo "$OUTPUT" | grep -q "Cached"; then
+        SUMMARY=$(echo "$OUTPUT" | grep "Cached" | tail -1)
         log_echo "Summary: $SUMMARY"
+    fi
+    
+    # Extract cache statistics
+    if echo "$OUTPUT" | grep -q "totalSize"; then
+        STATS=$(echo "$OUTPUT" | grep -E "cached|totalSize" | tail -2)
+        log "Cache statistics: $STATS"
     fi
     
     exit 0
