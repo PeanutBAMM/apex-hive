@@ -1,6 +1,7 @@
-// cache-warm-all.js - Combined cache warming for READMEs and high-value documentation
+// cache-warm-all.js - Combined cache warming for READMEs, high-value documentation, and conversations
 import { run as warmReadmes } from "./cache-warm-readmes.js";
 import { run as warmDocs } from "./cache-warm-docs.js";
+import { run as warmConversations } from "./cache-warm-conversations.js";
 
 export async function run(args = {}) {
   const {
@@ -16,6 +17,7 @@ export async function run(args = {}) {
     const results = {
       readmes: null,
       docs: null,
+      conversations: null,
       combined: {
         success: true,
         totalCached: 0,
@@ -80,6 +82,31 @@ export async function run(args = {}) {
       results.combined.totalSize += docsSize;
     }
 
+    // Step 3: Warm conversations
+    if (verbose) {
+      console.error("[CACHE-WARM-ALL] Phase 3: Warming conversations...");
+    }
+    
+    results.conversations = await warmConversations({
+      dryRun,
+      verbose,
+      limit: 50  // Warm last 50 conversations
+    });
+
+    if (!results.conversations.success) {
+      console.error("[CACHE-WARM-ALL] Conversation warming failed:", results.conversations.error);
+      results.combined.success = false;
+    } else {
+      // Include both newly warmed AND already cached conversations in total
+      const conversationCount = results.conversations.data.warmed + results.conversations.data.alreadyCached;
+      results.combined.totalCached += conversationCount;
+      results.combined.categories.conversations = conversationCount;
+      
+      // Parse size if it's a string
+      const convoSize = parseSizeString(results.conversations.data.totalSize);
+      results.combined.totalSize += convoSize;
+    }
+
     // Generate summary
     const summary = {
       success: results.combined.success,
@@ -95,6 +122,11 @@ export async function run(args = {}) {
             success: results.docs.success,
             cached: results.docs.data?.cached || 0,
             message: results.docs.message
+          } : null,
+          conversations: results.conversations ? {
+            success: results.conversations.success,
+            cached: (results.conversations.data?.warmed || 0) + (results.conversations.data?.alreadyCached || 0),
+            message: results.conversations.message
           } : null
         },
         totals: {
@@ -106,15 +138,16 @@ export async function run(args = {}) {
         }
       },
       message: dryRun 
-        ? `Would cache ${results.combined.totalCached} files (${formatSize(results.combined.totalSize)}) across READMEs and documentation`
-        : `Successfully cached ${results.combined.totalCached} files (${formatSize(results.combined.totalSize)}) - READMEs and high-value documentation`
+        ? `Would cache ${results.combined.totalCached} items (${formatSize(results.combined.totalSize)}) across READMEs, documentation, and conversations`
+        : `Successfully cached ${results.combined.totalCached} items (${formatSize(results.combined.totalSize)}) - READMEs, high-value documentation, and conversations`
     };
 
     if (verbose) {
       console.error("[CACHE-WARM-ALL] Cache warming summary:");
       console.error(`  READMEs: ${results.readmes?.data?.cached || 0} files`);
       console.error(`  Documentation: ${results.docs?.data?.cached || 0} files`);
-      console.error(`  Total: ${results.combined.totalCached} files (${formatSize(results.combined.totalSize)})`);
+      console.error(`  Conversations: ${results.conversations?.data?.warmed || 0} warmed, ${results.conversations?.data?.alreadyCached || 0} already cached`);
+      console.error(`  Total: ${results.combined.totalCached} items (${formatSize(results.combined.totalSize)})`);
       console.error(`  Categories:`, results.combined.categories);
     }
 

@@ -1,5 +1,5 @@
 // cache-status.js - Display cache statistics and status
-import { commandCache, fileCache, searchCache, formatBytes } from "../modules/unified-cache.js";
+import { commandCache, fileCache, searchCache, conversationCache, formatBytes } from "../modules/unified-cache.js";
 
 export async function run(args = {}) {
   const {
@@ -15,7 +15,8 @@ export async function run(args = {}) {
     const caches = {
       commands: commandCache,
       files: fileCache,
-      search: searchCache
+      search: searchCache,
+      conversations: conversationCache
     };
 
     // If specific namespace requested
@@ -77,13 +78,26 @@ export async function run(args = {}) {
       };
 
       if (detailed) {
-        summary.caches[name].topItems = stats.active.map(item => ({
-          key: item.key.length > 50 ? item.key.substring(0, 47) + "..." : item.key,
-          hits: item.hits,
-          size: formatBytes(item.size),
-          age: formatDuration(item.age),
-          lastAccess: formatDuration(item.lastAccess) + " ago"
-        }));
+        summary.caches[name].topItems = stats.active.map(item => {
+          let displayKey = item.key;
+          
+          // Special formatting for conversation keys
+          if (name === 'conversations' && item.key.startsWith('conversation-')) {
+            // Extract date and ID from key like "conversation-2025-01-01-abc123"
+            const parts = item.key.split('-');
+            if (parts.length >= 4) {
+              displayKey = `${parts[1]}-${parts[2]}-${parts[3]} (${parts.slice(4).join('-')})`;
+            }
+          }
+          
+          return {
+            key: displayKey.length > 50 ? displayKey.substring(0, 47) + "..." : displayKey,
+            hits: item.hits,
+            size: formatBytes(item.size),
+            age: formatDuration(item.age),
+            lastAccess: formatDuration(item.lastAccess) + " ago"
+          };
+        });
       }
     }
 
