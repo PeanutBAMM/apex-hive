@@ -262,6 +262,10 @@ apex save-conversation \
   --title "Implemented cache system" \
   --tags "cache,performance,optimization"
 
+# Via MCP: tags can be string or array
+mcp__apex-hive__apex command="save-conversation" \
+  args={"title": "Title", "tags": ["cache", "fix"]}
+
 # Warm conversation cache
 apex cache:warm-conversations --limit 5
 
