@@ -1,17 +1,17 @@
 # Issues Report
 
-Generated: 2025-07-02T07:41:18.184Z
+Generated: 2025-07-02T14:31:42.231Z
 
 ## Summary
 
-- Total Issues: 167
+- Total Issues: 173
 - Critical: 0
 - High: 0
-- Medium: 46
-- Low: 121
+- Medium: 48
+- Low: 125
 - Info: 0
 
-## 🟡 MEDIUM (46)
+## 🟡 MEDIUM (48)
 
 ### console-log
 - **Category**: code
@@ -129,8 +129,20 @@ Generated: 2025-07-02T07:41:18.184Z
 
 ### console-log
 - **Category**: code
+- **File**: scripts/startup-context.js:340
+- **Message**: 2 console.log statements found (lines: 340, 349)
+- **Fixable**: Yes - Remove console.log statements
+
+### console-log
+- **Category**: code
 - **File**: test/setup.js:39
 - **Message**: 2 console.log statements found (lines: 39, 45)
+- **Fixable**: Yes - Remove console.log statements
+
+### console-log
+- **Category**: code
+- **File**: test-performance-runner.js:9
+- **Message**: 31 console.log statements found (lines: 9, 12, 13, 16, 20, 26, 32, 43, 44, 45, 46, 47, 48, 49, 56, 57, 58, 59, 64, 119, 120, 121, 122, 132, 140, 147, 148, 149, 150, 151, 153)
 - **Fixable**: Yes - Remove console.log statements
 
 ### console-log
@@ -264,7 +276,12 @@ Generated: 2025-07-02T07:41:18.184Z
 - **File**: scripts/detect-issues.js:554
 - **Message**: Synchronous operation 'mkdirSync' found
 
-## 🔵 LOW (121)
+## 🔵 LOW (125)
+
+### todo-comment
+- **Category**: code
+- **File**: modules/unified-cache.js:19
+- **Message**: // TODO: Consider removing _attempts as we rely on persistent meta.hits instead
 
 ### todo-comment
 - **Category**: code
@@ -526,9 +543,14 @@ Generated: 2025-07-02T07:41:18.184Z
 - **File**: scripts/doc-generate.js:274
 - **Message**: Function 'anonymous' is 52 lines long (max: 50)
 
+### long-function
+- **Category**: code
+- **File**: test-performance-runner.js:80
+- **Message**: Function 'main' is 53 lines long (max: 50)
+
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: modules/unified-cache.js:301
+- **File**: modules/unified-cache.js:304
 - **Message**: 1 function missing JSDoc: formatBytes
 
 ### missing-jsdoc
@@ -573,7 +595,7 @@ Generated: 2025-07-02T07:41:18.184Z
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/cache-warm-all.js:6
+- **File**: scripts/cache-warm-all.js:7
 - **Message**: 1 function missing JSDoc: run
 
 ### missing-jsdoc
@@ -589,6 +611,11 @@ Generated: 2025-07-02T07:41:18.184Z
 ### missing-jsdoc
 - **Category**: documentation
 - **File**: scripts/cache-warm-readmes.js:9
+- **Message**: 1 function missing JSDoc: run
+
+### missing-jsdoc
+- **Category**: documentation
+- **File**: scripts/cache-warm-scripts.js:31
 - **Message**: 1 function missing JSDoc: run
 
 ### missing-jsdoc
@@ -833,6 +860,11 @@ Generated: 2025-07-02T07:41:18.184Z
 
 ### missing-jsdoc
 - **Category**: documentation
+- **File**: scripts/startup-context.js:259
+- **Message**: 1 function missing JSDoc: run
+
+### missing-jsdoc
+- **Category**: documentation
 - **File**: scripts/test-runner.js:6
 - **Message**: 1 function missing JSDoc: run
 
@@ -869,5 +901,5 @@ Generated: 2025-07-02T07:41:18.184Z
 ### missing-tests
 - **Category**: testing
 - **File**: multiple
-- **Message**: 88 files missing tests (showing first 10: apex-router.js, config/patterns-nl.js, config/patterns.js, config/registry.js, generate-claude-md.js, index.js, install-mcp.js, jest.config.js, mcp-server-debug.js, mcp-server-fixed.js, and 78 more)
+- **Message**: 91 files missing tests (showing first 10: apex-router.js, config/patterns-nl.js, config/patterns.js, config/registry.js, generate-claude-md.js, index.js, install-mcp.js, jest.config.js, mcp-server-debug.js, mcp-server-fixed.js, and 81 more)
 

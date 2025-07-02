@@ -1,5 +1,29 @@
 [
   {
+    "file": "2025-07-02-14-21-51-rollback-na-mislukte-parallel-file-ops-implementat.md",
+    "title": "Rollback na mislukte parallel file-ops implementatie",
+    "timestamp": "2025-07-02T12:21:43.019Z",
+    "tags": [
+      "rollback",
+      "file-ops",
+      "reality-check",
+      "testing"
+    ],
+    "summary": [
+      "apex",
+      "router",
+      "patterns",
+      "registry",
+      "generate",
+      "claude",
+      "install",
+      "jest.config",
+      "server",
+      "debug"
+    ],
+    "narrativeSummary": "## Conversation Summary\n\nToday's development session focused on the **apex-hive** project on the `feature/cached-file-operations` branch.\n\n### What We Accomplished\n\nThroughout this session, we made si..."
+  },
+  {
     "file": "2025-07-01-23-24-59-batch-4-migration-completed-git-and-backlog-script.md",
     "title": "Batch 4 migration completed - Git and Backlog scripts",
     "timestamp": "2025-07-01T21:24:45.459Z",

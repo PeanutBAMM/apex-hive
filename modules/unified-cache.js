@@ -15,7 +15,8 @@ export class UnifiedCache {
     this.ttl = options.ttl || 15 * 60 * 1000; // 15 minutes default
     this.maxSize = options.maxSize || 100 * 1024 * 1024; // 100MB default
     this.encoding = options.encoding || "utf8";
-    // Track hits and misses for accurate hit rate
+    // Runtime hit tracking - not useful in MCP context where each call creates new process
+    // TODO: Consider removing _attempts as we rely on persistent meta.hits instead
     this._attempts = { hits: 0, misses: 0 };
   }
 
@@ -248,10 +249,12 @@ export class UnifiedCache {
       const sortedByHits = active.sort((a, b) => b.hits - a.hits);
       const sortedByAge = [...active].sort((a, b) => a.created - b.created);
 
-      // Calculate hit rate from tracked attempts
-      const totalAttempts = this._attempts.hits + this._attempts.misses;
-      const hitRate =
-        totalAttempts > 0 ? this._attempts.hits / totalAttempts : 0;
+      // Calculate hit rate from persistent meta hits
+      // Since each entry tracks its own hits, we calculate based on average hits per entry
+      const avgHitsPerEntry = items > 0 ? totalHits / items : 0;
+      // Assume at least one access attempt per cached item (the initial set counts as a miss)
+      const estimatedAttempts = items > 0 ? totalHits + items : 0;
+      const hitRate = estimatedAttempts > 0 ? totalHits / estimatedAttempts : 0;
 
       return {
         namespace: this.namespace,

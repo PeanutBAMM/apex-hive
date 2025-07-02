@@ -1,5 +1,9 @@
 # Conversation Index
 
+## 2025-07-02
+
+- [Rollback na mislukte parallel file-ops implementatie](2025-07-02-14-21-51-rollback-na-mislukte-parallel-file-ops-implementat.md) - `rollback`, `file-ops`, `reality-check`, `testing`
+
 ## 2025-07-01
 
 - [Batch 4 migration completed - Git and Backlog scripts](2025-07-01-23-24-59-batch-4-migration-completed-git-and-backlog-script.md) - `cache`, `migration`, `file-ops`, `batch-4`, `testing`
