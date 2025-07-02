@@ -59,8 +59,11 @@ new UnifiedCache(namespace, options = {})
 #### `async get(key)`
 Retrieves a cached value by key.
 - **Returns**: Cached data or `null` if not found/expired
-- **Side Effects**: Updates hit count and last access time
+- **Side Effects**: 
+  - Updates persistent `meta.hits` counter in metadata file
+  - Updates `meta.lastAccess` timestamp
 - **Automatic Cleanup**: Removes expired entries
+- **Hit Tracking**: Increments the persistent hit counter on successful retrieval
 
 #### `async set(key, value, options = {})`
 Stores a value in the cache.
@@ -97,7 +100,7 @@ Returns the number of cached items.
 - **Note**: Automatically excludes expired entries
 
 #### `async stats()`
-Provides detailed cache statistics.
+Provides detailed cache statistics with persistent hit tracking.
 - **Returns**: Comprehensive statistics object:
   ```javascript
   {
@@ -105,11 +108,20 @@ Provides detailed cache statistics.
     totalSize: 45678,
     entries: [...],        // Top 10 entries by hit count
     count: 23,            // Total active entries
-    hitRate: 0.76,        // Hit rate (0-1)
+    hitRate: 0.76,        // Hit rate calculated from persistent data
     oldestEntry: {...},   // Oldest cached item
     newestEntry: {...},   // Newest cached item
+    // Legacy properties for backward compatibility:
+    items: 23,            // Same as count
+    totalHits: 342,       // Sum of all meta.hits
+    expired: 5,           // Number of expired entries cleaned up
+    active: [...]         // Same as entries
   }
   ```
+- **Hit Rate Calculation**: 
+  - Formula: `totalHits / (totalHits + items + expired)`
+  - Based entirely on persistent metadata, not runtime state
+  - Accurate across MCP server restarts
 
 ### Performance Features
 
@@ -125,10 +137,21 @@ All cache writes use atomic operations to prevent corruption:
 - No background cleanup processes needed
 
 #### Hit Tracking
-Each cache entry tracks:
+
+The cache system uses **persistent hit tracking** that survives across MCP server restarts and Claude sessions:
+
+- **Persistent Storage**: Hit counts are stored in the `.meta` files alongside cache entries
+- **Automatic Updates**: Each successful cache retrieval increments the `meta.hits` counter
+- **No Runtime State**: The deprecated `_attempts` object is no longer used for tracking
+- **Hit Rate Calculation**: Calculated as `totalHits / (totalHits + items + expired)`
+  - `totalHits`: Sum of all `meta.hits` values from active entries
+  - `items`: Number of active cache entries (represents initial misses)
+  - `expired`: Number of expired entries (represents cache misses)
+
+Each cache entry's metadata tracks:
 - **Creation time**: When the entry was first cached
 - **Last access**: When the entry was last retrieved
-- **Hit count**: Number of times the entry was accessed
+- **Hit count**: Number of successful cache retrievals (persistent)
 - **Size**: Storage size in bytes
 
 ## 🎯 Cache Commands
@@ -299,6 +322,7 @@ Typical hit rates in development workflows:
 - **Memory footprint**: Minimal (file-based storage)
 - **Disk usage**: Automatically managed with TTL cleanup
 - **Network impact**: Zero (local file system only)
+- **Metadata overhead**: ~200-300 bytes per cache entry for persistent tracking
 
 ## 🚨 Error Handling
 

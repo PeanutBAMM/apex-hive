@@ -284,6 +284,7 @@ The file-ops module now provides cached file operations with dramatic performanc
 - **Memory Protection**: `batchReadSafe()` chunks large file sets
 - **Persistent Cache**: Survives between MCP calls via unified-cache
 - **82% Faster**: Second read of same file (7.97ms → 1.42ms)
+- **Cache Hit Tracking Fixed**: Cache hits now properly tracked between MCP calls
 
 ### Usage in Scripts:
 ```javascript
@@ -300,13 +301,20 @@ const { results, errors } = await batchRead(['file1.js', 'file2.js']);
 ```
 
 ### Migration Status:
-- **✅ Converted (5/59)**: quality-console-clean, doc-generate-changed, detect-issues, cache-warm-readmes, git-commit
-- **❌ TODO (44/59)**: All other scripts still use direct fs operations
+- **✅ Converted (20/66)**: quality-console-clean, doc-generate-changed, detect-issues, cache-warm-readmes, git-commit, startup-context, and 14 more
+- **❌ TODO (41/66)**: All other scripts still use direct fs operations
 
 ### Performance Impact:
-- **70-80% token reduction** expected when all scripts converted
+- **70-80% token reduction** when all scripts converted
 - **Recipe execution** much faster with shared cache context
+- **Cache hits properly tracked** between MCP server calls
 - **No breaking changes** - fully backwards compatible
+
+### Cache Hit Tracking Fix:
+- Previously, cache stats were reset between MCP calls
+- Now uses persistent unified-cache for hit/miss tracking
+- Proper hit rates shown in `apex cache:status`
+- Cache effectiveness accurately measured across sessions
 
 ## 💭 Conversation Memory System
 

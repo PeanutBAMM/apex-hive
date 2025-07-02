@@ -1,10 +1,11 @@
 # Cached File Operations Migration Status
 
-## ✅ Completed Scripts (19)
+## ✅ Completed Scripts (20)
 Batch 1:
 - cache-warm-readmes.js
 - doc-generate-changed.js
 - quality-console-clean.js
+- detect-issues.js
 
 Batch 2:
 - cache-clear.js
@@ -85,9 +86,15 @@ Found by searching for "promises as fs" imports:
 
 ## 📊 Progress
 - Total Scripts: 66 (including new scripts)
-- Migrated: 19 (28.8%)
+- Migrated: 20 (30.3%)
 - Remaining: 41 (62.1%)
 - New scripts added: 7 (cache-warm-scripts.js, startup-context.js, etc.)
+
+## 🔧 Cache Hit Tracking Fix
+- Fixed issue where cache stats were reset between MCP server calls
+- Now uses persistent unified-cache for accurate hit/miss tracking
+- Cache effectiveness properly measured across sessions
+- Hit rates correctly shown in `apex cache:status` command
 
 ## 🎯 Next Batch (Batch 5)
 Suggested high-impact scripts for next migration:
