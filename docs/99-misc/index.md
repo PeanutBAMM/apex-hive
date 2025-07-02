@@ -1,17 +1,18 @@
 # Documentation Index
 
-Generated on 2025-06-30T21:49:28.111Z
+Generated on 2025-07-01T19:01:51.198Z
 
 ## Contents
 
 ### api
 
-- [cache](./api/cache.md)
+- [backlog-parser](./api/backlog-parser.md)
 - [file-ops](./api/file-ops.md)
 - [git-ops](./api/git-ops.md)
 - [logger](./api/logger.md)
 - [rag-system](./api/rag-system.md)
 - [search](./api/search.md)
+- [unified-cache](./api/unified-cache.md)
 - [utils](./api/utils.md)
 
 ### scripts

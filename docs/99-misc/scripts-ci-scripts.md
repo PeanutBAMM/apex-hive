@@ -20,17 +20,17 @@ This category contains 7 scripts.
 
 ```bash
 apex ci:monitor
-```javascript
+```
 
 ### ci:parse
 
 ```bash
 apex ci:parse
-```javascript
+```
 
 ### ci:fix
 
 ```bash
 apex ci:fix
-```javascript
+```
 

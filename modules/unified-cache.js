@@ -15,7 +15,8 @@ export class UnifiedCache {
     this.ttl = options.ttl || 15 * 60 * 1000; // 15 minutes default
     this.maxSize = options.maxSize || 100 * 1024 * 1024; // 100MB default
     this.encoding = options.encoding || "utf8";
-    // Track hits and misses for accurate hit rate
+    // Runtime hit tracking - not useful in MCP context where each call creates new process
+    // TODO: Consider removing _attempts as we rely on persistent meta.hits instead
     this._attempts = { hits: 0, misses: 0 };
   }
 
@@ -54,10 +55,10 @@ export class UnifiedCache {
       meta.hits = (meta.hits || 0) + 1;
       await fs.writeFile(metaPath, JSON.stringify(meta, null, 2));
 
-      this._attempts.hits++;
+      // this._attempts.hits++; // Deprecated - using meta.hits instead
       return JSON.parse(content);
     } catch (error) {
-      this._attempts.misses++;
+      // this._attempts.misses++; // Deprecated - calculated from total attempts
       if (error.code === "ENOENT") {
         return null; // Not in cache
       }
@@ -248,10 +249,14 @@ export class UnifiedCache {
       const sortedByHits = active.sort((a, b) => b.hits - a.hits);
       const sortedByAge = [...active].sort((a, b) => a.created - b.created);
 
-      // Calculate hit rate from tracked attempts
-      const totalAttempts = this._attempts.hits + this._attempts.misses;
-      const hitRate =
-        totalAttempts > 0 ? this._attempts.hits / totalAttempts : 0;
+      // Calculate hit rate from persistent meta hits
+      // Each cache get attempt either results in a hit (if found and not expired) or miss
+      // The meta.hits tracks successful cache hits per entry
+      // Total attempts = total hits + total misses
+      // We can estimate misses as: initial cache sets (items) + expired items
+      const totalMisses = items + expired.length;
+      const totalAttempts = totalHits + totalMisses;
+      const hitRate = totalAttempts > 0 ? totalHits / totalAttempts : 0;
 
       return {
         namespace: this.namespace,

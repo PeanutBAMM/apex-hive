@@ -16,17 +16,17 @@ This category contains 3 scripts.
 
 ```bash
 apex test
-```javascript
+```
 
 ### test:run
 
 ```bash
 apex test:run
-```javascript
+```
 
 ### test:setup
 
 ```bash
 apex test:setup
-```javascript
+```
 

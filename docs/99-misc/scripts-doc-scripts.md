@@ -28,17 +28,17 @@ This category contains 15 scripts.
 
 ```bash
 apex doc:generate
-```javascript
+```
 
 ### doc:generate-changed
 
 ```bash
 apex doc:generate-changed
-```javascript
+```
 
 ### doc:generate-missing
 
 ```bash
 apex doc:generate-missing
-```javascript
+```
 

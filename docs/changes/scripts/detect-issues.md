@@ -3,7 +3,7 @@
 **File**: `scripts/detect-issues.js`
 **Language**: javascript
 **Lines**: 761
-**Last Modified**: 2025-07-01T19:09:45.707Z
+**Last Modified**: 2025-07-02T14:01:31.638Z
 
 ## Functions
 

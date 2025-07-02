@@ -162,7 +162,14 @@ export default class ApexRouter {
     // Check script registry
     if (this.registry && this.registry[command]) {
       const script = await this.loadScript(command);
-      return await script.run(args);
+      // Pass modules and recipe cache if available
+      const scriptArgs = {
+        ...args,
+        modules: args.modules || this.modules,
+        _recipeCache: args._recipeCache,
+        _recipeName: args._recipeName
+      };
+      return await script.run(scriptArgs);
     }
     
     // Handle help command
@@ -192,11 +199,18 @@ export default class ApexRouter {
     
     const results = [];
     
+    // Create shared context for the recipe to enable cache sharing
+    const sharedContext = {
+      ...context,
+      _recipeCache: new Map(), // Shared cache for this recipe execution
+      _recipeName: name
+    };
+    
     for (const step of steps) {
       // Running step
       
       try {
-        const result = await this.execute(step, context);
+        const result = await this.execute(step, sharedContext);
         results.push({ step, success: true, result });
         
         // Smart stopping on test failures

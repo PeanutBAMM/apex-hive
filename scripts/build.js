@@ -1,6 +1,7 @@
 // build.js - Build orchestration script
 import { execSync } from "child_process";
-import { promises as fs } from "fs";
+import { readFile, writeFile, pathExists, getFileStats } from "../modules/file-ops.js";
+import { promises as fs } from "fs"; // Still need for rm and some operations
 import path from "path";
 
 export async function run(args = {}) {
@@ -201,7 +202,8 @@ async function runPreBuildChecks() {
 
   // Check 1: package.json exists
   try {
-    await fs.access("package.json");
+    const pkgExists = await pathExists("package.json");
+    if (!pkgExists) throw new Error("package.json not found");
   } catch {
     checks.failures.push("No package.json found");
     checks.passed = false;
@@ -210,14 +212,15 @@ async function runPreBuildChecks() {
 
   // Check 2: node_modules exists
   try {
-    await fs.access("node_modules");
+    const modulesExist = await pathExists("node_modules");
+    if (!modulesExist) throw new Error("node_modules not found");
   } catch {
     checks.needsInstall = true;
   }
 
   // Check 3: Check for build script
   try {
-    const pkg = JSON.parse(await fs.readFile("package.json", "utf8"));
+    const pkg = JSON.parse(await readFile("package.json"));
     if (!pkg.scripts?.build && !pkg.scripts?.["build:production"]) {
       checks.failures.push("No build script defined in package.json");
       checks.passed = false;
@@ -229,10 +232,11 @@ async function runPreBuildChecks() {
 
   // Check 4: TypeScript config if using TypeScript
   try {
-    await fs.access("tsconfig.json");
+    const tsconfigExists = await pathExists("tsconfig.json");
+    if (!tsconfigExists) throw new Error("tsconfig.json not found");
     // Validate tsconfig
     try {
-      const tsconfig = JSON.parse(await fs.readFile("tsconfig.json", "utf8"));
+      const tsconfig = JSON.parse(await readFile("tsconfig.json"));
       if (!tsconfig.compilerOptions) {
         checks.warnings.push("tsconfig.json missing compilerOptions");
       }
@@ -286,7 +290,7 @@ async function executeBuild(options) {
 
   try {
     // Determine build command
-    const pkg = JSON.parse(await fs.readFile("package.json", "utf8"));
+    const pkg = JSON.parse(await readFile("package.json"));
     let buildCommand = "npm run build";
 
     // Check for target-specific scripts
@@ -362,7 +366,7 @@ async function detectBuildOutput() {
 
   for (const dir of possibleOutputs) {
     try {
-      const stats = await fs.stat(dir);
+      const stats = await getFileStats(dir);
       if (stats.isDirectory()) {
         // Check if it was recently modified (within last minute)
         const modified = Date.now() - stats.mtimeMs;
@@ -383,7 +387,8 @@ async function runPostBuild(options) {
 
   // Copy static assets
   try {
-    await fs.access("public");
+    const publicExists = await pathExists("public");
+    if (!publicExists) throw new Error("public directory not found");
     if (options.buildResult.output && options.buildResult.output !== "public") {
       execSync(`cp -r public/* ${options.buildResult.output}/`, {
         stdio: "ignore",
@@ -403,7 +408,7 @@ async function runPostBuild(options) {
   };
 
   if (options.buildResult.output) {
-    await fs.writeFile(
+    await writeFile(
       path.join(options.buildResult.output, "build-info.json"),
       JSON.stringify(buildInfo, null, 2),
     );
@@ -447,7 +452,7 @@ async function validateBuildOutput(outputDir) {
   };
 
   try {
-    const stats = await fs.stat(outputDir);
+    const stats = await getFileStats(outputDir);
     if (!stats.isDirectory()) {
       validation.valid = false;
       validation.issues.push("Output is not a directory");
@@ -460,7 +465,8 @@ async function validateBuildOutput(outputDir) {
 
     for (const entry of entries) {
       try {
-        await fs.access(path.join(outputDir, entry));
+        const entryExists = await pathExists(path.join(outputDir, entry));
+        if (!entryExists) throw new Error(`Entry ${entry} not found`);
         hasEntry = true;
         break;
       } catch {
@@ -500,7 +506,8 @@ async function getBuildOutput() {
 
   for (const dir of outputDirs) {
     try {
-      await fs.access(dir);
+      const dirExists = await pathExists(dir);
+      if (!dirExists) throw new Error(`Directory ${dir} not found`);
       return dir;
     } catch {
       // Not this one

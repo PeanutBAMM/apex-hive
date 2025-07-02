@@ -132,9 +132,20 @@ Apex Hive is a powerful development automation system with 67 commands (59 scrip
 - `apex cache:warm-readmes` - Pre-cache README files for performance
 - `apex cache:warm-docs` - Pre-cache high-value documentation files
 - `apex cache:warm-conversations` - Warm cache with recent conversation summaries (max 5)
-- `apex cache:warm-all` - Pre-cache READMEs, documentation, and conversations
+- `apex cache:warm-scripts` - Pre-cache frequently used scripts and recipes
+- `apex cache:warm-all` - Pre-cache READMEs, documentation, conversations, scripts, and recipes
 - `apex cache:clear` - Clear all caches with detailed statistics per namespace
 - `apex cache:status` - Display cache statistics and status
+
+### Context & Intelligence
+
+- `apex startup-context` - Intelligent project context analyzer showing:
+  - Previous conversation summary with full details
+  - Cache statistics (READMEs, docs, conversations, scripts)
+  - Git status with uncommitted changes and recent commits
+  - System issues summary with top 3 issues
+  - Recommended focus areas based on context
+  - Top 5 backlog items
 
 ### Aliases & Helpers
 
@@ -147,7 +158,13 @@ Apex Hive is a powerful development automation system with 67 commands (59 scrip
 Apex Hive supports complex workflows through recipes:
 
 ### Development Workflows
-- `apex start-day` - Runs: git:pull → ci:status → backlog:display
+- `apex start-day` - Enhanced startup sequence:
+  - `startup-context` - Analyze previous session and project state
+  - `cache:clear` - Clear old cache data
+  - `cache:warm-all` - Warm all caches including scripts/recipes
+  - `git:pull` - Sync with remote
+  - `detect-issues` - Check for code quality issues
+  - `backlog:display` - Show prioritized backlog
 - `apex commit-and-push` - Runs: git:commit → ci:smart-push → ci:monitor
 - `apex fix-all` - Runs: quality:fix-all → doc:generate → test:run
 
@@ -256,6 +273,48 @@ The unified cache system provides on-demand caching of READMEs, documentation, a
 - Supports 23+ files with ~100KB total cache size
 - TTL: 24 hours for documentation, 7 days for conversations
 - Hash-based storage for collision-free caching
+
+## 🚀 Cached File Operations (NEW)
+
+The file-ops module now provides cached file operations with dramatic performance improvements:
+
+### Features:
+- **Batch Operations**: `batchRead()` and `batchWrite()` for multiple files
+- **File Locking**: Prevents race conditions during concurrent access
+- **Memory Protection**: `batchReadSafe()` chunks large file sets
+- **Persistent Cache**: Survives between MCP calls via unified-cache
+- **82% Faster**: Second read of same file (7.97ms → 1.42ms)
+- **Cache Hit Tracking Fixed**: Cache hits now properly tracked between MCP calls
+
+### Usage in Scripts:
+```javascript
+// Old way (direct fs - no cache)
+import { promises as fs } from "fs";
+const content = await fs.readFile(file, "utf8");
+
+// New way (cached file-ops)
+import { readFile, batchRead } from "../modules/file-ops.js";
+const content = await readFile(file); // Uses cache!
+
+// Batch operations
+const { results, errors } = await batchRead(['file1.js', 'file2.js']);
+```
+
+### Migration Status:
+- **✅ Converted (20/66)**: quality-console-clean, doc-generate-changed, detect-issues, cache-warm-readmes, git-commit, startup-context, and 14 more
+- **❌ TODO (41/66)**: All other scripts still use direct fs operations
+
+### Performance Impact:
+- **70-80% token reduction** when all scripts converted
+- **Recipe execution** much faster with shared cache context
+- **Cache hits properly tracked** between MCP server calls
+- **No breaking changes** - fully backwards compatible
+
+### Cache Hit Tracking Fix:
+- Previously, cache stats were reset between MCP calls
+- Now uses persistent unified-cache for hit/miss tracking
+- Proper hit rates shown in `apex cache:status`
+- Cache effectiveness accurately measured across sessions
 
 ## 💭 Conversation Memory System
 

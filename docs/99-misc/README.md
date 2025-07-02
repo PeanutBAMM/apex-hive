@@ -4,15 +4,40 @@ Other documentation
 
 ## Documents
 
-- [backlog-system](./backlog-system.md)
-- [cache-system-verification-results](./cache-system-verification-results.md)
-- [conversation-memory](./conversation-memory.md)
+- [backlog-parser Module](./backlog-parser.md)
+- [backlog-parser.js](./backlog-parser.md)
+- [Backlog Scripts](./backlog-scripts.md)
+- [Backlog System](./backlog-system.md)
+- [Cache Scripts](./cache-scripts.md)
+- [Changelog Scripts](./changelog-scripts.md)
+- [Ci Scripts](./ci-scripts.md)
+- [ci-status.js](./ci-status.md)
+- [Code Scripts](./code-scripts.md)
+- [code-stub.js](./code-stub.md)
+- [Commit Scripts](./commit-scripts.md)
+- [Conversation Memory System](./conversation-memory.md)
+- [Doc Scripts](./doc-scripts.md)
+- [file-ops Module](./file-ops.md)
+- [Fix-detected Scripts](./fix-detected-scripts.md)
 - [Getting Started with Apex Hive](./getting-started.md)
+- [git-ops Module](./git-ops.md)
+- [Git Scripts](./git-scripts.md)
 - [Documentation Index](./index.md)
+- [Changed Files Documentation](./index.md)
+- [Documentation Index](./index.md)
+- [Init Scripts](./init-scripts.md)
+- [logger Module](./logger.md)
+- [Push Scripts](./push-scripts.md)
+- [quality-console-clean.js](./quality-console-clean.md)
+- [Quality Scripts](./quality-scripts.md)
+- [rag-system Module](./rag-system.md)
+- [Report Scripts](./report-scripts.md)
+- [report-status.js](./report-status.md)
 - [Recipes and Workflows](./restructuring-07-recipes-workflows.md)
 - [Token Optimization - Apex Hive](./restructuring-09-token-optimization.md)
 - [Implementation Plan - Apex Hive](./restructuring-10-implementation-plan.md)
 - [Apex Hive Implementation Progress](./restructuring-17-apex-hive-implementation-progress.md)
+- [Save-conversation Scripts](./save-conversation-scripts.md)
 - [Backlog Scripts](./scripts-backlog-scripts.md)
 - [Changelog Scripts](./scripts-changelog-scripts.md)
 - [Ci Scripts](./scripts-ci-scripts.md)
@@ -29,10 +54,16 @@ Other documentation
 - [Search Scripts](./scripts-search-scripts.md)
 - [Version Scripts](./scripts-version-scripts.md)
 - [Xml Scripts](./scripts-xml-scripts.md)
+- [Search Scripts](./search-scripts.md)
+- [search Module](./search.md)
+- [unified-cache Module](./unified-cache.md)
+- [utils Module](./utils.md)
+- [Version Scripts](./version-scripts.md)
+- [Xml Scripts](./xml-scripts.md)
 
 ## Overview
 
-This category contains 25 documents.
+This category contains 56 documents.
 
 ## Navigation
 

@@ -18,17 +18,17 @@ This category contains 5 scripts.
 
 ```bash
 apex backlog:analyze
-```javascript
+```
 
 ### backlog:score
 
 ```bash
 apex backlog:score
-```javascript
+```
 
 ### backlog:sync
 
 ```bash
 apex backlog:sync
-```javascript
+```
 

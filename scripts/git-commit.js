@@ -1,6 +1,5 @@
 // git-commit.js - Create a git commit with smart message generation
 import { execSync } from "child_process";
-import { promises as fs } from "fs";
 
 export async function run(args = {}) {
   const {

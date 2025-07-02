@@ -21,17 +21,17 @@ This category contains 8 scripts.
 
 ```bash
 apex quality:lint
-```javascript
+```
 
 ### quality:fix-versions
 
 ```bash
 apex quality:fix-versions
-```javascript
+```
 
 ### quality:console-clean
 
 ```bash
 apex quality:console-clean
-```javascript
+```
 

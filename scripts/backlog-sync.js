@@ -1,4 +1,5 @@
 // backlog-sync.js - Sync backlog between different sources
+import { readFile, writeFile } from "../modules/file-ops.js";
 import { promises as fs } from "fs";
 import { execSync } from "child_process";
 
@@ -174,7 +175,7 @@ async function loadItems(source, modules) {
     case "json":
       // Load from local JSON file
       try {
-        const data = JSON.parse(await fs.readFile("backlog.json", "utf8"));
+        const data = JSON.parse(await readFile("backlog.json"));
         items.push(...(Array.isArray(data) ? data : data.items || []));
       } catch {
         // No local file, return empty
@@ -216,7 +217,7 @@ async function loadItems(source, modules) {
       const mdFiles = ["TODO.md", "BACKLOG.md", "ROADMAP.md"];
       for (const file of mdFiles) {
         try {
-          const content = await fs.readFile(file, "utf8");
+          const content = await readFile(file);
           const parsed = parseMarkdown(content);
           items.push(...parsed);
         } catch {
@@ -327,7 +328,7 @@ async function executeSyncAction(action) {
       // Update local JSON file
       let data = { items: [] };
       try {
-        data = JSON.parse(await fs.readFile("backlog.json", "utf8"));
+        data = JSON.parse(await readFile("backlog.json"));
       } catch {
         // File doesn't exist yet
       }
@@ -349,7 +350,7 @@ async function executeSyncAction(action) {
         }
       }
 
-      await fs.writeFile("backlog.json", JSON.stringify(data, null, 2));
+      await writeFile("backlog.json", JSON.stringify(data, null, 2));
       break;
 
     case "github":

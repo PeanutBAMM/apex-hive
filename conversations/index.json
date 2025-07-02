@@ -1,5 +1,103 @@
 [
   {
+    "file": "2025-07-02-14-21-51-rollback-na-mislukte-parallel-file-ops-implementat.md",
+    "title": "Rollback na mislukte parallel file-ops implementatie",
+    "timestamp": "2025-07-02T12:21:43.019Z",
+    "tags": [
+      "rollback",
+      "file-ops",
+      "reality-check",
+      "testing"
+    ],
+    "summary": [
+      "apex",
+      "router",
+      "patterns",
+      "registry",
+      "generate",
+      "claude",
+      "install",
+      "jest.config",
+      "server",
+      "debug"
+    ],
+    "narrativeSummary": "## Conversation Summary\n\nToday's development session focused on the **apex-hive** project on the `feature/cached-file-operations` branch.\n\n### What We Accomplished\n\nThroughout this session, we made si..."
+  },
+  {
+    "file": "2025-07-01-23-24-59-batch-4-migration-completed-git-and-backlog-script.md",
+    "title": "Batch 4 migration completed - Git and Backlog scripts",
+    "timestamp": "2025-07-01T21:24:45.459Z",
+    "tags": [
+      "cache",
+      "migration",
+      "file-ops",
+      "batch-4",
+      "testing"
+    ],
+    "summary": [
+      "apex",
+      "router",
+      "patterns",
+      "registry",
+      "generate",
+      "claude",
+      "install",
+      "jest.config",
+      "server",
+      "debug"
+    ],
+    "narrativeSummary": "## Conversation Summary\n\nToday's development session focused on the **apex-hive** project on the `feature/cached-file-operations` branch.\n\n### What We Accomplished\n\nThroughout this session, we made si..."
+  },
+  {
+    "file": "2025-07-01-23-09-29-cached-file-operations-migration-phase-4-5-complet.md",
+    "title": "Cached file operations migration - Phase 4-5 completed, batch migration ongoing",
+    "timestamp": "2025-07-01T21:09:22.794Z",
+    "tags": [
+      "cache",
+      "file-ops",
+      "migration",
+      "mcp-fix",
+      "performance"
+    ],
+    "summary": [
+      "apex",
+      "router",
+      "patterns",
+      "registry",
+      "generate",
+      "claude",
+      "install",
+      "jest.config",
+      "server",
+      "debug"
+    ],
+    "narrativeSummary": "## Conversation Summary\n\nToday's development session focused on the **apex-hive** project on the `feature/cached-file-operations` branch.\n\n### What We Accomplished\n\nThroughout this session, we made si..."
+  },
+  {
+    "file": "2025-07-01-21-59-13-implemented-cached-file-operations-for-70-80-token.md",
+    "title": "Implemented cached file operations for 70-80% token reduction",
+    "timestamp": "2025-07-01T19:59:02.847Z",
+    "tags": [
+      "performance",
+      "cache",
+      "file-ops",
+      "optimization"
+    ],
+    "summary": [
+      "apex",
+      "router",
+      "patterns",
+      "registry",
+      "generate",
+      "claude",
+      "install",
+      "jest.config",
+      "server",
+      "debug"
+    ],
+    "narrativeSummary": "## Conversation Summary\n\nToday's development session focused on the **apex-hive** project on the `master` branch.\n\n### What We Accomplished\n\nThroughout this session, we made significant progress on se..."
+  },
+  {
     "file": "2025-07-01-21-07-08-improved-detect-issues-with-intelligent-grouping.md",
     "title": "Improved detect-issues with intelligent grouping",
     "timestamp": "2025-07-01T19:06:57.685Z",

@@ -1,5 +1,6 @@
 // doc-sync.js - Sync documentation across repositories
-import { promises as fs } from "fs";
+import { readFile, writeFile, pathExists, listFiles, getFileStats } from "../modules/file-ops.js";
+import { promises as fs } from "fs"; // Still need for mkdir
 import path from "path";
 import { execSync } from "child_process";
 
@@ -85,7 +86,7 @@ export async function run(args) {
 async function getSyncTargets() {
   try {
     const configPath = ".apex-hive/config.json";
-    const config = JSON.parse(await fs.readFile(configPath, "utf8"));
+    const config = JSON.parse(await readFile(configPath));
     return config.docSync?.targets || [];
   } catch {
     return [];
@@ -137,7 +138,8 @@ async function syncToTarget(docs, source, target, dryRun, modules) {
     // Check if target exists and is accessible
     const targetPath = path.resolve(target);
     try {
-      await fs.access(targetPath);
+      const exists = await pathExists(targetPath);
+      if (!exists) throw new Error("File not found");
     } catch {
       return {
         target,
@@ -171,7 +173,7 @@ async function syncToTarget(docs, source, target, dryRun, modules) {
           await fs.copyFile(sourcePath, targetPath);
 
           // Update relative links
-          const content = await fs.readFile(targetPath, "utf8");
+          const content = await readFile(targetPath);
           const updated = await updateRelativeLinks(
             content,
             doc,
@@ -180,7 +182,7 @@ async function syncToTarget(docs, source, target, dryRun, modules) {
           );
 
           if (content !== updated) {
-            await fs.writeFile(targetPath, updated);
+            await writeFile(targetPath, updated);
           }
         }
 
@@ -327,14 +329,15 @@ async function findMarkdownFiles(dir) {
   const files = [];
 
   async function scan(directory, base = "") {
-    const entries = await fs.readdir(directory, { withFileTypes: true });
+    const fileList = await listFiles(directory, { includeDirectories: true });
+    const entries = fileList;
 
     for (const entry of entries) {
       const relativePath = path.join(base, entry.name);
       const fullPath = path.join(directory, entry.name);
 
       if (
-        entry.isDirectory() &&
+        (typeof entry.isDirectory === "function" ? entry.isDirectory() : entry._isDirectory) &&
         !entry.name.startsWith(".") &&
         entry.name !== "node_modules"
       ) {

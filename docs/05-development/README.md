@@ -4,11 +4,11 @@ Development and contribution guides
 
 ## Documents
 
-- [cache-test-plan-complete](./cache-test-plan-complete.md)
-- [cache-test-results](./cache-test-results.md)
+- [Build Scripts](./build-scripts.md)
 - [Development](./README.md)
 - [Build Scripts](./scripts-build-scripts.md)
 - [Test Scripts](./scripts-test-scripts.md)
+- [Test Scripts](./test-scripts.md)
 
 ## Overview
 

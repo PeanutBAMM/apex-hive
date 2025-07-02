@@ -16,17 +16,17 @@ This category contains 3 scripts.
 
 ```bash
 apex xml:validate
-```javascript
+```
 
 ### xml:add
 
 ```bash
 apex xml:add
-```javascript
+```
 
 ### xml:clean
 
 ```bash
 apex xml:clean
-```javascript
+```
 

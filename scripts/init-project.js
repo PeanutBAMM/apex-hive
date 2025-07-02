@@ -237,17 +237,17 @@ async function createSampleRecipes(recipesDir) {
     ],
   };
 
-  await fs.writeFile(
+  await writeFile(
     path.join(recipesDir, "quick-fix.json"),
     JSON.stringify(quickFix, null, 2),
   );
 
-  await fs.writeFile(
+  await writeFile(
     path.join(recipesDir, "daily.json"),
     JSON.stringify(dailyWorkflow, null, 2),
   );
 
-  await fs.writeFile(
+  await writeFile(
     path.join(recipesDir, "release.json"),
     JSON.stringify(release, null, 2),
   );

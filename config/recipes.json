@@ -20,12 +20,12 @@
     "quality:format"
   ],
   "start-day": [
+    "startup-context",
     "cache:clear",
     "cache:warm-all",
     "git:pull",
-    "test",
-    "backlog:display",
-    "ci:status"
+    "detect-issues",
+    "backlog:display"
   ],
   "end-day": [
     "doc:organize",

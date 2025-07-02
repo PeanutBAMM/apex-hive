@@ -14,5 +14,5 @@ This category contains 1 scripts.
 
 ```bash
 apex save-conversation
-```javascript
+```
 

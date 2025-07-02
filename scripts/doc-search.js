@@ -204,13 +204,13 @@ async function findMarkdownFiles(dir) {
 
   async function scan(directory) {
     try {
-      const entries = await fs.readdir(directory, { withFileTypes: true });
+      const entries = await listFiles(directory, { withFileTypes: true, includeDirectories: true });
 
       for (const entry of entries) {
         const fullPath = path.join(directory, entry.name);
 
         if (
-          entry.isDirectory() &&
+          (typeof entry.isDirectory === "function" ? entry.isDirectory() : entry._isDirectory) &&
           !entry.name.startsWith(".") &&
           entry.name !== "node_modules"
         ) {

@@ -1,5 +1,6 @@
 // doc-generate-changed.js - Generate documentation for changed files
 import { execSync } from "child_process";
+import { readFile, writeFile, batchRead, batchWrite, pathExists } from "../modules/file-ops.js";
 import { promises as fs } from "fs";
 import path from "path";
 
@@ -57,6 +58,7 @@ export async function run(args = {}) {
 
     const generated = [];
     const failed = [];
+    const docsToWrite = {};
 
     // Generate documentation for each file
     for (const file of filesToDocument) {
@@ -69,9 +71,9 @@ export async function run(args = {}) {
           if (!dryRun) {
             // Create directory
             await fs.mkdir(path.dirname(docPath), { recursive: true });
-
-            // Write documentation
-            await fs.writeFile(docPath, docResult.content);
+            
+            // Queue for batch write
+            docsToWrite[docPath] = docResult.content;
           }
 
           generated.push({
@@ -97,7 +99,18 @@ export async function run(args = {}) {
     if (generated.length > 1 && !dryRun) {
       const indexPath = path.join(output, "index.md");
       const indexContent = generateIndex(generated, { since, branch });
-      await fs.writeFile(indexPath, indexContent);
+      docsToWrite[indexPath] = indexContent;
+    }
+    
+    // Batch write all documentation files
+    if (!dryRun && Object.keys(docsToWrite).length > 0) {
+      const { errors: writeErrors } = await batchWrite(docsToWrite);
+      
+      // Report write errors
+      for (const [file, error] of Object.entries(writeErrors)) {
+        console.error(`[DOC-GENERATE-CHANGED] Error writing ${file}:`, error);
+        failed.push({ file, error });
+      }
     }
 
     return {
@@ -144,15 +157,15 @@ async function getChangedFiles(options) {
       .split("\n")
       .filter((f) => f);
 
-    // Check if files still exist
-    for (const file of changedFiles) {
-      try {
-        await fs.access(file);
-        files.push(file);
-      } catch {
-        // File was deleted
-      }
-    }
+    // Check if files still exist in parallel
+    const existChecks = await Promise.all(
+      changedFiles.map(async (file) => ({
+        file,
+        exists: await pathExists(file)
+      }))
+    );
+    
+    files.push(...existChecks.filter(check => check.exists).map(check => check.file));
   } catch (error) {
     console.error(
       "[DOC-GENERATE-CHANGED] Error getting changed files:",
@@ -165,7 +178,7 @@ async function getChangedFiles(options) {
 
 async function generateFileDoc(filepath, options) {
   try {
-    const content = await fs.readFile(filepath, "utf8");
+    const content = await readFile(filepath);
     const ext = path.extname(filepath);
     const basename = path.basename(filepath);
     const language = getLanguage(ext);

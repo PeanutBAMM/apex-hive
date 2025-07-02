@@ -1,4 +1,4 @@
-// registry.js - Script registry (64 scripts total)
+// registry.js - Script registry (66 scripts total)
 
 export default {
   // CI Scripts (6)
@@ -80,13 +80,17 @@ export default {
   "fix-detected": "./scripts/fix-detected.js",
   report: "./scripts/report-status.js",
 
-  // Cache Scripts (7)
+  // Cache Scripts (8)
   "cache:warm-readmes": "./scripts/cache-warm-readmes.js",
   "cache:warm-docs": "./scripts/cache-warm-docs.js",
   "cache:warm-conversations": "./scripts/cache-warm-conversations.js",
+  "cache:warm-scripts": "./scripts/cache-warm-scripts.js",
   "cache:warm-all": "./scripts/cache-warm-all.js",
   "cache:clear": "./scripts/cache-clear.js",
   "cache:status": "./scripts/cache-status.js",
+  
+  // Context Scripts (1)
+  "startup-context": "./scripts/startup-context.js",
 
   // Workflow Helpers (2)
   commit: "./scripts/git-commit.js", // Alias

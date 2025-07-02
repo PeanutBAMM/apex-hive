@@ -1,17 +1,17 @@
 # Issues Report
 
-Generated: 2025-07-01T19:08:39.717Z
+Generated: 2025-07-02T14:31:42.231Z
 
 ## Summary
 
-- Total Issues: 171
+- Total Issues: 173
 - Critical: 0
 - High: 0
-- Medium: 50
-- Low: 121
+- Medium: 48
+- Low: 125
 - Info: 0
 
-## 🟡 MEDIUM (50)
+## 🟡 MEDIUM (48)
 
 ### console-log
 - **Category**: code
@@ -51,8 +51,8 @@ Generated: 2025-07-01T19:08:39.717Z
 
 ### console-log
 - **Category**: code
-- **File**: scripts/ci-status.js:76
-- **Message**: 1 console.log statement found (lines: 76)
+- **File**: scripts/ci-status.js:77
+- **Message**: 1 console.log statement found (lines: 77)
 - **Fixable**: Yes - Remove console.log statements
 
 ### console-log
@@ -70,13 +70,13 @@ Generated: 2025-07-01T19:08:39.717Z
 ### console-log
 - **Category**: code
 - **File**: scripts/detect-issues.js:167
-- **Message**: 6 console.log statements found (lines: 167, 196, 198, 646, 648, 662)
+- **Message**: 6 console.log statements found (lines: 167, 196, 198, 648, 650, 664)
 - **Fixable**: Yes - Remove console.log statements
 
 ### console-log
 - **Category**: code
-- **File**: scripts/doc-validate.js:362
-- **Message**: 3 console.log statements found (lines: 362, 363, 367)
+- **File**: scripts/doc-validate.js:363
+- **Message**: 3 console.log statements found (lines: 363, 364, 368)
 - **Fixable**: Yes - Remove console.log statements
 
 ### console-log
@@ -100,7 +100,7 @@ Generated: 2025-07-01T19:08:39.717Z
 ### console-log
 - **Category**: code
 - **File**: scripts/quality-console-clean.js:1
-- **Message**: 8 console.log statements found (lines: 1, 14, 51, 56, 57, 106, 107, 114)
+- **Message**: 8 console.log statements found (lines: 1, 14, 63, 68, 69, 128, 129, 136)
 - **Fixable**: Yes - Remove console.log statements
 
 ### console-log
@@ -129,32 +129,20 @@ Generated: 2025-07-01T19:08:39.717Z
 
 ### console-log
 - **Category**: code
+- **File**: scripts/startup-context.js:340
+- **Message**: 2 console.log statements found (lines: 340, 349)
+- **Fixable**: Yes - Remove console.log statements
+
+### console-log
+- **Category**: code
 - **File**: test/setup.js:39
 - **Message**: 2 console.log statements found (lines: 39, 45)
 - **Fixable**: Yes - Remove console.log statements
 
 ### console-log
 - **Category**: code
-- **File**: test-integration.js:165
-- **Message**: 9 console.log statements found (lines: 165, 176, 179, 183, 188, 189, 190, 191, 192)
-- **Fixable**: Yes - Remove console.log statements
-
-### console-log
-- **Category**: code
-- **File**: test-mcp-minimal.js:4
-- **Message**: 2 console.log statements found (lines: 4, 5)
-- **Fixable**: Yes - Remove console.log statements
-
-### console-log
-- **Category**: code
-- **File**: test-mcp-protocol.js:44
-- **Message**: 8 console.log statements found (lines: 44, 57, 71, 74, 81, 84, 96, 100)
-- **Fixable**: Yes - Remove console.log statements
-
-### console-log
-- **Category**: code
-- **File**: test-scripts.js:23
-- **Message**: 17 console.log statements found (lines: 23, 48, 51, 55, 70, 129, 173, 264, 271, 277, 281, 282, 283, 284, 285, 286, 306)
+- **File**: test-performance-runner.js:9
+- **Message**: 31 console.log statements found (lines: 9, 12, 13, 16, 20, 26, 32, 43, 44, 45, 46, 47, 48, 49, 56, 57, 58, 59, 64, 119, 120, 121, 122, 132, 140, 147, 148, 149, 150, 151, 153)
 - **Fixable**: Yes - Remove console.log statements
 
 ### console-log
@@ -165,12 +153,12 @@ Generated: 2025-07-01T19:08:39.717Z
 
 ### unsafe-regex
 - **Category**: security
-- **File**: modules/file-ops.js:82
+- **File**: modules/file-ops.js:179
 - **Message**: Dynamic RegExp construction (potential ReDoS)
 
 ### unsafe-regex
 - **Category**: security
-- **File**: scripts/detect-issues.js:370
+- **File**: scripts/detect-issues.js:371
 - **Message**: Dynamic RegExp construction (potential ReDoS)
 
 ### unsafe-regex
@@ -195,37 +183,37 @@ Generated: 2025-07-01T19:08:39.717Z
 
 ### unsafe-regex
 - **Category**: security
-- **File**: scripts/doc-validate-links.js:497
-- **Message**: Dynamic RegExp construction (potential ReDoS)
-
-### unsafe-regex
-- **Category**: security
-- **File**: scripts/doc-validate-links.js:498
-- **Message**: Dynamic RegExp construction (potential ReDoS)
-
-### unsafe-regex
-- **Category**: security
-- **File**: scripts/doc-validate-links.js:499
-- **Message**: Dynamic RegExp construction (potential ReDoS)
-
-### unsafe-regex
-- **Category**: security
 - **File**: scripts/doc-validate-links.js:500
 - **Message**: Dynamic RegExp construction (potential ReDoS)
 
 ### unsafe-regex
 - **Category**: security
-- **File**: scripts/doc-validate-links.js:511
+- **File**: scripts/doc-validate-links.js:501
 - **Message**: Dynamic RegExp construction (potential ReDoS)
 
 ### unsafe-regex
 - **Category**: security
-- **File**: scripts/doc-validate-links.js:512
+- **File**: scripts/doc-validate-links.js:502
 - **Message**: Dynamic RegExp construction (potential ReDoS)
 
 ### unsafe-regex
 - **Category**: security
-- **File**: scripts/doc-validate-links.js:677
+- **File**: scripts/doc-validate-links.js:503
+- **Message**: Dynamic RegExp construction (potential ReDoS)
+
+### unsafe-regex
+- **Category**: security
+- **File**: scripts/doc-validate-links.js:514
+- **Message**: Dynamic RegExp construction (potential ReDoS)
+
+### unsafe-regex
+- **Category**: security
+- **File**: scripts/doc-validate-links.js:515
+- **Message**: Dynamic RegExp construction (potential ReDoS)
+
+### unsafe-regex
+- **Category**: security
+- **File**: scripts/doc-validate-links.js:680
 - **Message**: Dynamic RegExp construction (potential ReDoS)
 
 ### unsafe-regex
@@ -255,12 +243,12 @@ Generated: 2025-07-01T19:08:39.717Z
 
 ### outdated-dependency
 - **Category**: dependencies
-- **Message**: eslint: 8.57.1 → 9.30.0
+- **Message**: eslint: 8.57.1 → 9.30.1
 - **Fixable**: Yes
 
 ### sync-operation
 - **Category**: performance
-- **File**: scripts/detect-issues.js:547
+- **File**: scripts/detect-issues.js:551
 - **Message**: Synchronous operation 'readFileSync' found
 
 ### sync-operation
@@ -270,7 +258,7 @@ Generated: 2025-07-01T19:08:39.717Z
 
 ### sync-operation
 - **Category**: performance
-- **File**: scripts/detect-issues.js:548
+- **File**: scripts/detect-issues.js:552
 - **Message**: Synchronous operation 'writeFileSync' found
 
 ### sync-operation
@@ -280,15 +268,20 @@ Generated: 2025-07-01T19:08:39.717Z
 
 ### sync-operation
 - **Category**: performance
-- **File**: scripts/detect-issues.js:549
+- **File**: scripts/detect-issues.js:553
 - **Message**: Synchronous operation 'appendFileSync' found
 
 ### sync-operation
 - **Category**: performance
-- **File**: scripts/detect-issues.js:550
+- **File**: scripts/detect-issues.js:554
 - **Message**: Synchronous operation 'mkdirSync' found
 
-## 🔵 LOW (121)
+## 🔵 LOW (125)
+
+### todo-comment
+- **Category**: code
+- **File**: modules/unified-cache.js:19
+- **Message**: // TODO: Consider removing _attempts as we rely on persistent meta.hits instead
 
 ### todo-comment
 - **Category**: code
@@ -502,7 +495,7 @@ Generated: 2025-07-01T19:08:39.717Z
 
 ### todo-comment
 - **Category**: code
-- **File**: scripts/detect-issues.js:234
+- **File**: scripts/detect-issues.js:235
 - **Message**: // Skip code that's checking/counting/reporting TODOs
 
 ### todo-comment
@@ -547,12 +540,17 @@ Generated: 2025-07-01T19:08:39.717Z
 
 ### long-function
 - **Category**: code
-- **File**: scripts/doc-generate.js:272
+- **File**: scripts/doc-generate.js:274
 - **Message**: Function 'anonymous' is 52 lines long (max: 50)
+
+### long-function
+- **Category**: code
+- **File**: test-performance-runner.js:80
+- **Message**: Function 'main' is 53 lines long (max: 50)
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: modules/unified-cache.js:301
+- **File**: modules/unified-cache.js:304
 - **Message**: 1 function missing JSDoc: formatBytes
 
 ### missing-jsdoc
@@ -572,7 +570,7 @@ Generated: 2025-07-01T19:08:39.717Z
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/backlog-sync.js:5
+- **File**: scripts/backlog-sync.js:6
 - **Message**: 1 function missing JSDoc: run
 
 ### missing-jsdoc
@@ -582,7 +580,7 @@ Generated: 2025-07-01T19:08:39.717Z
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/build.js:6
+- **File**: scripts/build.js:7
 - **Message**: 1 function missing JSDoc: run
 
 ### missing-jsdoc
@@ -597,7 +595,7 @@ Generated: 2025-07-01T19:08:39.717Z
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/cache-warm-all.js:6
+- **File**: scripts/cache-warm-all.js:7
 - **Message**: 1 function missing JSDoc: run
 
 ### missing-jsdoc
@@ -612,7 +610,12 @@ Generated: 2025-07-01T19:08:39.717Z
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/cache-warm-readmes.js:8
+- **File**: scripts/cache-warm-readmes.js:9
+- **Message**: 1 function missing JSDoc: run
+
+### missing-jsdoc
+- **Category**: documentation
+- **File**: scripts/cache-warm-scripts.js:31
 - **Message**: 1 function missing JSDoc: run
 
 ### missing-jsdoc
@@ -647,7 +650,7 @@ Generated: 2025-07-01T19:08:39.717Z
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/ci-status.js:6
+- **File**: scripts/ci-status.js:7
 - **Message**: 1 function missing JSDoc: run
 
 ### missing-jsdoc
@@ -687,7 +690,7 @@ Generated: 2025-07-01T19:08:39.717Z
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/doc-generate-changed.js:6
+- **File**: scripts/doc-generate-changed.js:7
 - **Message**: 1 function missing JSDoc: run
 
 ### missing-jsdoc
@@ -697,17 +700,17 @@ Generated: 2025-07-01T19:08:39.717Z
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/doc-generate.js:6
+- **File**: scripts/doc-generate.js:7
 - **Message**: 1 function missing JSDoc: run
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/doc-organize.js:5
+- **File**: scripts/doc-organize.js:6
 - **Message**: 1 function missing JSDoc: run
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/doc-post-merge.js:6
+- **File**: scripts/doc-post-merge.js:7
 - **Message**: 1 function missing JSDoc: run
 
 ### missing-jsdoc
@@ -717,7 +720,7 @@ Generated: 2025-07-01T19:08:39.717Z
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/doc-sync.js:6
+- **File**: scripts/doc-sync.js:7
 - **Message**: 1 function missing JSDoc: run
 
 ### missing-jsdoc
@@ -727,12 +730,12 @@ Generated: 2025-07-01T19:08:39.717Z
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/doc-update.js:5
+- **File**: scripts/doc-update.js:6
 - **Message**: 1 function missing JSDoc: run
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/doc-validate-links.js:7
+- **File**: scripts/doc-validate-links.js:8
 - **Message**: 1 function missing JSDoc: run
 
 ### missing-jsdoc
@@ -742,7 +745,7 @@ Generated: 2025-07-01T19:08:39.717Z
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/doc-validate.js:6
+- **File**: scripts/doc-validate.js:7
 - **Message**: 1 function missing JSDoc: run
 
 ### missing-jsdoc
@@ -757,12 +760,12 @@ Generated: 2025-07-01T19:08:39.717Z
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/git-commit.js:5
+- **File**: scripts/git-commit.js:4
 - **Message**: 1 function missing JSDoc: run
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/git-init.js:6
+- **File**: scripts/git-init.js:7
 - **Message**: 1 function missing JSDoc: run
 
 ### missing-jsdoc
@@ -857,12 +860,17 @@ Generated: 2025-07-01T19:08:39.717Z
 
 ### missing-jsdoc
 - **Category**: documentation
+- **File**: scripts/startup-context.js:259
+- **Message**: 1 function missing JSDoc: run
+
+### missing-jsdoc
+- **Category**: documentation
 - **File**: scripts/test-runner.js:6
 - **Message**: 1 function missing JSDoc: run
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/test-setup.js:6
+- **File**: scripts/test-setup.js:7
 - **Message**: 1 function missing JSDoc: run
 
 ### missing-jsdoc
@@ -893,5 +901,5 @@ Generated: 2025-07-01T19:08:39.717Z
 ### missing-tests
 - **Category**: testing
 - **File**: multiple
-- **Message**: 92 files missing tests (showing first 10: apex-router.js, config/patterns-nl.js, config/patterns.js, config/registry.js, generate-claude-md.js, index.js, install-mcp.js, jest.config.js, mcp-server-debug.js, mcp-server-fixed.js, and 82 more)
+- **Message**: 91 files missing tests (showing first 10: apex-router.js, config/patterns-nl.js, config/patterns.js, config/registry.js, generate-claude-md.js, index.js, install-mcp.js, jest.config.js, mcp-server-debug.js, mcp-server-fixed.js, and 81 more)
 

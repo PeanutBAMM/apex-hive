@@ -1,5 +1,5 @@
 // backlog-analyze.js - Analyze backlog items and provide insights
-import { promises as fs } from "fs";
+import { readFile } from "../modules/file-ops.js";
 import path from "path";
 import { loadBacklogItems } from "../modules/backlog-parser.js";
 
@@ -161,7 +161,7 @@ async function loadBacklogItemsWrapper(source, modules) {
     case "json":
       // Load from backlog.json
       try {
-        const data = JSON.parse(await fs.readFile("backlog.json", "utf8"));
+        const data = JSON.parse(await readFile("backlog.json"));
         items.push(...(data.items || data));
       } catch {
         // No backlog.json
