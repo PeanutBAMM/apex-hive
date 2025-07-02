@@ -132,9 +132,20 @@ Apex Hive is a powerful development automation system with 67 commands (59 scrip
 - `apex cache:warm-readmes` - Pre-cache README files for performance
 - `apex cache:warm-docs` - Pre-cache high-value documentation files
 - `apex cache:warm-conversations` - Warm cache with recent conversation summaries (max 5)
-- `apex cache:warm-all` - Pre-cache READMEs, documentation, and conversations
+- `apex cache:warm-scripts` - Pre-cache frequently used scripts and recipes
+- `apex cache:warm-all` - Pre-cache READMEs, documentation, conversations, scripts, and recipes
 - `apex cache:clear` - Clear all caches with detailed statistics per namespace
 - `apex cache:status` - Display cache statistics and status
+
+### Context & Intelligence
+
+- `apex startup-context` - Intelligent project context analyzer showing:
+  - Previous conversation summary with full details
+  - Cache statistics (READMEs, docs, conversations, scripts)
+  - Git status with uncommitted changes and recent commits
+  - System issues summary with top 3 issues
+  - Recommended focus areas based on context
+  - Top 5 backlog items
 
 ### Aliases & Helpers
 
@@ -147,7 +158,13 @@ Apex Hive is a powerful development automation system with 67 commands (59 scrip
 Apex Hive supports complex workflows through recipes:
 
 ### Development Workflows
-- `apex start-day` - Runs: git:pull → ci:status → backlog:display
+- `apex start-day` - Enhanced startup sequence:
+  - `startup-context` - Analyze previous session and project state
+  - `cache:clear` - Clear old cache data
+  - `cache:warm-all` - Warm all caches including scripts/recipes
+  - `git:pull` - Sync with remote
+  - `detect-issues` - Check for code quality issues
+  - `backlog:display` - Show prioritized backlog
 - `apex commit-and-push` - Runs: git:commit → ci:smart-push → ci:monitor
 - `apex fix-all` - Runs: quality:fix-all → doc:generate → test:run
 

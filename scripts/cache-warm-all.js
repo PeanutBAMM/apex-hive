@@ -1,7 +1,8 @@
-// cache-warm-all.js - Combined cache warming for READMEs, high-value documentation, and conversations
+// cache-warm-all.js - Combined cache warming for READMEs, high-value documentation, conversations, and scripts
 import { run as warmReadmes } from "./cache-warm-readmes.js";
 import { run as warmDocs } from "./cache-warm-docs.js";
 import { run as warmConversations } from "./cache-warm-conversations.js";
+import { run as warmScripts } from "./cache-warm-scripts.js";
 
 export async function run(args = {}) {
   const {
@@ -11,13 +12,14 @@ export async function run(args = {}) {
     encoding = "utf8",
   } = args;
 
-  console.error("[CACHE-WARM-ALL] Starting comprehensive cache warming...");
+  process.stderr.write("[CACHE-WARM-ALL] Starting comprehensive cache warming...\n");
 
   try {
     const results = {
       readmes: null,
       docs: null,
       conversations: null,
+      scripts: null,
       combined: {
         success: true,
         totalCached: 0,
@@ -30,7 +32,7 @@ export async function run(args = {}) {
 
     // Step 1: Warm README files
     if (verbose) {
-      console.error("[CACHE-WARM-ALL] Phase 1: Warming README files...");
+      process.stderr.write("[CACHE-WARM-ALL] Phase 1: Warming README files...\n");
     }
 
     results.readmes = await warmReadmes({
@@ -41,9 +43,8 @@ export async function run(args = {}) {
     });
 
     if (!results.readmes.success) {
-      console.error(
-        "[CACHE-WARM-ALL] README warming failed:",
-        results.readmes.error,
+      process.stderr.write(
+        `[CACHE-WARM-ALL] README warming failed: ${results.readmes.error}\n`
       );
       results.combined.success = false;
     } else {
@@ -59,8 +60,8 @@ export async function run(args = {}) {
 
     // Step 2: Warm high-value documentation
     if (verbose) {
-      console.error(
-        "[CACHE-WARM-ALL] Phase 2: Warming high-value documentation...",
+      process.stderr.write(
+        "[CACHE-WARM-ALL] Phase 2: Warming high-value documentation...\n"
       );
     }
 
@@ -72,9 +73,8 @@ export async function run(args = {}) {
     });
 
     if (!results.docs.success) {
-      console.error(
-        "[CACHE-WARM-ALL] Documentation warming failed:",
-        results.docs.error,
+      process.stderr.write(
+        `[CACHE-WARM-ALL] Documentation warming failed: ${results.docs.error}\n`
       );
       results.combined.success = false;
     } else {
@@ -95,7 +95,7 @@ export async function run(args = {}) {
 
     // Step 3: Warm conversations
     if (verbose) {
-      console.error("[CACHE-WARM-ALL] Phase 3: Warming conversations...");
+      process.stderr.write("[CACHE-WARM-ALL] Phase 3: Warming conversations...\n");
     }
 
     results.conversations = await warmConversations({
@@ -105,9 +105,8 @@ export async function run(args = {}) {
     });
 
     if (!results.conversations.success) {
-      console.error(
-        "[CACHE-WARM-ALL] Conversation warming failed:",
-        results.conversations.error,
+      process.stderr.write(
+        `[CACHE-WARM-ALL] Conversation warming failed: ${results.conversations.error}\n`
       );
       results.combined.success = false;
     } else {
@@ -121,6 +120,34 @@ export async function run(args = {}) {
       // Parse size if it's a string
       const convoSize = parseSizeString(results.conversations.data.totalSize);
       results.combined.totalSize += convoSize;
+    }
+
+    // Step 4: Warm frequently used scripts and recipes
+    if (verbose) {
+      process.stderr.write("[CACHE-WARM-ALL] Phase 4: Warming scripts and recipes...\n");
+    }
+
+    results.scripts = await warmScripts({
+      dryRun,
+      verbose,
+      includeRecipes: true,
+    });
+
+    if (!results.scripts.success) {
+      process.stderr.write(
+        `[CACHE-WARM-ALL] Script warming failed: ${results.scripts.error}\n`
+      );
+      results.combined.success = false;
+    } else {
+      results.combined.totalCached += results.scripts.data.totalCached;
+      results.combined.totalSkipped += results.scripts.data.totalSkipped;
+      results.combined.totalFailed += results.scripts.data.totalFailed;
+      results.combined.categories.scripts = results.scripts.data.scripts.cached;
+      results.combined.categories.recipes = results.scripts.data.recipes.cached;
+
+      // Parse size if it's a string
+      const scriptsSize = parseSizeString(results.scripts.data.totalSize);
+      results.combined.totalSize += scriptsSize;
     }
 
     // Generate summary
@@ -152,6 +179,13 @@ export async function run(args = {}) {
                 message: results.conversations.message,
               }
             : null,
+          scripts: results.scripts
+            ? {
+                success: results.scripts.success,
+                cached: results.scripts.data?.totalCached || 0,
+                message: results.scripts.message,
+              }
+            : null,
         },
         totals: {
           cached: results.combined.totalCached,
@@ -162,30 +196,33 @@ export async function run(args = {}) {
         },
       },
       message: dryRun
-        ? `Would cache ${results.combined.totalCached} items (${formatSize(results.combined.totalSize)}) across READMEs, documentation, and conversations`
-        : `Successfully cached ${results.combined.totalCached} items (${formatSize(results.combined.totalSize)}) - READMEs, high-value documentation, and conversations`,
+        ? `Would cache ${results.combined.totalCached} items (${formatSize(results.combined.totalSize)}) across READMEs, documentation, conversations, and scripts`
+        : `Successfully cached ${results.combined.totalCached} items (${formatSize(results.combined.totalSize)}) - READMEs, high-value documentation, conversations, and scripts`,
     };
 
     if (verbose) {
-      console.error("[CACHE-WARM-ALL] Cache warming summary:");
-      console.error(`  READMEs: ${results.readmes?.data?.cached || 0} files`);
-      console.error(
-        `  Documentation: ${results.docs?.data?.cached || 0} files`,
+      process.stderr.write("[CACHE-WARM-ALL] Cache warming summary:\n");
+      process.stderr.write(`  READMEs: ${results.readmes?.data?.cached || 0} files\n`);
+      process.stderr.write(
+        `  Documentation: ${results.docs?.data?.cached || 0} files\n`,
       );
-      console.error(
-        `  Conversations: ${results.conversations?.data?.warmed || 0} warmed, ${results.conversations?.data?.alreadyCached || 0} already cached`,
+      process.stderr.write(
+        `  Conversations: ${results.conversations?.data?.warmed || 0} warmed, ${results.conversations?.data?.alreadyCached || 0} already cached\n`,
       );
-      console.error(
-        `  Total: ${results.combined.totalCached} items (${formatSize(results.combined.totalSize)})`,
+      process.stderr.write(
+        `  Scripts: ${results.scripts?.data?.scripts?.cached || 0} scripts, ${results.scripts?.data?.recipes?.cached || 0} recipes\n`,
       );
-      console.error(`  Categories:`, results.combined.categories);
+      process.stderr.write(
+        `  Total: ${results.combined.totalCached} items (${formatSize(results.combined.totalSize)})\n`,
+      );
+      process.stderr.write(`  Categories: ${JSON.stringify(results.combined.categories)}\n`);
     }
 
-    console.error(`[CACHE-WARM-ALL] ${summary.message}`);
+    process.stderr.write(`[CACHE-WARM-ALL] ${summary.message}\n`);
 
     return summary;
   } catch (error) {
-    console.error("[CACHE-WARM-ALL] Error:", error.message);
+    process.stderr.write(`[CACHE-WARM-ALL] Error: ${error.message}\n`);
     return {
       success: false,
       error: error.message,

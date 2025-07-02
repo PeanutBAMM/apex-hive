@@ -15,7 +15,7 @@ export async function run(args = {}) {
     modules = {},
   } = args;
 
-  console.error("[DETECT-ISSUES] Scanning for issues...");
+  process.stderr.write("[DETECT-ISSUES] Scanning for issues...\n");
 
   try {
     const issues = {
@@ -41,7 +41,7 @@ export async function run(args = {}) {
       : categories.filter((cat) => detectors[cat]);
 
     for (const category of selectedCategories) {
-      console.error(`[DETECT-ISSUES] Checking ${category}...`);
+      process.stderr.write(`[DETECT-ISSUES] Checking ${category}...\n`);
       const categoryIssues = await detectors[category]();
 
       // Categorize by severity
