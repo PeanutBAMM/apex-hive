@@ -1,4 +1,4 @@
-// registry.js - Script registry (66 scripts total)
+// registry.js - Script registry (67 scripts total)
 
 export default {
   // CI Scripts (6)
@@ -10,7 +10,7 @@ export default {
   "ci:smart-push": "./scripts/ci-smart-push.js",
   "ci:status": "./scripts/ci-status.js",
 
-  // Documentation Scripts (15)
+  // Documentation Scripts (16)
   "doc:generate": "./scripts/doc-generate.js",
   "doc:generate-changed": "./scripts/doc-generate-changed.js",
   "doc:generate-missing": "./scripts/doc-generate-missing.js",
@@ -26,6 +26,7 @@ export default {
   "doc:search": "./scripts/doc-search.js",
   "doc:post-merge": "./scripts/doc-post-merge.js",
   "doc:check": "./scripts/doc-check.js",
+  "doc:cleanup-prefixes": "./scripts/doc-cleanup-prefixes.js",
 
   // Quality Scripts (8)
   "quality:lint": "./scripts/quality-lint.js",
