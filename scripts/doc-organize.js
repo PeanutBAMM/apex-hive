@@ -122,6 +122,9 @@ export async function run(args) {
       },
     };
 
+    // Validate no duplicate folder names across all levels
+    validateNoDuplicateFolders(categories);
+
     // Find all markdown files
     const allDocs = await findAllDocs(source);
 
@@ -133,11 +136,8 @@ export async function run(args) {
       };
     }
 
-    // Clean up any existing prefixes first
-    const cleanedDocs = await cleanupPrefixes(allDocs);
-
     // Categorize documents with subfolder support
-    const categorized = await categorizeDocs(cleanedDocs, categories);
+    const categorized = await categorizeDocs(allDocs, categories);
 
     // Organize files
     const moves = await planMoves(categorized, source, categories);
@@ -220,39 +220,6 @@ async function findAllDocs(sourceDir) {
   return docs;
 }
 
-// Enhanced cleanup function for complex patterns
-function cleanupFileName(fileName) {
-  let clean = fileName;
-  
-  // Remove numbered prefixes: "99-misc-", "03-reference-"
-  clean = clean.replace(/^\d{2}-[^-]+-/, '');
-  
-  // Remove restructuring prefix
-  clean = clean.replace(/^restructuring-/, '');
-  
-  // Remove scripts suffix: "-scripts.md" → ".md"
-  clean = clean.replace(/-scripts\.md$/, '.md');
-  
-  // Remove duplicate patterns: "scripts-ci-scripts" → "ci"
-  clean = clean.replace(/^scripts-(.+)-scripts/, '$1');
-  
-  // Remove changes- prefix for script docs
-  clean = clean.replace(/^changes-scripts-/, '');
-  
-  return clean;
-}
-
-async function cleanupPrefixes(docs) {
-  // Enhanced cleanup with multiple patterns
-  return docs.map(doc => {
-    const cleanName = cleanupFileName(doc.name);
-    return {
-      ...doc,
-      originalName: doc.name,
-      name: cleanName
-    };
-  });
-}
 
 // Dynamic folder detection for scripts
 function detectDynamicFolder(doc, content) {
@@ -369,6 +336,7 @@ async function categorizeDocs(docs, categories) {
       const pathParts = currentDir.split(path.sep);
       const topLevel = pathParts[0];
       
+      // Check if it matches a known category
       if (categories[topLevel]) {
         category = topLevel;
         // Keep existing subfolder structure if valid
@@ -669,6 +637,7 @@ function formatCategoryName(category) {
     .join(" ");
 }
 
+
 async function cleanEmptyDirs(dir) {
   try {
     const entries = await listFiles(dir, { withFileTypes: true, includeDirectories: true });
@@ -689,4 +658,101 @@ async function fileExists(filePath) {
   } catch {
     return false;
   }
+}
+
+// Validate that no folder names are duplicated across all levels
+function validateNoDuplicateFolders(categories) {
+  const allFolderNames = new Map(); // name -> paths[]
+  const duplicates = [];
+
+  function collectFolderNames(obj, path = []) {
+    for (const [name, config] of Object.entries(obj)) {
+      const fullPath = [...path, name].join('/');
+      
+      // Track all paths where this name appears
+      if (!allFolderNames.has(name)) {
+        allFolderNames.set(name, []);
+      }
+      allFolderNames.get(name).push(fullPath);
+      
+      // Recursively check subfolders
+      if (config.subfolders) {
+        collectFolderNames(config.subfolders, [...path, name]);
+      }
+    }
+  }
+
+  // Start collecting from root categories
+  collectFolderNames(categories);
+
+  // Find duplicates
+  for (const [name, paths] of allFolderNames.entries()) {
+    if (paths.length > 1) {
+      duplicates.push({
+        name,
+        paths,
+        message: `Folder name "${name}" appears in ${paths.length} locations`
+      });
+    }
+  }
+
+  // If duplicates found, log warnings and auto-fix
+  if (duplicates.length > 0) {
+    console.error("\n[DOC-ORGANIZE] WARNING: Duplicate folder names detected:");
+    duplicates.forEach(dup => {
+      console.error(`  - "${dup.name}" appears in:`);
+      dup.paths.forEach(p => console.error(`    • ${p}`));
+    });
+    console.error("\nAuto-fixing duplicate folder names...\n");
+    
+    // Auto-fix the structure by renaming duplicates
+    fixDuplicateFolders(categories);
+  }
+}
+
+// Fix duplicate folder names by making them unique
+function fixDuplicateFolders(categories) {
+  const usedNames = new Set();
+
+  function fixFolders(obj, parentPath = [], parentObj = null, parentKey = null) {
+    const entries = Object.entries(obj);
+    
+    for (const [name, config] of entries) {
+      let uniqueName = name;
+      
+      // If name already used, create unique name based on context
+      if (usedNames.has(name)) {
+        if (parentPath.length > 0) {
+          // For deep subfolders, use parent context
+          const parentName = parentPath[parentPath.length - 1];
+          uniqueName = `${parentName}-${name}`;
+        } else {
+          // For top-level duplicates, use a suffix
+          uniqueName = `${name}-alt`;
+        }
+        
+        // Keep trying until we find a unique name
+        let counter = 2;
+        while (usedNames.has(uniqueName)) {
+          uniqueName = `${name}-${counter}`;
+          counter++;
+        }
+        
+        // Update the object with new name
+        obj[uniqueName] = obj[name];
+        delete obj[name];
+        
+        console.error(`[DOC-ORGANIZE] Renamed: "${name}" → "${uniqueName}" (in ${parentPath.join('/') || 'root'})`);
+      }
+      
+      usedNames.add(uniqueName);
+      
+      // Recursively fix subfolders with updated name
+      if (obj[uniqueName].subfolders) {
+        fixFolders(obj[uniqueName].subfolders, [...parentPath, uniqueName], obj[uniqueName], 'subfolders');
+      }
+    }
+  }
+
+  fixFolders(categories);
 }

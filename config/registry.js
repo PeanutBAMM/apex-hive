@@ -10,7 +10,7 @@ export default {
   "ci:smart-push": "./scripts/ci-smart-push.js",
   "ci:status": "./scripts/ci-status.js",
 
-  // Documentation Scripts (16)
+  // Documentation Scripts (17)
   "doc:generate": "./scripts/doc-generate.js",
   "doc:generate-changed": "./scripts/doc-generate-changed.js",
   "doc:generate-missing": "./scripts/doc-generate-missing.js",
@@ -21,6 +21,7 @@ export default {
   "doc:validate-links": "./scripts/doc-validate-links.js",
   "doc:fix-links": "./scripts/doc-fix-links.js",
   "doc:organize": "./scripts/doc-organize.js",
+  "doc:cleanup": "./scripts/doc-cleanup.js",
   "doc:sync": "./scripts/doc-sync.js",
   "doc:add-xml": "./scripts/doc-add-xml.js",
   "doc:search": "./scripts/doc-search.js",

@@ -1,0 +1,1464 @@
+// doc-organize.js - Intelligent document organization system
+import { readFile, writeFile, pathExists, listFiles, batchRead } from "../modules/file-ops.js";
+import { promises as fs } from "fs";
+import path from "path";
+
+// Concept relationships for intelligent categorization
+const CONCEPT_GRAPH = {
+  'testing': ['test', 'spec', 'unit', 'integration', 'e2e', 'coverage', 'jest', 'mocha'],
+  'deployment': ['deploy', 'release', 'build', 'publish', 'production', 'staging', 'rollout'],
+  'troubleshooting': ['fix', 'debug', 'error', 'issue', 'problem', 'solve', 'diagnose'],
+  'architecture': ['design', 'pattern', 'structure', 'component', 'module', 'system', 'flow'],
+  'documentation': ['doc', 'guide', 'manual', 'reference', 'api', 'readme', 'example'],
+  'development': ['dev', 'develop', 'code', 'build', 'compile', 'contribute', 'workflow'],
+  'configuration': ['config', 'setup', 'install', 'init', 'env', 'settings', 'options'],
+  'monitoring': ['monitor', 'log', 'metric', 'track', 'observe', 'alert', 'dashboard'],
+  'security': ['auth', 'secure', 'encrypt', 'permission', 'access', 'token', 'credential'],
+  'performance': ['optimize', 'speed', 'cache', 'fast', 'slow', 'perf', 'benchmark']
+};
+
+// Target structure for modern documentation (no numbered prefixes)
+const TARGET_STRUCTURE = {
+  'getting-started': { 
+    priority: 1,
+    patterns: ['install', 'setup', 'quick', 'start', 'begin']
+  },
+  'guides': { 
+    priority: 2,
+    patterns: ['guide', 'how-to', 'tutorial', 'example']
+  },
+  'architecture': { 
+    priority: 3,
+    patterns: ['design', 'system', 'component', 'module'],
+    subfolders: {
+      'components': ['module', 'component', 'api', 'cache', 'utils'],
+      'design': ['pattern', 'flow', 'diagram', 'overview'],
+      'features': ['natural-language', 'recipes', 'rag']
+    }
+  },
+  'scripts': {
+    priority: 4,
+    patterns: ['script', 'command', 'cli'],
+    dynamicSubfolders: true
+  },
+  'testing': { 
+    priority: 5,
+    patterns: ['test', 'spec', 'unit', 'integration', 'e2e']
+  },
+  'troubleshooting': { 
+    priority: 6,
+    patterns: ['troubleshoot', 'debug', 'fix', 'error', 'issue', 'problem']
+  },
+  'reference': { 
+    priority: 7,
+    patterns: ['reference', 'api', 'command', 'config', 'schema']
+  },
+  'development': { 
+    priority: 8,
+    patterns: ['develop', 'contribute', 'build', 'workflow']
+  },
+  'operations': { 
+    priority: 9,
+    patterns: ['deploy', 'monitor', 'production', 'release'],
+    subfolders: {
+      'deployment': ['deploy', 'release', 'publish'],
+      'monitoring': ['monitor', 'metric', 'log', 'alert']
+    }
+  },
+  'changes': { 
+    priority: 10,
+    patterns: ['change', 'changelog', 'update', 'migration']
+  },
+  'misc': { 
+    priority: 99,
+    patterns: []
+  }
+};
+
+export async function run(args) {
+  const { 
+    source = "docs", 
+    dryRun = false, 
+    createIndex = true, 
+    mergeFolders = true,
+    transformMode = true  // Enable active transformation by default
+  } = args;
+
+  console.error("[DOC-ORGANIZE] Starting intelligent document organization...");
+  console.error(`[DOC-ORGANIZE] Options: dryRun=${dryRun}, transformMode=${transformMode}, mergeFolders=${mergeFolders}`);
+  if (transformMode) {
+    console.error("[DOC-ORGANIZE] Transform mode enabled - will restructure folders and remove prefixes");
+  }
+
+  try {
+    // Discover existing folder structure
+    const folderStructure = await discoverFolderStructure(source);
+    console.error(`[DOC-ORGANIZE] Discovered ${Object.keys(folderStructure).length} existing folders`);
+
+    // Transform folder structure if enabled
+    let transformedStructure = folderStructure;
+    let folderMappings = {};
+    if (transformMode) {
+      const transformation = await planFolderTransformation(folderStructure, source);
+      transformedStructure = transformation.structure;
+      folderMappings = transformation.mappings;
+      
+      if (Object.keys(folderMappings).length > 0) {
+        console.error("\n[DOC-ORGANIZE] Folder transformations:");
+        for (const [oldPath, newPath] of Object.entries(folderMappings)) {
+          console.error(`  - ${oldPath} → ${newPath}`);
+        }
+        console.error("");
+      }
+    }
+
+    // Find all markdown files
+    const allDocs = await findAllDocs(source);
+    console.error(`[DOC-ORGANIZE] Found ${allDocs.length} documents`);
+
+    if (allDocs.length === 0) {
+      return {
+        status: "no-docs",
+        message: "No documentation files found",
+        source,
+      };
+    }
+
+    // Batch read all documents for analysis (using cached file-ops!)
+    const docContents = await batchReadDocuments(allDocs);
+    
+    // Learn patterns from existing structure
+    const learnedPatterns = await learnFromStructure(folderStructure, docContents);
+    
+    // Build category system - use target structure in transform mode
+    const categories = transformMode 
+      ? buildTargetCategories(TARGET_STRUCTURE, learnedPatterns)
+      : buildDynamicCategories(transformedStructure, learnedPatterns);
+    
+    // Detect obsolete and mergeable folders if enabled
+    let folderOperations = { obsolete: [], merges: [] };
+    if (mergeFolders) {
+      const obsoleteFolders = detectObsoleteFolders(folderStructure, categories);
+      const folderMerges = suggestFolderMerges(folderStructure, learnedPatterns);
+      folderOperations = { obsolete: obsoleteFolders, merges: folderMerges };
+      
+      if (folderOperations.obsolete.length > 0 || folderOperations.merges.length > 0) {
+        console.error("\n[DOC-ORGANIZE] Suggested folder operations:");
+        folderOperations.merges.forEach(merge => {
+          console.error(`  - Merge: ${merge.from} → ${merge.to} (${merge.reason})`);
+        });
+        folderOperations.obsolete.forEach(folder => {
+          console.error(`  - Remove: ${folder.path} (${folder.reason})`);
+        });
+        console.error("");
+      }
+    }
+    
+    // Intelligently categorize documents
+    const categorized = await intelligentCategorize(allDocs, docContents, categories, folderStructure);
+    
+    // Apply folder consolidation if we have operations
+    let consolidated = categorized;
+    if (folderOperations.obsolete.length > 0 || folderOperations.merges.length > 0) {
+      consolidated = await consolidateFolders(categorized, folderOperations, docContents, categories);
+    }
+    
+    // Apply anti-duplicate folder logic
+    const optimized = applyAntiDuplicateLogic(consolidated, folderStructure);
+    
+    // Plan moves
+    const moves = await planIntelligentMoves(optimized, source, categories);
+    
+    if (moves.length === 0 && folderOperations.obsolete.length === 0 && folderOperations.merges.length === 0) {
+      return {
+        status: "organized",
+        message: "Documentation is already well organized",
+        categories: generateCategoryStats(optimized)
+      };
+    }
+
+    // Execute moves
+    let executed = 0;
+    if (!dryRun) {
+      executed = await executeMoves(moves);
+      
+      // Execute folder removals after file moves
+      if (folderOperations.obsolete.length > 0) {
+        for (const folder of folderOperations.obsolete) {
+          await cleanEmptyDirs(path.join(source, folder.path));
+          console.error(`[DOC-ORGANIZE] Removed obsolete folder: ${folder.path}`);
+        }
+      }
+    }
+
+    // Create intelligent indexes
+    let indexFiles = [];
+    if (createIndex && !dryRun) {
+      indexFiles = await createIntelligentIndexes(source, optimized, categories);
+    }
+
+    // Prepare result message
+    const operations = [];
+    if (moves.length > 0) operations.push(`${moves.length} file(s)`);
+    if (folderOperations.merges.length > 0) operations.push(`${folderOperations.merges.length} folder merge(s)`);
+    if (folderOperations.obsolete.length > 0) operations.push(`${folderOperations.obsolete.length} folder removal(s)`);
+    
+    const operationStr = operations.join(', ');
+
+    return {
+      status: dryRun ? "dry-run" : "organized",
+      source,
+      moves: moves.length,
+      executed,
+      indexFiles: indexFiles.length,
+      folderOperations,
+      categories: generateCategoryStats(optimized),
+      message: dryRun
+        ? `Would perform: ${operationStr}`
+        : `Completed: ${operationStr}`,
+    };
+  } catch (error) {
+    console.error("[DOC-ORGANIZE] Error:", error.message);
+    return {
+      status: "error",
+      message: "Failed to organize documentation",
+      error: error.message,
+    };
+  }
+}
+
+// Discover existing folder structure dynamically
+async function discoverFolderStructure(sourceDir) {
+  const structure = {};
+  
+  async function scan(dir, base = "") {
+    try {
+      const entries = await listFiles(dir, { withFileTypes: true, includeDirectories: true });
+      
+      for (const entry of entries) {
+        const relativePath = path.join(base, entry.name);
+        const fullPath = path.join(dir, entry.name);
+        
+        if (isDirectory(entry) && !entry.name.startsWith(".")) {
+          // Record folder and scan recursively
+          structure[relativePath] = {
+            name: entry.name,
+            path: relativePath,
+            depth: relativePath.split(path.sep).length,
+            files: [],
+            subfolders: []
+          };
+          
+          // Add to parent's subfolders
+          if (base) {
+            structure[base].subfolders.push(entry.name);
+          }
+          
+          await scan(fullPath, relativePath);
+        } else if (entry.name.endsWith(".md")) {
+          // Add file to current folder
+          if (base && structure[base]) {
+            structure[base].files.push(entry.name);
+          } else if (!base) {
+            // File in root, ensure root structure exists
+            if (!structure[""]) {
+              structure[""] = {
+                name: "root",
+                path: "",
+                depth: 0,
+                files: [],
+                subfolders: []
+              };
+            }
+            structure[""].files.push(entry.name);
+          }
+        }
+      }
+    } catch (error) {
+      console.error(`[DOC-ORGANIZE] Failed to scan ${dir}:`, error.message);
+    }
+  }
+  
+  await scan(sourceDir);
+  return structure;
+}
+
+// Find all markdown files
+async function findAllDocs(sourceDir) {
+  const docs = [];
+
+  async function scan(dir, base = "") {
+    try {
+      const entries = await listFiles(dir, { withFileTypes: true, includeDirectories: true });
+
+      for (const entry of entries) {
+        const relativePath = path.join(base, entry.name);
+        const fullPath = path.join(dir, entry.name);
+
+        if (isDirectory(entry) && !entry.name.startsWith(".")) {
+          await scan(fullPath, relativePath);
+        } else if (entry.name.endsWith(".md")) {
+          docs.push({
+            name: cleanupFileName(entry.name),
+            originalName: entry.name,
+            path: relativePath,
+            fullPath,
+            currentFolder: base || "root"
+          });
+        }
+      }
+    } catch (error) {
+      console.error(`[DOC-ORGANIZE] Failed to scan ${dir}:`, error.message);
+    }
+  }
+
+  await scan(sourceDir);
+  return docs;
+}
+
+// Batch read documents using cached file-ops
+async function batchReadDocuments(docs) {
+  const paths = docs.map(doc => doc.fullPath);
+  const { results, errors } = await batchRead(paths);
+  
+  const contents = {};
+  docs.forEach((doc, index) => {
+    contents[doc.fullPath] = results[index] || "";
+    if (errors[index]) {
+      console.error(`[DOC-ORGANIZE] Failed to read ${doc.name}:`, errors[index].message);
+    }
+  });
+  
+  return contents;
+}
+
+// Learn patterns from existing structure
+async function learnFromStructure(folderStructure, docContents) {
+  const patterns = {};
+  
+  for (const [folderPath, folder] of Object.entries(folderStructure)) {
+    // Skip file-like paths
+    if (folderPath.endsWith('.md')) continue;
+    
+    if (folder.files.length === 0) continue;
+    
+    // Extract keywords from files in this folder
+    const folderKeywords = [];
+    for (const file of folder.files) {
+      const fullPath = path.join('docs', folderPath, file);
+      const content = docContents[fullPath] || "";
+      const keywords = extractKeywords(file, content);
+      folderKeywords.push(...keywords);
+    }
+    
+    // Build pattern fingerprint for this folder
+    patterns[folder.name] = {
+      keywords: getMostFrequent(folderKeywords, 10),
+      filePatterns: detectFilePatterns(folder.files),
+      depth: folder.depth,
+      hasSubfolders: folder.subfolders.length > 0
+    };
+  }
+  
+  return patterns;
+}
+
+// Build dynamic categories from learned patterns
+function buildDynamicCategories(folderStructure, learnedPatterns) {
+  const categories = {};
+  
+  // First, identify main categories (top-level folders with content)
+  const mainFolders = Object.entries(folderStructure)
+    .filter(([path, folder]) => folder.depth === 1)
+    .sort((a, b) => b[1].files.length - a[1].files.length);
+  
+  // Build category hierarchy
+  for (const [folderPath, folder] of mainFolders) {
+    const pattern = learnedPatterns[folder.name] || {};
+    
+    categories[folder.name] = {
+      description: generateDescription(folder.name, pattern),
+      keywords: pattern.keywords || [],
+      priority: calculatePriority(folder),
+      subfolders: buildSubfolderConfig(folderPath, folderStructure, learnedPatterns)
+    };
+  }
+  
+  // Add essential categories if missing
+  ensureEssentialCategories(categories);
+  
+  return categories;
+}
+
+// Intelligent categorization using multiple signals
+async function intelligentCategorize(docs, docContents, categories, folderStructure) {
+  const categorized = {};
+  
+  // Initialize categories
+  for (const cat of Object.keys(categories)) {
+    categorized[cat] = [];
+  }
+  
+  // Ensure misc category exists
+  if (!categorized.misc) {
+    categorized.misc = [];
+  }
+  
+  for (const doc of docs) {
+    const content = docContents[doc.fullPath] || "";
+    
+    // Analyze document
+    const analysis = analyzeDocument(doc, content);
+    
+    // Find best category match
+    const match = findBestCategoryMatch(analysis, categories, folderStructure);
+    
+    // Store with intelligent path
+    const targetPath = determineIntelligentPath(doc, match, analysis, categories);
+    
+    // Clean up the filename if needed
+    const cleanName = cleanupFileName(doc.name);
+    
+    categorized[match.category].push({
+      ...doc,
+      originalName: cleanName !== doc.name ? cleanName : doc.originalName,
+      targetPath,
+      confidence: match.confidence,
+      analysis
+    });
+  }
+  
+  return categorized;
+}
+
+// Apply anti-duplicate folder logic
+function applyAntiDuplicateLogic(categorized, folderStructure) {
+  const mainFolders = new Set(
+    Object.keys(categorized).filter(cat => cat !== 'misc')
+  );
+  
+  const optimized = { ...categorized };
+  
+  for (const [category, docs] of Object.entries(categorized)) {
+    optimized[category] = docs.map(doc => {
+      const newPath = [];
+      
+      for (let i = 0; i < doc.targetPath.length; i++) {
+        const part = doc.targetPath[i];
+        
+        // Check if this part exists as main folder
+        if (i > 0 && mainFolders.has(part)) {
+          // Check if document truly belongs in main folder
+          if (shouldUseMainFolder(doc, part, doc.targetPath.slice(0, i))) {
+            // Move to main folder
+            return {
+              ...doc,
+              targetPath: [part],
+              movedFrom: doc.targetPath
+            };
+          }
+        }
+        
+        newPath.push(part);
+      }
+      
+      return { ...doc, targetPath: newPath };
+    });
+  }
+  
+  return optimized;
+}
+
+// Helper functions
+
+function isDirectory(entry) {
+  return typeof entry.isDirectory === "function" 
+    ? entry.isDirectory() 
+    : entry._isDirectory;
+}
+
+function cleanupFileName(fileName) {
+  let clean = fileName;
+  
+  // Learn from existing patterns and remove noise
+  clean = clean.replace(/^\d{2}-[^-]+-/, ''); // "99-misc-"
+  clean = clean.replace(/^restructuring-/, '');
+  clean = clean.replace(/-scripts\.md$/, '.md');
+  clean = clean.replace(/^scripts-(.+)-scripts/, '$1');
+  clean = clean.replace(/^changes-scripts-/, '');
+  clean = clean.replace(/^changes-/, '');
+  
+  return clean;
+}
+
+function extractKeywords(filename, content) {
+  const keywords = [];
+  
+  // Extract from filename
+  const nameParts = filename.replace('.md', '').split(/[-_]/);
+  keywords.push(...nameParts.filter(p => p.length > 2));
+  
+  // Extract from headers
+  const headers = content.match(/^#{1,3}\s+(.+)$/gm) || [];
+  headers.forEach(header => {
+    const words = header.replace(/^#+\s+/, '').toLowerCase().split(/\s+/);
+    keywords.push(...words.filter(w => w.length > 3));
+  });
+  
+  // Extract significant words from content
+  const words = content.toLowerCase().match(/\b[a-z]{4,}\b/g) || [];
+  const wordFreq = {};
+  words.forEach(word => {
+    wordFreq[word] = (wordFreq[word] || 0) + 1;
+  });
+  
+  // Get top frequent words
+  const topWords = Object.entries(wordFreq)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 20)
+    .map(([word]) => word);
+  
+  keywords.push(...topWords);
+  
+  return keywords;
+}
+
+function getMostFrequent(items, count) {
+  const freq = {};
+  items.forEach(item => {
+    freq[item] = (freq[item] || 0) + 1;
+  });
+  
+  return Object.entries(freq)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, count)
+    .map(([item]) => item);
+}
+
+function detectFilePatterns(files) {
+  const patterns = {
+    prefixes: {},
+    suffixes: {},
+    common: []
+  };
+  
+  files.forEach(file => {
+    const name = file.replace('.md', '');
+    
+    // Check prefixes
+    const prefix = name.match(/^([^-]+)-/)?.[1];
+    if (prefix) {
+      patterns.prefixes[prefix] = (patterns.prefixes[prefix] || 0) + 1;
+    }
+    
+    // Check suffixes
+    const suffix = name.match(/-([^-]+)$/)?.[1];
+    if (suffix) {
+      patterns.suffixes[suffix] = (patterns.suffixes[suffix] || 0) + 1;
+    }
+  });
+  
+  return patterns;
+}
+
+function generateDescription(folderName, pattern) {
+  const name = folderName.replace(/-/g, ' ');
+  const capitalized = name.charAt(0).toUpperCase() + name.slice(1);
+  
+  // Generate contextual description
+  if (pattern.keywords?.length > 0) {
+    const keywordHint = pattern.keywords.slice(0, 3).join(', ');
+    return `${capitalized} - ${keywordHint}`;
+  }
+  
+  return `${capitalized} documentation`;
+}
+
+function calculatePriority(folder) {
+  // Priority based on: file count, subfolder count, depth
+  return (folder.files.length * 10) + (folder.subfolders.length * 5) - (folder.depth * 2);
+}
+
+function buildSubfolderConfig(folderPath, folderStructure, learnedPatterns) {
+  const config = {};
+  const folder = folderStructure[folderPath];
+  
+  if (!folder || folder.subfolders.length === 0) return config;
+  
+  for (const subName of folder.subfolders) {
+    const subPath = path.join(folderPath, subName);
+    const subFolder = folderStructure[subPath];
+    
+    if (subFolder) {
+      const pattern = learnedPatterns[subName] || {};
+      config[subName] = {
+        description: generateDescription(subName, pattern),
+        keywords: pattern.keywords || [],
+        subfolders: buildSubfolderConfig(subPath, folderStructure, learnedPatterns)
+      };
+    }
+  }
+  
+  return config;
+}
+
+function ensureEssentialCategories(categories) {
+  const essentials = {
+    'getting-started': 'Installation and setup guides',
+    'architecture': 'System design and architecture',
+    'reference': 'API and command reference',
+    'troubleshooting': 'Problem solving and debugging',
+    'misc': 'Other documentation'
+  };
+  
+  for (const [name, desc] of Object.entries(essentials)) {
+    if (!categories[name]) {
+      categories[name] = {
+        description: desc,
+        keywords: [],
+        priority: 0,
+        subfolders: {}
+      };
+    }
+  }
+}
+
+function analyzeDocument(doc, content) {
+  const analysis = {
+    filename: doc.name,
+    keywords: extractKeywords(doc.name, content),
+    headers: extractHeaders(content),
+    concepts: detectConcepts(content),
+    currentLocation: doc.currentFolder,
+    contentLength: content.length,
+    language: detectLanguage(content)
+  };
+  
+  return analysis;
+}
+
+function extractHeaders(content) {
+  const headers = [];
+  const matches = content.match(/^#{1,3}\s+(.+)$/gm) || [];
+  
+  matches.forEach(match => {
+    const level = match.match(/^#+/)[0].length;
+    const text = match.replace(/^#+\s+/, '');
+    headers.push({ level, text });
+  });
+  
+  return headers;
+}
+
+function detectConcepts(content) {
+  const found = {};
+  const lowerContent = content.toLowerCase();
+  
+  for (const [concept, keywords] of Object.entries(CONCEPT_GRAPH)) {
+    let score = 0;
+    keywords.forEach(keyword => {
+      const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+      const matches = lowerContent.match(regex) || [];
+      score += matches.length;
+    });
+    
+    if (score > 0) {
+      found[concept] = score;
+    }
+  }
+  
+  return found;
+}
+
+function detectLanguage(content) {
+  // Simple language detection
+  const dutchWords = ['het', 'een', 'van', 'voor', 'met', 'aan', 'naar'];
+  const englishWords = ['the', 'and', 'for', 'with', 'from', 'that', 'this'];
+  
+  let dutchScore = 0;
+  let englishScore = 0;
+  
+  const words = content.toLowerCase().split(/\s+/);
+  words.forEach(word => {
+    if (dutchWords.includes(word)) dutchScore++;
+    if (englishWords.includes(word)) englishScore++;
+  });
+  
+  return dutchScore > englishScore ? 'nl' : 'en';
+}
+
+function findBestCategoryMatch(analysis, categories, folderStructure) {
+  let bestMatch = { category: 'misc', confidence: 0 };
+  
+  // Check each category
+  for (const [catName, catConfig] of Object.entries(categories)) {
+    if (catName === 'misc') continue;
+    
+    let score = 0;
+    
+    // Keyword matching
+    const keywordMatches = analysis.keywords.filter(k => 
+      catConfig.keywords.includes(k)
+    ).length;
+    score += keywordMatches * 10;
+    
+    // Concept matching
+    const catConcepts = catName.toLowerCase();
+    for (const [concept, conceptScore] of Object.entries(analysis.concepts)) {
+      if (catConcepts.includes(concept) || concept.includes(catConcepts)) {
+        score += conceptScore * 5;
+      }
+    }
+    
+    // Filename pattern matching
+    if (analysis.filename.toLowerCase().includes(catName)) {
+      score += 20;
+    }
+    
+    // Current location bonus
+    if (analysis.currentLocation.includes(catName)) {
+      score += 15;
+    }
+    
+    if (score > bestMatch.confidence) {
+      bestMatch = { category: catName, confidence: score };
+    }
+  }
+  
+  // Minimum confidence threshold
+  if (bestMatch.confidence < 10) {
+    bestMatch.category = 'misc';
+  }
+  
+  return bestMatch;
+}
+
+function determineIntelligentPath(doc, match, analysis, categories) {
+  const basePath = [match.category];
+  const catConfig = categories[match.category];
+  
+  if (!catConfig || !catConfig.subfolders || Object.keys(catConfig.subfolders).length === 0) {
+    return basePath;
+  }
+  
+  // Find best subfolder match
+  let bestSubMatch = null;
+  let bestSubScore = 0;
+  
+  function searchSubfolders(subfolders, currentPath) {
+    for (const [subName, subConfig] of Object.entries(subfolders)) {
+      let score = 0;
+      
+      // Check keywords
+      const keywordMatches = analysis.keywords.filter(k => 
+        subConfig.keywords?.includes(k)
+      ).length;
+      score += keywordMatches * 10;
+      
+      // Check name match
+      if (analysis.filename.toLowerCase().includes(subName)) {
+        score += 15;
+      }
+      
+      // Check concept alignment
+      const subConcepts = subName.toLowerCase();
+      for (const concept of Object.keys(analysis.concepts)) {
+        if (subConcepts.includes(concept) || concept.includes(subConcepts)) {
+          score += 10;
+        }
+      }
+      
+      if (score > bestSubScore) {
+        bestSubScore = score;
+        bestSubMatch = [...currentPath, subName];
+      }
+      
+      // Search deeper
+      if (subConfig.subfolders && Object.keys(subConfig.subfolders).length > 0) {
+        searchSubfolders(subConfig.subfolders, [...currentPath, subName]);
+      }
+    }
+  }
+  
+  searchSubfolders(catConfig.subfolders, basePath);
+  
+  return bestSubMatch || basePath;
+}
+
+function shouldUseMainFolder(doc, folderName, currentPath) {
+  // Check if document is generic enough for main folder
+  const analysis = doc.analysis;
+  
+  // If filename suggests it's specific to current context, keep in subfolder
+  const currentContext = currentPath.join('-');
+  if (analysis.filename.toLowerCase().includes(currentContext)) {
+    return false;
+  }
+  
+  // If document has high concept scores for the main folder, use it
+  const mainConcept = folderName.toLowerCase();
+  const conceptScore = analysis.concepts[mainConcept] || 0;
+  
+  return conceptScore > 10;
+}
+
+function generateCategoryStats(categorized) {
+  return Object.entries(categorized)
+    .filter(([_, docs]) => docs.length > 0)
+    .map(([name, docs]) => ({
+      name,
+      count: docs.length,
+      description: `${docs.length} document${docs.length === 1 ? '' : 's'}`
+    }));
+}
+
+async function planIntelligentMoves(categorized, sourceDir, categories) {
+  const moves = [];
+  
+  for (const [category, docs] of Object.entries(categorized)) {
+    for (const doc of docs) {
+      const currentDir = path.dirname(doc.path);
+      const targetDir = doc.targetPath.join(path.sep);
+      
+      // Skip if already in correct location
+      if (currentDir === targetDir) {
+        continue;
+      }
+      
+      moves.push({
+        from: doc.fullPath,
+        to: path.join(sourceDir, targetDir, doc.originalName),
+        category,
+        targetPath: doc.targetPath,
+        confidence: doc.confidence
+      });
+    }
+  }
+  
+  // Sort by confidence (move most confident first)
+  moves.sort((a, b) => b.confidence - a.confidence);
+  
+  return moves;
+}
+
+async function executeMoves(moves) {
+  let executed = 0;
+  
+  for (const move of moves) {
+    try {
+      // Create target directory
+      const targetDir = path.dirname(move.to);
+      await fs.mkdir(targetDir, { recursive: true });
+      
+      // Read content using cached file-ops
+      const content = await readFile(move.from);
+      
+      // Write to new location
+      await writeFile(move.to, content);
+      
+      // Remove from old location
+      await fs.unlink(move.from);
+      
+      console.error(
+        `[DOC-ORGANIZE] Moved ${path.basename(move.from)} to ${move.targetPath.join("/")} (confidence: ${move.confidence})`
+      );
+      executed++;
+    } catch (error) {
+      console.error(
+        `[DOC-ORGANIZE] Failed to move ${move.from}:`,
+        error.message
+      );
+    }
+  }
+  
+  // Clean up empty directories
+  if (moves.length > 0) {
+    await cleanEmptyDirs(path.dirname(moves[0].from));
+  }
+  
+  return executed;
+}
+
+async function createIntelligentIndexes(sourceDir, categorized, categories) {
+  const indexFiles = [];
+  const indexPaths = new Set();
+  
+  // Create indexes for all paths with documents
+  for (const [category, docs] of Object.entries(categorized)) {
+    if (docs.length === 0) continue;
+    
+    // Group by path
+    const pathGroups = {};
+    for (const doc of docs) {
+      const pathKey = doc.targetPath.join('/');
+      if (!pathGroups[pathKey]) {
+        pathGroups[pathKey] = [];
+      }
+      pathGroups[pathKey].push(doc);
+    }
+    
+    // Create index for each unique path
+    for (const [pathKey, pathDocs] of Object.entries(pathGroups)) {
+      const parts = pathKey.split('/');
+      
+      // Create indexes for all levels
+      for (let i = 1; i <= parts.length; i++) {
+        const subPath = parts.slice(0, i).join('/');
+        if (!indexPaths.has(subPath)) {
+          indexPaths.add(subPath);
+          
+          const indexPath = await createSmartIndex(
+            sourceDir,
+            parts.slice(0, i),
+            categorized,
+            categories
+          );
+          
+          if (indexPath) {
+            indexFiles.push(indexPath);
+          }
+        }
+      }
+    }
+  }
+  
+  // Create main index
+  const mainIndex = await createMainSmartIndex(sourceDir, categorized, categories);
+  if (mainIndex) indexFiles.push(mainIndex);
+  
+  return indexFiles;
+}
+
+async function createSmartIndex(sourceDir, pathParts, categorized, categories) {
+  const indexPath = path.join(sourceDir, ...pathParts, "README.md");
+  
+  // Check if index already exists and is custom
+  if (await pathExists(indexPath)) {
+    const content = await readFile(indexPath);
+    if (!content.includes('*Generated by Apex Hive')) {
+      // Don't overwrite custom indexes
+      return null;
+    }
+  }
+  
+  let content = `# ${pathParts.map(formatName).join(' / ')}\n\n`;
+  
+  // Find all docs in this path
+  const pathDocs = [];
+  const subfolders = new Set();
+  
+  for (const docs of Object.values(categorized)) {
+    for (const doc of docs) {
+      if (doc.targetPath.slice(0, pathParts.length).join('/') === pathParts.join('/')) {
+        if (doc.targetPath.length === pathParts.length) {
+          pathDocs.push(doc);
+        } else if (doc.targetPath.length > pathParts.length) {
+          subfolders.add(doc.targetPath[pathParts.length]);
+        }
+      }
+    }
+  }
+  
+  // Add description
+  const catConfig = findCategoryConfig(pathParts, categories);
+  if (catConfig?.description) {
+    content += `${catConfig.description}\n\n`;
+  }
+  
+  // Add subfolders
+  if (subfolders.size > 0) {
+    content += "## Categories\n\n";
+    for (const subfolder of Array.from(subfolders).sort()) {
+      content += `- [${formatName(subfolder)}](./${subfolder}/)\n`;
+    }
+    content += "\n";
+  }
+  
+  // Add documents
+  if (pathDocs.length > 0) {
+    content += "## Documents\n\n";
+    
+    // Sort by confidence then name
+    pathDocs.sort((a, b) => {
+      if (b.confidence !== a.confidence) return b.confidence - a.confidence;
+      return a.name.localeCompare(b.name);
+    });
+    
+    for (const doc of pathDocs) {
+      const title = await getDocTitle(doc.fullPath) || doc.name.replace('.md', '');
+      content += `- [${title}](./${doc.originalName})`;
+      if (doc.confidence > 50) {
+        content += ' ⭐'; // High confidence match
+      }
+      content += '\n';
+    }
+  }
+  
+  // Add navigation
+  content += "\n## Navigation\n\n";
+  if (pathParts.length > 1) {
+    content += `- [← Back to ${formatName(pathParts[pathParts.length - 2])}](../)\n`;
+  } else {
+    content += "- [← Back to Documentation](../)\n";
+  }
+  
+  content += `\n---\n*Generated by Apex Hive on ${new Date().toISOString()}*\n`;
+  
+  await writeFile(indexPath, content);
+  return indexPath;
+}
+
+async function createMainSmartIndex(sourceDir, categorized, categories) {
+  const indexPath = path.join(sourceDir, "README.md");
+  
+  let content = "# Documentation\n\n";
+  content += "Welcome to the intelligently organized documentation.\n\n";
+  content += "## Categories\n\n";
+  
+  // Sort categories by priority
+  const sortedCategories = Object.entries(categories)
+    .sort((a, b) => (b[1].priority || 0) - (a[1].priority || 0));
+  
+  for (const [category, config] of sortedCategories) {
+    const docs = categorized[category];
+    if (!docs || docs.length === 0) continue;
+    
+    content += `### [${formatName(category)}](./${category}/)\n\n`;
+    content += `${config.description}\n\n`;
+    content += `- ${docs.length} document${docs.length === 1 ? "" : "s"}`;
+    
+    // Show confidence stats
+    const highConfidence = docs.filter(d => d.confidence > 50).length;
+    if (highConfidence > 0) {
+      content += ` (${highConfidence} high confidence)`;
+    }
+    content += '\n\n';
+  }
+  
+  content += `\n---\n*Generated by Apex Hive Intelligent Organizer on ${new Date().toISOString()}*\n`;
+  
+  await writeFile(indexPath, content);
+  return indexPath;
+}
+
+function findCategoryConfig(pathParts, categories) {
+  let config = categories[pathParts[0]];
+  
+  for (let i = 1; i < pathParts.length && config; i++) {
+    config = config.subfolders?.[pathParts[i]];
+  }
+  
+  return config;
+}
+
+async function getDocTitle(filePath) {
+  try {
+    const content = await readFile(filePath);
+    const match = content.match(/^#\s+(.+)$/m);
+    return match ? match[1] : null;
+  } catch {
+    return null;
+  }
+}
+
+function formatName(name) {
+  return name
+    .split(/[-_]/)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+async function cleanEmptyDirs(dir) {
+  try {
+    const entries = await listFiles(dir, { withFileTypes: true, includeDirectories: true });
+    
+    if (entries.length === 0) {
+      await fs.rmdir(dir);
+      
+      // Try parent directory
+      const parent = path.dirname(dir);
+      if (parent !== dir) {
+        await cleanEmptyDirs(parent);
+      }
+    }
+  } catch {
+    // Ignore errors
+  }
+}
+
+// Detect obsolete folders that should be removed
+function detectObsoleteFolders(folderStructure, categories) {
+  const obsolete = [];
+  const essentialFolders = new Set(Object.keys(categories));
+  
+  for (const [folderPath, folder] of Object.entries(folderStructure)) {
+    // Skip root and essential categories
+    if (folder.depth === 0 || essentialFolders.has(folder.name)) continue;
+    
+    // Skip if path looks like a file (ends with .md)
+    if (folderPath.endsWith('.md')) continue;
+    
+    // Don't mark folders with only README as obsolete
+    const nonReadmeFiles = folder.files.filter(f => f.toLowerCase() !== 'readme.md');
+    
+    // Criteria for obsolete folders
+    const isObsolete = 
+      // Legacy numbered folders
+      /^\d{2}-/.test(folder.name) ||
+      // Very few non-README files and no subfolders
+      (nonReadmeFiles.length < 2 && folder.subfolders.length === 0) ||
+      // Old naming patterns
+      folder.name === '99-misc' ||
+      folder.name.includes('restructuring') ||
+      // Empty folders (no files at all, not even README)
+      (folder.files.length === 0 && folder.subfolders.length === 0);
+    
+    if (isObsolete) {
+      obsolete.push({
+        path: folderPath,
+        name: folder.name,
+        fileCount: folder.files.length,
+        reason: getObsoleteReason(folder, nonReadmeFiles.length)
+      });
+    }
+  }
+  
+  return obsolete;
+}
+
+// Get human-readable reason for obsolete folder
+function getObsoleteReason(folder, nonReadmeCount = null) {
+  if (/^\d{2}-/.test(folder.name)) return "legacy numbered folder";
+  if (folder.files.length === 0 && folder.subfolders.length === 0) return "empty folder";
+  if (nonReadmeCount !== null && nonReadmeCount < 2 && folder.subfolders.length === 0) return "too few files (excluding README)";
+  if (folder.files.length < 2 && folder.subfolders.length === 0) return "too few files";
+  if (folder.name === '99-misc') return "legacy misc folder";
+  if (folder.name.includes('restructuring')) return "temporary restructuring folder";
+  return "obsolete pattern";
+}
+
+// Suggest folder merges based on similarity
+function suggestFolderMerges(folderStructure, learnedPatterns) {
+  const merges = [];
+  const folders = Object.entries(folderStructure)
+    .filter(([path, f]) => {
+      // Only consider actual folders with files, not file paths
+      return f.files.length > 0 && !path.endsWith('.md') && !path.includes('.md/');
+    });
+  
+  // Compare each folder pair
+  for (let i = 0; i < folders.length; i++) {
+    for (let j = i + 1; j < folders.length; j++) {
+      const [path1, folder1] = folders[i];
+      const [path2, folder2] = folders[j];
+      
+      // Skip if one is parent of other or paths contain .md
+      if (path1.includes(path2) || path2.includes(path1)) continue;
+      if (path1.includes('.md') || path2.includes('.md')) continue;
+      
+      const pattern1 = learnedPatterns[folder1.name] || {};
+      const pattern2 = learnedPatterns[folder2.name] || {};
+      
+      // Calculate similarity
+      const similarity = calculateFolderSimilarity(pattern1, pattern2);
+      
+      // Check for duplicate concepts
+      const isDuplicate = checkDuplicateConcepts(folder1.name, folder2.name);
+      
+      if (similarity > 0.8 || isDuplicate) {
+        // Determine which folder should be target
+        const target = folder1.files.length >= folder2.files.length ? path1 : path2;
+        const source = target === path1 ? path2 : path1;
+        
+        merges.push({
+          from: source,
+          to: target,
+          similarity,
+          reason: isDuplicate ? "duplicate concept" : `${Math.round(similarity * 100)}% keyword overlap`
+        });
+      }
+    }
+  }
+  
+  // Also check for parent-child flattening opportunities
+  for (const [path, folder] of Object.entries(folderStructure)) {
+    // Skip paths that look like files
+    if (path.endsWith('.md') || path.includes('.md/')) continue;
+    
+    if (folder.subfolders.length === 1 && folder.files.length === 0) {
+      // Parent has only one subfolder and no files - can flatten
+      const subfolderPath = path + '/' + folder.subfolders[0];
+      
+      // Make sure subfolder isn't a file
+      if (!subfolderPath.endsWith('.md')) {
+        merges.push({
+          from: subfolderPath,
+          to: path,
+          similarity: 1,
+          reason: "single subfolder - flatten structure"
+        });
+      }
+    }
+  }
+  
+  return merges;
+}
+
+// Calculate similarity between folder patterns
+function calculateFolderSimilarity(pattern1, pattern2) {
+  const keywords1 = new Set(pattern1.keywords || []);
+  const keywords2 = new Set(pattern2.keywords || []);
+  
+  if (keywords1.size === 0 || keywords2.size === 0) return 0;
+  
+  // Jaccard similarity
+  const intersection = new Set([...keywords1].filter(k => keywords2.has(k)));
+  const union = new Set([...keywords1, ...keywords2]);
+  
+  return intersection.size / union.size;
+}
+
+// Check if folders represent duplicate concepts
+function checkDuplicateConcepts(name1, name2) {
+  const duplicates = [
+    ['test', 'tests', 'testing'],
+    ['doc', 'docs', 'documentation'],
+    ['util', 'utils', 'utilities', 'utility'],
+    ['config', 'configuration', 'settings'],
+    ['module', 'modules', 'component', 'components']
+  ];
+  
+  const lower1 = name1.toLowerCase();
+  const lower2 = name2.toLowerCase();
+  
+  for (const group of duplicates) {
+    if (group.includes(lower1) && group.includes(lower2)) {
+      return true;
+    }
+  }
+  
+  return false;
+}
+
+// Consolidate folders based on merge and obsolete operations
+async function consolidateFolders(categorized, folderOperations, docContents, categories) {
+  const consolidated = { ...categorized };
+  const { obsolete, merges } = folderOperations;
+  
+  // Process obsolete folders - redistribute their files
+  for (const obsoleteFolder of obsolete) {
+    // Find all docs in obsolete folder
+    const docsToMove = [];
+    for (const [category, docs] of Object.entries(consolidated)) {
+      const folderDocs = docs.filter(doc => 
+        doc.path.startsWith(obsoleteFolder.path + '/') || 
+        path.dirname(doc.path) === obsoleteFolder.path
+      );
+      docsToMove.push(...folderDocs);
+      
+      // Remove from current category
+      consolidated[category] = docs.filter(doc => !folderDocs.includes(doc));
+    }
+    
+    // Re-categorize each document
+    for (const doc of docsToMove) {
+      const content = docContents[doc.fullPath] || "";
+      const analysis = analyzeDocument(doc, content);
+      const match = findBestCategoryMatch(analysis, categories, {});
+      const newPath = determineIntelligentPath(doc, match, analysis, categories);
+      
+      // Add to new category
+      if (!consolidated[match.category]) {
+        consolidated[match.category] = [];
+      }
+      
+      consolidated[match.category].push({
+        ...doc,
+        targetPath: newPath,
+        confidence: match.confidence,
+        analysis,
+        movedFromObsolete: obsoleteFolder.path
+      });
+    }
+  }
+  
+  // Process folder merges
+  for (const merge of merges) {
+    // Find all docs in source folder
+    const docsToMerge = [];
+    for (const [category, docs] of Object.entries(consolidated)) {
+      const mergeDocs = docs.filter(doc => 
+        doc.path.startsWith(merge.from + '/') || 
+        path.dirname(doc.path) === merge.from
+      );
+      docsToMerge.push(...mergeDocs);
+      
+      // Remove from current location
+      consolidated[category] = docs.filter(doc => !mergeDocs.includes(doc));
+    }
+    
+    // Move to target folder
+    for (const doc of docsToMerge) {
+      // Update target path to use merge target
+      const relativePath = doc.path.replace(merge.from, '').replace(/^\//, '');
+      const newTargetPath = merge.to.split('/').concat(relativePath ? [relativePath] : []);
+      
+      // Find target category
+      const targetCategory = newTargetPath[0];
+      
+      if (!consolidated[targetCategory]) {
+        consolidated[targetCategory] = [];
+      }
+      
+      consolidated[targetCategory].push({
+        ...doc,
+        targetPath: newTargetPath.filter(p => p),
+        mergedFrom: merge.from
+      });
+    }
+  }
+  
+  return consolidated;
+}
+
+// Plan folder transformations from numbered to clean structure
+async function planFolderTransformation(folderStructure, sourceDir) {
+  const mappings = {};
+  const newStructure = {};
+  
+  // Process each existing folder
+  for (const [folderPath, folderInfo] of Object.entries(folderStructure)) {
+    if (!folderPath) continue; // Skip root
+    
+    const folderName = folderInfo.name;
+    let cleanName = folderName;
+    
+    // Remove numbered prefixes (01-, 02-, etc.)
+    cleanName = cleanName.replace(/^\d{2}-/, '');
+    
+    // Remove "restructuring-" prefix
+    cleanName = cleanName.replace(/^restructuring-/, '');
+    
+    // Map common numbered folders to target structure
+    const numberMapping = {
+      'getting-started': 'getting-started',
+      'guides': 'guides',
+      'development': 'development',
+      'react-native': 'guides',  // Merge into guides
+      'expo-sdk': 'guides',      // Merge into guides
+      'ci-cd': 'operations/deployment',
+      'testing': 'testing',
+      'architecture': 'architecture',
+      'deployment': 'operations/deployment',
+      'troubleshooting': 'troubleshooting',
+      'project-management': 'development',
+      'reference': 'reference',
+      'misc': 'misc'
+    };
+    
+    // Determine new path
+    let newPath = folderPath;
+    if (numberMapping[cleanName]) {
+      newPath = numberMapping[cleanName];
+    } else if (cleanName !== folderName) {
+      // Just remove prefix
+      newPath = folderPath.replace(folderName, cleanName);
+    }
+    
+    // Record mapping if changed
+    if (newPath !== folderPath) {
+      mappings[folderPath] = newPath;
+    }
+    
+    // Build new structure
+    const newFolderInfo = {
+      ...folderInfo,
+      name: path.basename(newPath),
+      path: newPath,
+      originalPath: folderPath
+    };
+    
+    newStructure[newPath] = newFolderInfo;
+  }
+  
+  return {
+    structure: newStructure,
+    mappings
+  };
+}
+
+// Build categories from target structure instead of learned patterns
+function buildTargetCategories(targetStructure, learnedPatterns) {
+  const categories = {};
+  
+  // Use target structure as base
+  for (const [categoryName, config] of Object.entries(targetStructure)) {
+    categories[categoryName] = {
+      name: categoryName,
+      priority: config.priority,
+      patterns: config.patterns || [],
+      description: getTargetDescription(categoryName),
+      subfolders: config.subfolders || {},
+      dynamicSubfolders: config.dynamicSubfolders || false
+    };
+    
+    // Enhance with learned patterns if available
+    if (learnedPatterns[categoryName]) {
+      // Add unique patterns from learned data
+      const learnedPatternList = learnedPatterns[categoryName].patterns || [];
+      for (const pattern of learnedPatternList) {
+        if (!categories[categoryName].patterns.includes(pattern)) {
+          categories[categoryName].patterns.push(pattern);
+        }
+      }
+    }
+  }
+  
+  // Add script subfolders if dynamic
+  if (categories.scripts && categories.scripts.dynamicSubfolders) {
+    const scriptTypes = new Set();
+    
+    // Collect script types from learned patterns
+    for (const [folder, info] of Object.entries(learnedPatterns)) {
+      if (folder.startsWith('scripts/') && folder.split('/').length === 2) {
+        const scriptType = folder.split('/')[1];
+        scriptTypes.add(scriptType);
+      }
+    }
+    
+    // Also add from known script patterns
+    const knownScriptTypes = [
+      'cache', 'ci', 'doc', 'git', 'quality', 'backlog',
+      'xml', 'init', 'code', 'search', 'report', 'detect'
+    ];
+    
+    knownScriptTypes.forEach(type => scriptTypes.add(type));
+    
+    // Build subfolders
+    categories.scripts.subfolders = {};
+    for (const type of scriptTypes) {
+      categories.scripts.subfolders[type] = [type];
+    }
+  }
+  
+  return categories;
+}
+
+// Get description for target categories
+function getTargetDescription(categoryName) {
+  const descriptions = {
+    'getting-started': 'Setup guides, installation, and quick start documentation',
+    'guides': 'How-to guides and tutorials for using the system',
+    'architecture': 'System design, components, and architectural decisions',
+    'scripts': 'Documentation for all automation scripts and commands',
+    'testing': 'Testing strategies, test documentation, and coverage reports',
+    'troubleshooting': 'Common issues, debugging guides, and solutions',
+    'reference': 'API documentation, command reference, and specifications',
+    'development': 'Development workflows, contribution guides, and standards',
+    'operations': 'Deployment, monitoring, and production operations',
+    'changes': 'Change logs, migration guides, and version history',
+    'misc': 'Other documentation that doesn\'t fit in main categories'
+  };
+  
+  return descriptions[categoryName] || `Documentation for ${categoryName}`;
+}
