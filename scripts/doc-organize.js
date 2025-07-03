@@ -9,118 +9,8 @@ export async function run(args) {
   console.error("[DOC-ORGANIZE] Organizing documentation...");
 
   try {
-    // Define documentation categories with improved structure
-    const categories = {
-      "getting-started": {
-        patterns: [/README/i, /INSTALL/i, /SETUP/i, /QUICKSTART/i, /TUTORIAL/i, /getting-started/i],
-        description: "Installation and setup guides",
-      },
-      "architecture": {
-        patterns: [/architecture|design|system|flow|gateway|router|module|component|utility|api-|natural-language|recipes|output-formatter/i],
-        description: "System architecture and components",
-        subfolders: {
-          "design": {
-            patterns: [/design|architecture|gateway|router|flow|system-overview/i],
-            description: "System design and architecture"
-          },
-          "components": {
-            patterns: [/module|component|utility|api-|file-ops|logger|utils|cache|rag|search|backlog|git-ops|output-formatter|natural-language|recipes/i],
-            description: "System components and modules",
-            subfolders: {
-              "core": {
-                patterns: [/^(file-ops|logger|utils|git-ops)$/i],
-                description: "Core system modules"
-              },
-              "cache": {
-                patterns: [/unified-cache|cache-module/i],
-                description: "Caching system"
-              },
-              "features": {
-                patterns: [/natural-language|recipes|output-formatter|rag-system/i],
-                description: "System features"
-              },
-              "api": {
-                patterns: [/^api-/i],
-                description: "API documentation"
-              }
-            }
-          },
-          "patterns": {
-            patterns: [/pattern|best-practice|standard|convention/i],
-            description: "Design patterns and best practices"
-          }
-        }
-      },
-      "scripts": {
-        patterns: [/scripts-.*-scripts|changes-scripts-|script-doc|script-ref|script-/i],
-        description: "Script documentation",
-        dynamicSubfolders: true // Enable dynamic folder detection
-      },
-      "operations": {
-        patterns: [/deploy|release|production|hosting|troubleshoot|monitor|debug|error|issue/i],
-        description: "Operations and deployment",
-        subfolders: {
-          "deployment": {
-            patterns: [/deploy|release|production|hosting|changelog|version/i],
-            description: "Deployment and releases"
-          },
-          "troubleshooting": {
-            patterns: [/troubleshoot|debug|error|issue|fix|problem/i],
-            description: "Troubleshooting guides"
-          },
-          "monitoring": {
-            patterns: [/monitor|status|health|metric|performance/i],
-            description: "Monitoring and metrics"
-          }
-        }
-      },
-      "development": {
-        patterns: [/development|contributing|build|test|testing/i],
-        description: "Development guides",
-        subfolders: {
-          "contributing": {
-            patterns: [/contributing|contribute|pull-request/i],
-            description: "Contribution guidelines"
-          },
-          "testing": {
-            patterns: [/test|testing|unit-test|integration|spec/i],
-            description: "Testing documentation",
-            subfolders: {
-              "unified-cache": {
-                patterns: [/unified-cache|cache.*test/i],
-                description: "Cache testing",
-                subfolders: {
-                  "unit-tests": {
-                    patterns: [/unit/i],
-                    description: "Unit tests"
-                  },
-                  "integration-tests": {
-                    patterns: [/integration/i],
-                    description: "Integration tests"
-                  }
-                }
-              }
-            }
-          },
-          "building": {
-            patterns: [/build|compile|bundle|package/i],
-            description: "Build processes"
-          }
-        }
-      },
-      "reference": {
-        patterns: [/reference|command|configuration|schema|quick-ref/i],
-        description: "Quick reference guides",
-      },
-      "changes": {
-        patterns: [/^changes-|changelog|update|migration|release-notes/i],
-        description: "Change logs and updates",
-      },
-      "misc": {
-        patterns: [],
-        description: "Other documentation",
-      },
-    };
+    // Define documentation categories with header-based scoring
+    const categories = getDocumentationStructure();
 
     // Validate no duplicate folder names across all levels
     validateNoDuplicateFolders(categories);
@@ -221,100 +111,320 @@ async function findAllDocs(sourceDir) {
 }
 
 
-// Dynamic folder detection for scripts
-function detectDynamicFolder(doc, content) {
-  const fileName = doc.name.replace('.md', '');
+// Extract headers from document (H1, H2, H3)
+function extractHeaders(content) {
+  const headers = {
+    title: null,      // H1 - weight 10
+    h2: [],          // H2 - weight 5
+    h3: []           // H3 - weight 3
+  };
   
-  // Try to extract category from filename patterns
-  // Examples: "ci-monitor.md" → "ci", "git-commit.md" → "git"
-  const prefixMatch = fileName.match(/^([^-]+)-/);
-  if (prefixMatch) {
-    const prefix = prefixMatch[1];
-    // Map common prefixes to folders
-    const folderMap = {
+  const lines = content.split('\n').slice(0, 30); // Check first 30 lines
+  
+  for (const line of lines) {
+    // H1: # Title (usually just one)
+    if (line.match(/^#\s+(.+)/) && !headers.title) {
+      headers.title = line.substring(2).trim();
+    }
+    // H2: ## Subtitle
+    else if (line.match(/^##\s+(.+)/)) {
+      headers.h2.push(line.substring(3).trim());
+    }
+    // H3: ### Subsubtitle  
+    else if (line.match(/^###\s+(.+)/)) {
+      headers.h3.push(line.substring(4).trim());
+    }
+  }
+  
+  return headers;
+}
+
+// Score category based on headers
+function scoreCategory(headers, categoryConfig) {
+  let score = 0;
+  const keywords = categoryConfig.keywords || [];
+  
+  // Check title (weight 10)
+  if (headers.title) {
+    for (const keyword of keywords) {
+      if (headers.title.toLowerCase().includes(keyword.toLowerCase())) {
+        score += 10;
+      }
+    }
+  }
+  
+  // Check H2s (weight 5)
+  for (const h2 of headers.h2) {
+    for (const keyword of keywords) {
+      if (h2.toLowerCase().includes(keyword.toLowerCase())) {
+        score += 5;
+      }
+    }
+  }
+  
+  // Check H3s (weight 3)
+  for (const h3 of headers.h3) {
+    for (const keyword of keywords) {
+      if (h3.toLowerCase().includes(keyword.toLowerCase())) {
+        score += 3;
+      }
+    }
+  }
+  
+  return score;
+}
+
+// Get script subcategory from filename and headers
+function getScriptSubcategory(fileName, headers) {
+  // Clean filename first
+  const clean = fileName.replace(/\.md$/, '');
+  
+  // Extract from filename (ci-monitor → ci)
+  const match = clean.match(/^([^-]+)-/);
+  if (match) {
+    const prefix = match[1];
+    
+    // Simple mappings
+    const scriptMap = {
       'ci': 'ci',
-      'doc': 'documentation',
+      'doc': 'doc', 
       'quality': 'quality',
       'git': 'git',
       'backlog': 'backlog',
       'cache': 'cache',
-      'deploy': 'deployment',
-      'build': 'deployment',
-      'release': 'deployment',
-      'version': 'deployment',
+      'deploy': 'deploy',
+      'build': 'deploy',
+      'release': 'deploy',
+      'version': 'deploy',
+      'changelog': 'deploy',
       'test': 'quality',
       'lint': 'quality',
       'format': 'quality',
-      'fix': 'utilities',
-      'init': 'utilities',
-      'report': 'utilities',
-      'search': 'utilities',
-      'code': 'utilities',
-      'save': 'utilities',
-      'startup': 'utilities',
-      'detect': 'quality',
-      'xml': 'documentation',
-      'changelog': 'deployment'
+      'xml': 'doc'
     };
     
-    if (folderMap[prefix]) {
-      return folderMap[prefix];
+    if (scriptMap[prefix]) {
+      return scriptMap[prefix];
     }
   }
   
-  // Check content for clues
-  if (content.includes('CI') || content.includes('continuous integration')) return 'ci';
-  if (content.includes('documentation')) return 'documentation';
-  if (content.includes('quality') || content.includes('lint')) return 'quality';
-  if (content.includes('git') || content.includes('commit')) return 'git';
-  if (content.includes('deploy') || content.includes('release')) return 'deployment';
+  // Check headers as fallback
+  const headerText = headers.title + ' ' + headers.h2.join(' ');
+  if (headerText.toLowerCase().includes('cache')) return 'cache';
+  if (headerText.toLowerCase().includes('ci') || headerText.toLowerCase().includes('continuous')) return 'ci';
+  if (headerText.toLowerCase().includes('git')) return 'git';
+  if (headerText.toLowerCase().includes('deploy')) return 'deploy';
+  if (headerText.toLowerCase().includes('doc')) return 'doc';
+  if (headerText.toLowerCase().includes('quality') || headerText.toLowerCase().includes('test')) return 'quality';
   
-  return 'utilities'; // Default
+  return 'utilities';
 }
 
-// Recursive function to determine target path with subfolders
-function determineTargetPath(doc, category, categoryConfig, content) {
-  const basePath = [category];
-  
-  // Handle dynamic subfolders for scripts
-  if (categoryConfig.dynamicSubfolders) {
-    const dynamicFolder = detectDynamicFolder(doc, content);
-    return [...basePath, dynamicFolder];
+// Define folder structure with keywords for scoring
+function getDocumentationStructure() {
+  return {
+    'getting-started': {
+      keywords: ['Getting Started', 'Installation', 'Setup', 'Quick Start', 'Prerequisites', 'Install'],
+      description: 'Installation and setup guides',
+      subfolders: {}
+    },
+    
+    'architecture': {
+      keywords: ['Architecture', 'Design', 'System', 'Overview', 'Structure'],
+      description: 'System architecture and components',
+      subfolders: {
+        'components': {
+          keywords: ['Component', 'Module', 'Utility', 'Service', 'Logger', 'Utils'],
+          description: 'System components'
+        },
+        'integrations': {
+          keywords: ['Integration', 'MCP', 'Gateway', 'API Integration', 'Connect'],
+          description: 'External integrations'
+        },
+        'patterns': {
+          keywords: ['Pattern', 'Best Practice', 'Convention', 'Standard'],
+          description: 'Design patterns'
+        }
+      }
+    },
+    
+    'reference': {
+      keywords: ['Reference', 'API', 'Interface', 'Schema', 'Methods'],
+      description: 'API and command reference',
+      subfolders: {
+        'api': {
+          keywords: ['API', 'Endpoint', 'Method', 'Interface', 'REST'],
+          description: 'API documentation'
+        },
+        'commands': {
+          keywords: ['Command', 'CLI', 'Usage', 'Arguments'],
+          description: 'Command reference'
+        },
+        'configuration': {
+          keywords: ['Config', 'Settings', 'Options', 'Environment'],
+          description: 'Configuration options'
+        }
+      }
+    },
+    
+    'scripts': {
+      keywords: ['Script', 'Automation', 'Command', 'Tool'],
+      description: 'Script documentation',
+      // Simple subfolder structure - only 1 level deep
+      subfolders: {
+        'ci': {
+          keywords: ['CI', 'Continuous', 'Pipeline', 'GitHub Actions', 'Monitor', 'Parse'],
+          description: 'CI/CD scripts'
+        },
+        'doc': {
+          keywords: ['Doc', 'Generate', 'Validate', 'Organize', 'XML', 'Documentation'],
+          description: 'Documentation scripts'
+        },
+        'quality': {
+          keywords: ['Quality', 'Lint', 'Test', 'Console', 'Fix', 'Format'],
+          description: 'Code quality scripts'
+        },
+        'git': {
+          keywords: ['Git', 'Commit', 'Branch', 'Tag', 'Push', 'Pull'],
+          description: 'Git operations'
+        },
+        'cache': {
+          keywords: ['Cache', 'Warm', 'Clear', 'Unified', 'Status'],
+          description: 'Cache management'
+        },
+        'backlog': {
+          keywords: ['Backlog', 'Score', 'Analyze', 'Display'],
+          description: 'Backlog management'
+        },
+        'deploy': {
+          keywords: ['Deploy', 'Release', 'Build', 'Changelog', 'Version'],
+          description: 'Deployment scripts'
+        },
+        'utilities': {
+          keywords: ['Search', 'Report', 'Init', 'Save', 'Detect', 'Code', 'Startup'],
+          description: 'Utility scripts'
+        }
+      }
+    },
+    
+    'guides': {
+      keywords: ['Guide', 'How to', 'Tutorial', 'Walkthrough', 'Example', 'Learn'],
+      description: 'How-to guides and tutorials',
+      subfolders: {}
+    },
+    
+    'development': {
+      keywords: ['Development', 'Contributing', 'Developer', 'Workflow'],
+      description: 'Development guides',
+      subfolders: {
+        'testing': {
+          keywords: ['Test', 'Unit', 'Integration', 'Coverage', 'Jest', 'Testing'],
+          description: 'Testing documentation'
+        },
+        'contributing': {
+          keywords: ['Contribute', 'PR', 'Pull Request', 'Guidelines', 'Standards'],
+          description: 'Contribution guidelines'
+        },
+        'best-practices': {
+          keywords: ['Best Practice', 'Convention', 'Standard', 'Style Guide', 'Pattern'],
+          description: 'Development best practices'
+        }
+      }
+    },
+    
+    'troubleshooting': {
+      keywords: ['Troubleshoot', 'Debug', 'Fix', 'Error', 'Problem', 'Issue', 'Solution'],
+      description: 'Troubleshooting guides',
+      subfolders: {
+        'known-issues': {
+          keywords: ['Known Issue', 'Common Problem', 'FAQ', 'Limitation', 'Workaround'],
+          description: 'Known issues and limitations'
+        },
+        'debugging': {
+          keywords: ['Debug', 'Diagnose', 'Investigate', 'Trace', 'Debugging'],
+          description: 'Debugging guides'
+        },
+        'solutions': {
+          keywords: ['Solution', 'Fix', 'Resolution', 'Solved', 'Answer'],
+          description: 'Problem solutions'
+        }
+      }
+    },
+    
+    'operations': {
+      keywords: ['Operations', 'Production', 'Monitoring', 'Performance'],
+      description: 'Operations and deployment',
+      subfolders: {
+        'deployment': {
+          keywords: ['Deploy', 'Release', 'Production', 'Rollout', 'Publish'],
+          description: 'Deployment processes'
+        },
+        'monitoring': {
+          keywords: ['Monitor', 'Log', 'Metric', 'Alert', 'Dashboard', 'Status'],
+          description: 'Monitoring and metrics'
+        }
+      }
+    },
+    
+    'changes': {
+      keywords: ['Changes', 'Changelog', 'Update', 'Migration', 'Release Notes'],
+      description: 'Change logs and updates',
+      subfolders: {}
+    },
+    
+    'misc': {
+      keywords: [],
+      description: 'Other documentation',
+      subfolders: {}
+    }
+  };
+}
+
+// Determine target path based on headers
+function determineTargetPath(doc, headers, categories) {
+  // Special handling for obvious patterns
+  if (doc.name.startsWith('api-')) {
+    return ['reference', 'api'];
+  }
+  if (doc.name.includes('changes-')) {
+    return ['changes'];
   }
   
-  // Check if category has predefined subfolders
-  if (!categoryConfig.subfolders) {
-    return basePath;
-  }
+  // Score all categories
+  const scores = {};
   
-  // Recursive function to find matching subfolder
-  function findSubfolder(subfolders, currentPath) {
-    for (const [subName, subConfig] of Object.entries(subfolders)) {
-      const patterns = subConfig.patterns || [];
-      const combinedText = `${doc.name} ${content}`;
-      
-      // Check if document matches subfolder patterns
-      for (const pattern of patterns) {
-        if (pattern.test(combinedText)) {
-          const newPath = [...currentPath, subName];
-          
-          // Check for deeper subfolders
-          if (subConfig.subfolders) {
-            const deeperPath = findSubfolder(subConfig.subfolders, newPath);
-            if (deeperPath.length > newPath.length) {
-              return deeperPath;
-            }
-          }
-          
-          return newPath;
+  for (const [category, config] of Object.entries(categories)) {
+    scores[category] = scoreCategory(headers, config);
+    
+    // Check subfolders too
+    if (config.subfolders) {
+      for (const [sub, subConfig] of Object.entries(config.subfolders)) {
+        const subScore = scoreCategory(headers, subConfig);
+        if (subScore > 0) {
+          const fullPath = `${category}/${sub}`;
+          scores[fullPath] = scores[category] + subScore;
         }
       }
     }
-    
-    return currentPath;
   }
   
-  return findSubfolder(categoryConfig.subfolders, basePath);
+  // Special handling for scripts - use filename analysis
+  if (doc.name.includes('-scripts') || doc.name.includes('script')) {
+    const subcat = getScriptSubcategory(doc.name, headers);
+    const scriptPath = `scripts/${subcat}`;
+    scores[scriptPath] = (scores['scripts'] || 0) + 15; // Boost script categorization
+  }
+  
+  // Find best match
+  const sorted = Object.entries(scores)
+    .filter(([_, score]) => score > 0)
+    .sort(([,a], [,b]) => b - a);
+  
+  if (sorted.length > 0 && sorted[0][1] >= 5) {
+    return sorted[0][0].split('/');
+  }
+  
+  return ['misc'];
 }
 
 async function categorizeDocs(docs, categories) {
@@ -329,42 +439,42 @@ async function categorizeDocs(docs, categories) {
     let category = "misc";
     let targetPath = ["misc"];
 
+    // Read content and extract headers for scoring
+    const content = await readFile(doc.fullPath).catch(() => "");
+    const headers = extractHeaders(content);
+    
     // Priority 1: Check if already in correct path
     const currentDir = path.dirname(doc.path);
     if (currentDir !== "." && currentDir !== "") {
-      // Check if current directory matches a category or subfolder
+      // Check if current directory matches a category
       const pathParts = currentDir.split(path.sep);
       const topLevel = pathParts[0];
       
-      // Check if it matches a known category
+      // If already in a valid category, keep it there unless scoring suggests otherwise
       if (categories[topLevel]) {
         category = topLevel;
-        // Keep existing subfolder structure if valid
         targetPath = pathParts;
-      }
-    }
-
-    // Priority 2: Check filename and content patterns
-    if (category === "misc") {
-      const content = await readFile(doc.fullPath).catch(() => "");
-      const firstLine = content.split("\n")[0] || "";
-      const combinedText = `${doc.name} ${firstLine}`;
-
-      // Check each category's patterns
-      for (const [cat, config] of Object.entries(categories)) {
-        if (cat === "misc") continue;
-
-        for (const pattern of config.patterns) {
-          if (pattern.test(combinedText)) {
-            category = cat;
-            // Determine full target path including subfolders
-            targetPath = determineTargetPath(doc, cat, config, content);
-            break;
+        
+        // But still calculate where it SHOULD go
+        const suggestedPath = determineTargetPath(doc, headers, categories);
+        
+        // If suggested path has a much higher score, use that instead
+        if (suggestedPath[0] !== category && suggestedPath[0] !== 'misc') {
+          const currentScore = scoreCategory(headers, categories[category]);
+          const suggestedScore = scoreCategory(headers, categories[suggestedPath[0]]);
+          
+          if (suggestedScore > currentScore + 10) { // Need significant difference
+            category = suggestedPath[0];
+            targetPath = suggestedPath;
           }
         }
-
-        if (category !== "misc") break;
       }
+    }
+    
+    // Priority 2: Use header-based scoring for uncategorized docs
+    if (category === "misc" || currentDir === "." || currentDir === "") {
+      targetPath = determineTargetPath(doc, headers, categories);
+      category = targetPath[0];
     }
 
     // Store with target path
@@ -448,7 +558,7 @@ async function executeMoves(moves, modules) {
   return executed;
 }
 
-// Enhanced index creation with subfolder support
+// Create index files - only at main level and 1 level deep
 async function createIndexFiles(sourceDir, categorized, categories) {
   const indexFiles = [];
 
@@ -456,50 +566,50 @@ async function createIndexFiles(sourceDir, categorized, categories) {
   const mainIndex = await createMainIndex(sourceDir, categorized, categories);
   if (mainIndex) indexFiles.push(mainIndex);
 
-  // Create category and subfolder indexes
+  // Create category indexes (main level)
   for (const [category, docs] of Object.entries(categorized)) {
     if (docs.length === 0) continue;
-
-    // Group docs by target path for subfolder indexes
-    const pathGroups = {};
-    for (const doc of docs) {
-      const pathKey = doc.targetPath.join("/");
-      if (!pathGroups[pathKey]) {
-        pathGroups[pathKey] = [];
-      }
-      pathGroups[pathKey].push(doc);
-    }
-
-    // Create index for each path
-    for (const [pathKey, pathDocs] of Object.entries(pathGroups)) {
-      const pathParts = pathKey.split("/");
-      const indexPath = path.join(sourceDir, ...pathParts, "README.md");
+    
+    // Create main category README
+    const categoryPath = [category];
+    const categoryIndex = await createCategoryIndex(
+      sourceDir,
+      categoryPath,
+      docs, // Pass all docs for full tree
+      categories[category],
+      true // Include full tree
+    );
+    if (categoryIndex) indexFiles.push(categoryIndex);
+    
+    // Create subfolder READMEs (only 1 level deep)
+    if (categories[category].subfolders) {
+      const subfolderDocs = {};
       
-      // Find the configuration for this path
-      let config = categories[category];
-      let currentPath = [category];
-      
-      // Navigate to the correct config level
-      for (let i = 1; i < pathParts.length; i++) {
-        if (config.subfolders && config.subfolders[pathParts[i]]) {
-          config = config.subfolders[pathParts[i]];
-          currentPath.push(pathParts[i]);
-        } else if (config.dynamicSubfolders) {
-          // For dynamic folders, create a generic config
-          config = {
-            description: `${formatCategoryName(pathParts[i])} documentation`
-          };
-          currentPath.push(pathParts[i]);
+      // Group docs by first-level subfolder
+      for (const doc of docs) {
+        if (doc.targetPath.length > 1) {
+          const subfolder = doc.targetPath[1];
+          if (!subfolderDocs[subfolder]) {
+            subfolderDocs[subfolder] = [];
+          }
+          subfolderDocs[subfolder].push(doc);
         }
       }
       
-      const index = await createCategoryIndex(
-        sourceDir,
-        currentPath,
-        pathDocs,
-        config,
-      );
-      if (index) indexFiles.push(index);
+      // Create README for each subfolder
+      for (const [subfolder, subDocs] of Object.entries(subfolderDocs)) {
+        if (categories[category].subfolders[subfolder]) {
+          const subPath = [category, subfolder];
+          const subIndex = await createCategoryIndex(
+            sourceDir,
+            subPath,
+            subDocs,
+            categories[category].subfolders[subfolder],
+            true // Include full tree
+          );
+          if (subIndex) indexFiles.push(subIndex);
+        }
+      }
     }
   }
 
@@ -547,57 +657,59 @@ async function createMainIndex(sourceDir, categorized, categories) {
   return indexPath;
 }
 
-async function createCategoryIndex(sourceDir, pathParts, docs, config) {
+async function createCategoryIndex(sourceDir, pathParts, docs, config, includeFullTree = false) {
   const indexPath = path.join(sourceDir, ...pathParts, "README.md");
 
   let content = `# ${pathParts.map(p => formatCategoryName(p)).join(" / ")}\n\n`;
   content += `${config.description}\n\n`;
   
-  // Add subfolder links if present
-  if (config.subfolders) {
+  if (includeFullTree) {
+    // Generate full file tree
+    content += "## File Structure\n\n";
+    content += "```\n";
+    content += await generateFileTree(docs, pathParts);
+    content += "```\n\n";
+  }
+  
+  // Add subfolder links if at main category level
+  if (pathParts.length === 1 && config.subfolders) {
     content += "## Subcategories\n\n";
     for (const [subName, subConfig] of Object.entries(config.subfolders)) {
-      content += `- [${formatCategoryName(subName)}](./${subName}/) - ${subConfig.description}\n`;
+      const subDocs = docs.filter(d => d.targetPath[1] === subName);
+      if (subDocs.length > 0) {
+        content += `- [${formatCategoryName(subName)}](./${subName}/) - ${subConfig.description} (${subDocs.length} files)\n`;
+      }
     }
     content += "\n";
   }
   
-  // For dynamic folders, list all subfolders found
-  if (config.dynamicSubfolders) {
-    const subfolders = new Set();
-    docs.forEach(doc => {
-      if (doc.targetPath.length > pathParts.length) {
-        subfolders.add(doc.targetPath[pathParts.length]);
-      }
-    });
-    
-    if (subfolders.size > 0) {
-      content += "## Categories\n\n";
-      for (const subfolder of Array.from(subfolders).sort()) {
-        content += `- [${formatCategoryName(subfolder)}](./${subfolder}/)\n`;
-      }
-      content += "\n";
-    }
-  }
-  
-  content += "## Documents\n\n";
-
-  // Only show documents at this level, not in subfolders
+  // List documents at current level
   const levelDocs = docs.filter(doc => doc.targetPath.length === pathParts.length);
   
-  // Sort docs by name
-  levelDocs.sort((a, b) => a.name.localeCompare(b.name));
-
-  for (const doc of levelDocs) {
-    const title =
-      (await getDocTitle(doc.fullPath)) || doc.name.replace(".md", "");
-    content += `- [${title}](./${doc.name})\n`;
-  }
-
   if (levelDocs.length > 0) {
-    content += `\n## Overview\n\n`;
-    content += `This category contains ${levelDocs.length} document${levelDocs.length === 1 ? "" : "s"}.\n\n`;
+    content += "## Documents in this folder\n\n";
+    
+    // Sort docs by name
+    levelDocs.sort((a, b) => a.name.localeCompare(b.name));
+
+    for (const doc of levelDocs) {
+      const title = (await getDocTitle(doc.fullPath)) || doc.name.replace(".md", "");
+      content += `- [${title}](./${doc.name})\n`;
+    }
+    content += "\n";
   }
+
+  // Statistics
+  content += "## Overview\n\n";
+  const totalDocs = docs.length;
+  const subfolderCount = new Set(docs.filter(d => d.targetPath.length > pathParts.length)
+    .map(d => d.targetPath[pathParts.length])).size;
+  
+  content += `- Total documents: ${totalDocs}\n`;
+  if (subfolderCount > 0) {
+    content += `- Subfolders: ${subfolderCount}\n`;
+  }
+  content += "\n";
 
   // Add navigation
   content += "## Navigation\n\n";
@@ -606,9 +718,68 @@ async function createCategoryIndex(sourceDir, pathParts, docs, config) {
   } else {
     content += "- [← Back to Documentation](../)\n";
   }
+  content += "- [↑ Back to Main Documentation](/${"../".repeat(pathParts.length - 1)})\n";
 
   await writeFile(indexPath, content);
   return indexPath;
+}
+
+// Generate a file tree representation
+async function generateFileTree(docs, basePath) {
+  const tree = {};
+  
+  // Build tree structure
+  for (const doc of docs) {
+    // Get relative path from basePath
+    const relativePath = doc.targetPath.slice(basePath.length);
+    
+    // Build nested structure
+    let current = tree;
+    for (let i = 0; i < relativePath.length; i++) {
+      const part = relativePath[i];
+      if (!current[part]) {
+        current[part] = {};
+      }
+      current = current[part];
+    }
+    
+    // Add the file
+    current[doc.name] = null; // null indicates it's a file
+  }
+  
+  // Convert to string representation
+  function treeToString(node, prefix = "", isLast = true) {
+    let result = "";
+    const entries = Object.entries(node).sort(([a], [b]) => {
+      // Folders first, then files
+      const aIsFile = a.endsWith('.md');
+      const bIsFile = b.endsWith('.md');
+      if (aIsFile !== bIsFile) return aIsFile ? 1 : -1;
+      return a.localeCompare(b);
+    });
+    
+    entries.forEach(([name, children], index) => {
+      const isLastEntry = index === entries.length - 1;
+      const connector = isLastEntry ? "└── " : "├── ";
+      const extension = prefix + connector + name;
+      
+      result += extension + "\n";
+      
+      if (children !== null) {
+        const newPrefix = prefix + (isLastEntry ? "    " : "│   ");
+        result += treeToString(children, newPrefix, isLastEntry);
+      }
+    });
+    
+    return result;
+  }
+  
+  // Handle empty tree
+  if (Object.keys(tree).length === 0) {
+    return "(empty)\n";
+  }
+  
+  return treeToString(tree);
 }
 
 async function getDocTitle(filePath) {

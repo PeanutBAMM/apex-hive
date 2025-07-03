@@ -9,7 +9,7 @@ export async function run(args) {
 
   try {
     const renamedFiles = [];
-    
+
     // Scan all directories in docs
     await scanAndRename(source, renamedFiles, dryRun);
 
@@ -47,14 +47,16 @@ async function scanAndRename(dir, renamedFiles, dryRun) {
 
       if (entry.isDirectory() && !entry.name.startsWith(".")) {
         // Check if directory has numbered prefix
-        const cleanDirName = entry.name.replace(/^\d{2}-/, '');
+        const cleanDirName = entry.name.replace(/^\d{2}-/, "");
         if (cleanDirName !== entry.name) {
           const newPath = path.join(path.dirname(fullPath), cleanDirName);
-          
+
           if (!dryRun) {
             try {
               await fs.rename(fullPath, newPath);
-              console.error(`[DOC-CLEANUP] Renamed directory: ${entry.name} → ${cleanDirName}`);
+              console.error(
+                `[DOC-CLEANUP] Renamed directory: ${entry.name} → ${cleanDirName}`,
+              );
               renamedFiles.push({
                 type: "directory",
                 from: entry.name,
@@ -62,7 +64,10 @@ async function scanAndRename(dir, renamedFiles, dryRun) {
                 path: dir,
               });
             } catch (error) {
-              console.error(`[DOC-CLEANUP] Failed to rename directory ${entry.name}:`, error.message);
+              console.error(
+                `[DOC-CLEANUP] Failed to rename directory ${entry.name}:`,
+                error.message,
+              );
             }
           } else {
             renamedFiles.push({
@@ -72,9 +77,13 @@ async function scanAndRename(dir, renamedFiles, dryRun) {
               path: dir,
             });
           }
-          
+
           // Continue scanning with new directory name
-          await scanAndRename(dryRun ? fullPath : newPath, renamedFiles, dryRun);
+          await scanAndRename(
+            dryRun ? fullPath : newPath,
+            renamedFiles,
+            dryRun,
+          );
         } else {
           // Scan subdirectory
           await scanAndRename(fullPath, renamedFiles, dryRun);
@@ -85,20 +94,22 @@ async function scanAndRename(dir, renamedFiles, dryRun) {
         // - "03-reference-cache-test.md" → "cache-test.md"
         // - "restructuring-README.md" → "README.md"
         let cleanFileName = entry.name;
-        
+
         // Remove numbered category prefixes (e.g., "99-misc-", "03-reference-")
-        cleanFileName = cleanFileName.replace(/^\d{2}-[^-]+-/, '');
-        
+        cleanFileName = cleanFileName.replace(/^\d{2}-[^-]+-/, "");
+
         // Remove restructuring prefix
-        cleanFileName = cleanFileName.replace(/^restructuring-/, '');
-        
+        cleanFileName = cleanFileName.replace(/^restructuring-/, "");
+
         if (cleanFileName !== entry.name) {
           const newPath = path.join(dir, cleanFileName);
-          
+
           if (!dryRun) {
             try {
               await fs.rename(fullPath, newPath);
-              console.error(`[DOC-CLEANUP] Renamed file: ${entry.name} → ${cleanFileName}`);
+              console.error(
+                `[DOC-CLEANUP] Renamed file: ${entry.name} → ${cleanFileName}`,
+              );
               renamedFiles.push({
                 type: "file",
                 from: entry.name,
@@ -106,7 +117,10 @@ async function scanAndRename(dir, renamedFiles, dryRun) {
                 path: dir,
               });
             } catch (error) {
-              console.error(`[DOC-CLEANUP] Failed to rename file ${entry.name}:`, error.message);
+              console.error(
+                `[DOC-CLEANUP] Failed to rename file ${entry.name}:`,
+                error.message,
+              );
             }
           } else {
             renamedFiles.push({

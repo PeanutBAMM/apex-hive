@@ -18,9 +18,7 @@ export async function run(args = {}) {
     // Get scored items if available
     let items = [];
     try {
-      const scoreData = JSON.parse(
-        await readFile("backlog-scores.json"),
-      );
+      const scoreData = JSON.parse(await readFile("backlog-scores.json"));
       items = scoreData.items;
     } catch {
       // No scores, load raw items

@@ -1,6 +1,11 @@
 // build.js - Build orchestration script
 import { execSync } from "child_process";
-import { readFile, writeFile, pathExists, getFileStats } from "../modules/file-ops.js";
+import {
+  readFile,
+  writeFile,
+  pathExists,
+  getFileStats,
+} from "../modules/file-ops.js";
 import { promises as fs } from "fs"; // Still need for rm and some operations
 import path from "path";
 

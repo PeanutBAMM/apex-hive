@@ -1,6 +1,12 @@
 // doc-generate-changed.js - Generate documentation for changed files
 import { execSync } from "child_process";
-import { readFile, writeFile, batchRead, batchWrite, pathExists } from "../modules/file-ops.js";
+import {
+  readFile,
+  writeFile,
+  batchRead,
+  batchWrite,
+  pathExists,
+} from "../modules/file-ops.js";
 import { promises as fs } from "fs";
 import path from "path";
 
@@ -71,7 +77,7 @@ export async function run(args = {}) {
           if (!dryRun) {
             // Create directory
             await fs.mkdir(path.dirname(docPath), { recursive: true });
-            
+
             // Queue for batch write
             docsToWrite[docPath] = docResult.content;
           }
@@ -101,11 +107,11 @@ export async function run(args = {}) {
       const indexContent = generateIndex(generated, { since, branch });
       docsToWrite[indexPath] = indexContent;
     }
-    
+
     // Batch write all documentation files
     if (!dryRun && Object.keys(docsToWrite).length > 0) {
       const { errors: writeErrors } = await batchWrite(docsToWrite);
-      
+
       // Report write errors
       for (const [file, error] of Object.entries(writeErrors)) {
         console.error(`[DOC-GENERATE-CHANGED] Error writing ${file}:`, error);
@@ -161,11 +167,13 @@ async function getChangedFiles(options) {
     const existChecks = await Promise.all(
       changedFiles.map(async (file) => ({
         file,
-        exists: await pathExists(file)
-      }))
+        exists: await pathExists(file),
+      })),
     );
-    
-    files.push(...existChecks.filter(check => check.exists).map(check => check.file));
+
+    files.push(
+      ...existChecks.filter((check) => check.exists).map((check) => check.file),
+    );
   } catch (error) {
     console.error(
       "[DOC-GENERATE-CHANGED] Error getting changed files:",

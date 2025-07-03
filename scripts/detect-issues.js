@@ -1,6 +1,12 @@
 // detect-issues.js - Detect various issues in the codebase
 import { execSync } from "child_process";
-import { readFile, writeFile, batchRead, batchWrite, pathExists } from "../modules/file-ops.js";
+import {
+  readFile,
+  writeFile,
+  batchRead,
+  batchWrite,
+  pathExists,
+} from "../modules/file-ops.js";
 import path from "path";
 
 export async function run(args = {}) {
@@ -607,7 +613,7 @@ async function detectTestingIssues() {
 
       const testExists = await pathExists(testFile);
       const specExists = await pathExists(specFile);
-      
+
       if (!testExists && !specExists) {
         missingTestFiles.push(srcFile.replace("./", ""));
       }

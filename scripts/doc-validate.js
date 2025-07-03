@@ -1,5 +1,11 @@
 // doc-validate.js - Validate documentation for completeness and accuracy
-import { readFile, writeFile, pathExists, listFiles, getFileStats } from "../modules/file-ops.js";
+import {
+  readFile,
+  writeFile,
+  pathExists,
+  listFiles,
+  getFileStats,
+} from "../modules/file-ops.js";
 import { promises as fs } from "fs"; // Still need for mkdir
 import path from "path";
 import { execSync } from "child_process";
@@ -535,7 +541,11 @@ async function findMarkdownFiles(dir = ".") {
         continue;
       }
 
-      if ((typeof entry.isDirectory === "function" ? entry.isDirectory() : entry._isDirectory)) {
+      if (
+        typeof entry.isDirectory === "function"
+          ? entry.isDirectory()
+          : entry._isDirectory
+      ) {
         await scan(fullPath);
       } else if (entry.name.endsWith(".md")) {
         files.push(fullPath);

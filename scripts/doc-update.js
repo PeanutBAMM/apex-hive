@@ -1,5 +1,10 @@
 // doc-update.js - Update existing documentation
-import { readFile, writeFile, listFiles, pathExists } from "../modules/file-ops.js";
+import {
+  readFile,
+  writeFile,
+  listFiles,
+  pathExists,
+} from "../modules/file-ops.js";
 import { promises as fs } from "fs"; // Still need for readdir in some cases
 import path from "path";
 
@@ -292,7 +297,7 @@ async function updateAPIDocs(dryRun, modules) {
     }
 
     const fileList = await listFiles(apiDir);
-    const files = fileList.map(f => f.name);
+    const files = fileList.map((f) => f.name);
 
     for (const file of files) {
       if (file.endsWith(".md")) {

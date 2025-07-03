@@ -1,5 +1,11 @@
 // doc-sync.js - Sync documentation across repositories
-import { readFile, writeFile, pathExists, listFiles, getFileStats } from "../modules/file-ops.js";
+import {
+  readFile,
+  writeFile,
+  pathExists,
+  listFiles,
+  getFileStats,
+} from "../modules/file-ops.js";
 import { promises as fs } from "fs"; // Still need for mkdir
 import path from "path";
 import { execSync } from "child_process";
@@ -337,7 +343,9 @@ async function findMarkdownFiles(dir) {
       const fullPath = path.join(directory, entry.name);
 
       if (
-        (typeof entry.isDirectory === "function" ? entry.isDirectory() : entry._isDirectory) &&
+        (typeof entry.isDirectory === "function"
+          ? entry.isDirectory()
+          : entry._isDirectory) &&
         !entry.name.startsWith(".") &&
         entry.name !== "node_modules"
       ) {

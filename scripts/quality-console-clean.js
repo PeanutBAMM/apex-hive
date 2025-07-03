@@ -1,5 +1,10 @@
 // quality-console-clean.js - Remove console.log statements from code
-import { readFile, writeFile, batchRead, batchWrite } from "../modules/file-ops.js";
+import {
+  readFile,
+  writeFile,
+  batchRead,
+  batchWrite,
+} from "../modules/file-ops.js";
 import path from "path";
 import { execSync } from "child_process";
 
@@ -32,12 +37,13 @@ export async function run(args = {}) {
     };
 
     // Filter valid files
-    const validFiles = files.filter(f => f && !f.includes("node_modules"));
+    const validFiles = files.filter((f) => f && !f.includes("node_modules"));
     results.scanned = validFiles.length;
 
     // Batch read all files
-    const { results: fileContents, errors: readErrors } = await batchRead(validFiles);
-    
+    const { results: fileContents, errors: readErrors } =
+      await batchRead(validFiles);
+
     // Report read errors
     for (const [file, error] of Object.entries(readErrors)) {
       console.error(`[QUALITY-CONSOLE-CLEAN] Error reading ${file}:`, error);
@@ -113,7 +119,7 @@ export async function run(args = {}) {
     // Batch write all modified files
     if (!dryRun && Object.keys(filesToWrite).length > 0) {
       const { errors: writeErrors } = await batchWrite(filesToWrite);
-      
+
       // Report write errors
       for (const [file, error] of Object.entries(writeErrors)) {
         console.error(`[QUALITY-CONSOLE-CLEAN] Error writing ${file}:`, error);

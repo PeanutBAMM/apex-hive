@@ -190,7 +190,10 @@ async function findFileByName(fileName, searchDir) {
     if (depth > 3) return; // Limit search depth
 
     try {
-      const entries = await listFiles(dir, { withFileTypes: true, includeDirectories: true });
+      const entries = await listFiles(dir, {
+        withFileTypes: true,
+        includeDirectories: true,
+      });
 
       for (const entry of entries) {
         const fullPath = path.join(dir, entry.name);
@@ -198,7 +201,9 @@ async function findFileByName(fileName, searchDir) {
         if (entry.isFile() && entry.name === fileName) {
           candidates.push(fullPath);
         } else if (
-          (typeof entry.isDirectory === "function" ? entry.isDirectory() : entry._isDirectory) &&
+          (typeof entry.isDirectory === "function"
+            ? entry.isDirectory()
+            : entry._isDirectory) &&
           !entry.name.startsWith(".") &&
           entry.name !== "node_modules"
         ) {
@@ -225,13 +230,18 @@ async function findMarkdownFiles(dir) {
 
   async function scan(directory) {
     try {
-      const entries = await listFiles(directory, { withFileTypes: true, includeDirectories: true });
+      const entries = await listFiles(directory, {
+        withFileTypes: true,
+        includeDirectories: true,
+      });
 
       for (const entry of entries) {
         const fullPath = path.join(directory, entry.name);
 
         if (
-          (typeof entry.isDirectory === "function" ? entry.isDirectory() : entry._isDirectory) &&
+          (typeof entry.isDirectory === "function"
+            ? entry.isDirectory()
+            : entry._isDirectory) &&
           !entry.name.startsWith(".") &&
           entry.name !== "node_modules"
         ) {

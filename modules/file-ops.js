@@ -13,14 +13,14 @@ const MAX_WAIT_TIME = 5000; // 5 seconds
  */
 async function acquireLock(filePath) {
   const startTime = Date.now();
-  
+
   while (activeLocks.has(filePath)) {
     if (Date.now() - startTime > MAX_WAIT_TIME) {
       throw new Error(`Lock timeout for ${filePath}`);
     }
-    await new Promise(resolve => setTimeout(resolve, 10));
+    await new Promise((resolve) => setTimeout(resolve, 10));
   }
-  
+
   activeLocks.set(filePath, Date.now());
 }
 
@@ -44,21 +44,27 @@ export async function readFile(filePath, options = {}) {
       cached = await fileCache.get(absolutePath);
     } catch (cacheError) {
       // If cache fails, continue without cache
-      console.error(`[FILE-OPS] Cache get failed for ${filePath}:`, cacheError.message);
+      console.error(
+        `[FILE-OPS] Cache get failed for ${filePath}:`,
+        cacheError.message,
+      );
     }
     if (cached !== null) {
       // Check if file was modified since cache
       try {
         const stats = await fs.stat(absolutePath);
         const cacheTime = cached.timestamp || 0;
-        
+
         // If file is newer than cache, invalidate
         if (stats.mtime.getTime() > cacheTime) {
           try {
             await fileCache.delete(absolutePath);
           } catch (deleteError) {
             // If delete fails, just continue
-            console.error(`[FILE-OPS] Cache delete failed for ${filePath}:`, deleteError.message);
+            console.error(
+              `[FILE-OPS] Cache delete failed for ${filePath}:`,
+              deleteError.message,
+            );
           }
         } else {
           // Handle both direct content and structured cache data
@@ -90,11 +96,14 @@ export async function readFile(filePath, options = {}) {
         const stats = await fs.stat(absolutePath);
         await fileCache.set(absolutePath, {
           content,
-          timestamp: stats.mtime.getTime()
+          timestamp: stats.mtime.getTime(),
         });
       } catch (cacheError) {
         // If cache fails, just log and continue
-        console.error(`[FILE-OPS] Cache set failed for ${filePath}:`, cacheError.message);
+        console.error(
+          `[FILE-OPS] Cache set failed for ${filePath}:`,
+          cacheError.message,
+        );
       }
     }
 
@@ -129,11 +138,14 @@ export async function writeFile(filePath, content) {
       const stats = await fs.stat(absolutePath);
       await fileCache.set(absolutePath, {
         content,
-        timestamp: stats.mtime.getTime()
+        timestamp: stats.mtime.getTime(),
       });
     } catch (cacheError) {
       // If cache fails, just log and continue
-      console.error(`[FILE-OPS] Cache set failed for ${filePath}:`, cacheError.message);
+      console.error(
+        `[FILE-OPS] Cache set failed for ${filePath}:`,
+        cacheError.message,
+      );
     }
 
     return absolutePath;
@@ -154,14 +166,14 @@ export async function listFiles(dirPath, options = {}) {
 
     // If withFileTypes option is true, convert to serializable format
     if (options.withFileTypes) {
-      return entries.map(entry => ({
+      return entries.map((entry) => ({
         name: entry.name,
         path: entry.path || entry.parentPath,
         isFile: () => entry.isFile(),
         isDirectory: () => entry.isDirectory(),
         // Store the actual values for MCP serialization
         _isFile: entry.isFile(),
-        _isDirectory: entry.isDirectory()
+        _isDirectory: entry.isDirectory(),
       }));
     }
 
@@ -284,7 +296,7 @@ export async function deleteFile(filePath) {
 export async function batchRead(filePaths, options = {}) {
   const results = {};
   const errors = {};
-  
+
   // Process files in parallel for better performance
   await Promise.all(
     filePaths.map(async (filePath) => {
@@ -293,9 +305,9 @@ export async function batchRead(filePaths, options = {}) {
       } catch (error) {
         errors[filePath] = error.message;
       }
-    })
+    }),
   );
-  
+
   return { results, errors };
 }
 
@@ -308,7 +320,7 @@ export async function batchRead(filePaths, options = {}) {
 export async function batchWrite(fileMap, options = {}) {
   const results = [];
   const errors = {};
-  
+
   // Process files sequentially to avoid lock contention
   for (const [filePath, content] of Object.entries(fileMap)) {
     try {
@@ -318,7 +330,7 @@ export async function batchWrite(fileMap, options = {}) {
       errors[filePath] = error.message;
     }
   }
-  
+
   return { results, errors };
 }
 
@@ -342,21 +354,21 @@ function chunkArray(array, size) {
  */
 export async function batchReadSafe(filePaths, options = {}) {
   const { chunkSize = 50, ...readOptions } = options;
-  
+
   if (filePaths.length <= chunkSize) {
     return batchRead(filePaths, readOptions);
   }
-  
+
   // Process in chunks to avoid memory issues
   const chunks = chunkArray(filePaths, chunkSize);
   const allResults = {};
   const allErrors = {};
-  
+
   for (const chunk of chunks) {
     const { results, errors } = await batchRead(chunk, readOptions);
     Object.assign(allResults, results);
     Object.assign(allErrors, errors);
   }
-  
+
   return { results: allResults, errors: allErrors };
 }
