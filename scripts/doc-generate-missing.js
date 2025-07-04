@@ -1,13 +1,12 @@
 // doc-generate-missing.js - Generate documentation for files without docs
-import { readFile, writeFile, listFiles, pathExists } from "../modules/file-ops.js";
+import { readFile, writeFile, listFiles, pathExists, batchRead, getFileStats } from "../modules/file-ops.js";
 import { promises as fs } from "fs";
 import { execSync } from "child_process";
 import path from "path";
 
 export async function run(args = {}) {
   const {
-    source,  // Legacy single source
-    sources = source ? [source] : ["."], // Scan entire project by default
+    sources = ["."], // Scan entire project by default
     docsDir = "docs",
     extensions = [".js", ".ts", ".jsx", ".tsx"],
     format = "markdown",
@@ -64,7 +63,7 @@ export async function run(args = {}) {
     // Filter by size threshold
     const filesToDocument = [];
     for (const file of missingDocs) {
-      const stats = await fs.stat(file);
+      const stats = await getFileStats(file);
       const lines = await countLines(file);
 
       if (lines >= threshold) {
@@ -95,14 +94,14 @@ export async function run(args = {}) {
 
     for (const file of filesToDocument) {
       try {
-        const docPath = getDocPath(file.path, source, docsDir);
+        const docPath = getDocPath(file.path, "", docsDir);
         const docContent = await generateDocumentation(file.path, {
           format,
           modules,
         });
 
         if (!dryRun) {
-          // Create directory
+          // Create directory - still need fs for mkdir
           await fs.mkdir(path.dirname(docPath), { recursive: true });
 
           // Write documentation
@@ -174,13 +173,13 @@ async function findAllSourceFiles(sources, extensions) {
 
   // Filter out files we don't want to document
   const filteredFiles = Array.from(allFiles).filter(file => {
-    // Skip test files
-    if (file.includes('.test.') || file.includes('.spec.')) return false;
-    // Skip config files that are not main configs
-    if (file.includes('jest.config') || file.includes('webpack.config')) return false;
-    // Skip generated or debug files
+    // Skip test files (but not test runners)
+    if ((file.includes('.test.') || file.includes('.spec.')) && !file.includes('test-runner')) return false;
+    // Skip debug and fixed versions
     if (file.includes('-debug.') || file.includes('-fixed.')) return false;
-    // Skip node_modules, coverage, etc (already handled by find command)
+    // Skip README.js files if any
+    if (file.toLowerCase().includes('readme.js')) return false;
+    // Keep all other JS files including configs, modules, scripts, etc.
     return true;
   });
 
@@ -199,7 +198,7 @@ async function findSourceFiles(sourceDir, extensions) {
       "*/build/*",
       "*/coverage/*",
       "*/.git/*",
-      "*/test/*", // Exclude test directories
+      // Note: NOT excluding test/ to catch test runners and setup files
       "*/.cache/*",
       "*/tmp/*"
     ].map(p => `-not -path "${p}"`).join(" ");
@@ -214,13 +213,10 @@ async function findSourceFiles(sourceDir, extensions) {
     
     console.error(`[DOC-GENERATE-MISSING] Find command found ${foundFiles.length} files in ${sourceDir}`);
 
-    // Verify files exist
+    // Verify files exist using cached pathExists
     for (const file of foundFiles) {
-      try {
-        if (!(await pathExists(file))) throw new Error();
+      if (await pathExists(file)) {
         files.push(file);
-      } catch {
-        // File doesn't exist
       }
     }
   } catch (error) {
@@ -246,91 +242,57 @@ async function findMissingDocsIntelligent(sourceFiles, docsDir) {
 
 async function findExistingDocForFile(sourceFile, docsDir) {
   const basename = path.basename(sourceFile, path.extname(sourceFile));
-  const possibleLocations = [];
-
-  // Determine possible documentation locations based on file type
-  if (sourceFile.startsWith('./scripts/') || sourceFile.startsWith('scripts/')) {
-    // Script files
-    const scriptName = basename;
-    const prefix = scriptName.split('-')[0];
+  
+  try {
+    // Search the entire docs directory for any markdown file that documents this source file
+    const command = `find ${docsDir} -name "*.md" -type f`;
+    const output = execSync(command, { encoding: "utf8" });
+    const docFiles = output.trim().split("\n").filter(f => f);
     
-    const scriptFolders = {
-      ci: "scripts/ci-scripts",
-      doc: "scripts/documentation-scripts",
-      quality: "scripts/quality-scripts",
-      git: "scripts/git-scripts",
-      cache: "scripts/cache-scripts",
-      backlog: "scripts/backlog-scripts",
-      detect: "scripts/detection-scripts",
-      fix: "scripts/detection-scripts",
-      report: "scripts/detection-scripts",
-      startup: "scripts/context-scripts",
-      test: "scripts/quality-scripts",
-      deploy: "scripts/deployment-scripts",
-      version: "scripts/deployment-scripts",
-      changelog: "scripts/deployment-scripts",
-      release: "scripts/deployment-scripts",
-      init: "scripts/core-scripts",
-      build: "scripts/deployment-scripts",
-      search: "scripts/core-scripts",
-      save: "scripts/core-scripts",
-      code: "scripts/core-scripts",
-    };
-
-    const folder = scriptFolders[prefix] || "scripts";
-    possibleLocations.push(
-      path.join(docsDir, folder, `${basename}.md`),
-      path.join(docsDir, folder, `${basename}-overview.md`),
-      path.join(docsDir, folder, `${basename}-documentation.md`)
-    );
-  } else if (sourceFile.startsWith('./modules/') || sourceFile.startsWith('modules/')) {
-    // Module files
-    possibleLocations.push(
-      path.join(docsDir, "architecture/reference/api", `api-${basename}.md`),
-      path.join(docsDir, "architecture/components", `modules-${basename}.md`),
-      path.join(docsDir, "architecture/features", `${basename}-system.md`),
-      path.join(docsDir, "modules", basename, "README.md")
-    );
-  } else if (sourceFile.startsWith('./config/') || sourceFile.startsWith('config/')) {
-    // Config files
-    possibleLocations.push(
-      path.join(docsDir, "architecture/reference/configuration", `${basename}.md`),
-      path.join(docsDir, "configuration", `${basename}.md`)
-    );
-  } else if (sourceFile === './index.js' || sourceFile === 'index.js') {
-    // Main entry point
-    possibleLocations.push(
-      path.join(docsDir, "getting-started", "index.md"),
-      path.join(docsDir, "architecture", "index.md")
-    );
-  } else {
-    // Root level files
-    possibleLocations.push(
-      path.join(docsDir, "architecture/components", `${basename}.md`),
-      path.join(docsDir, "architecture", `${basename}.md`),
-      path.join(docsDir, "development", `${basename}.md`)
-    );
-  }
-
-  // Check each possible location
-  for (const docPath of possibleLocations) {
-    if (await pathExists(docPath)) {
-      // Verify it documents this source file
+    // Normalize the source file path for comparison
+    const normalizedSource = sourceFile.replace(/^\.\//, '');
+    
+    // Check each doc file to see if it documents this source file
+    for (const docFile of docFiles) {
+      // Skip report files and lists
+      if (docFile.includes('report') || docFile.includes('missing-docs')) {
+        continue;
+      }
+      
       try {
-        const content = await readFile(docPath);
-        // Check if the doc references the source file
-        if (content.includes(basename) || 
-            content.includes(`**File**: \`${sourceFile}\``) ||
-            content.includes(`**Path**: \`${sourceFile}\``)) {
-          return docPath;
+        const content = await readFile(docFile);
+        const lines = content.split('\n');
+        
+        // Check multiple patterns that indicate this doc is for the source file
+        if (
+          // Direct path references
+          content.includes(`**File**: \`${sourceFile}\``) ||
+          content.includes(`**Path**: \`${sourceFile}\``) ||
+          content.includes(`**File**: \`${normalizedSource}\``) ||
+          content.includes(`**Path**: \`${normalizedSource}\``) ||
+          // File name in main header (first few lines only)
+          lines.slice(0, 5).some(line => 
+            line === `# ${basename}` || 
+            line === `# ${basename}.js` ||
+            line === `# ${basename.replace(/-/g, ' ')}`
+          ) ||
+          // Check if it's an API doc for this module
+          (docFile.includes('api-') && docFile.includes(basename) && 
+           lines.slice(0, 5).some(line => line.includes(basename)))
+        ) {
+          console.error(`[DOC-GENERATE-MISSING] Found existing doc for ${sourceFile} at ${docFile}`);
+          return docFile;
         }
       } catch {
-        // Continue checking
+        // Continue if file can't be read
       }
     }
+    
+    return null;
+  } catch (error) {
+    console.error(`[DOC-GENERATE-MISSING] Error searching for existing docs: ${error.message}`);
+    return null;
   }
-
-  return null;
 }
 
 async function countLines(filepath) {
@@ -344,43 +306,8 @@ async function countLines(filepath) {
 
 function getDocPath(sourcePath, sourceRoot, docsDir) {
   const basename = path.basename(sourcePath, path.extname(sourcePath));
-  
-  // Intelligent location based on file type
-  if (sourcePath.includes('/scripts/') || sourcePath.startsWith('scripts/')) {
-    const prefix = basename.split('-')[0];
-    const scriptFolders = {
-      ci: "scripts/ci-scripts",
-      doc: "scripts/documentation-scripts",
-      quality: "scripts/quality-scripts",
-      git: "scripts/git-scripts",
-      cache: "scripts/cache-scripts",
-      backlog: "scripts/backlog-scripts",
-      detect: "scripts/detection-scripts",
-      fix: "scripts/detection-scripts",
-      report: "scripts/detection-scripts",
-      startup: "scripts/context-scripts",
-      test: "scripts/quality-scripts",
-      deploy: "scripts/deployment-scripts",
-      version: "scripts/deployment-scripts",
-      changelog: "scripts/deployment-scripts",
-      release: "scripts/deployment-scripts",
-      init: "scripts/core-scripts",
-      build: "scripts/deployment-scripts",
-      search: "scripts/core-scripts",
-      save: "scripts/core-scripts",
-      code: "scripts/core-scripts",
-    };
-    
-    const folder = scriptFolders[prefix] || "scripts";
-    return path.join(docsDir, folder, `${basename}.md`);
-  } else if (sourcePath.includes('/modules/') || sourcePath.startsWith('modules/')) {
-    return path.join(docsDir, "architecture/reference/api", `api-${basename}.md`);
-  } else if (sourcePath.includes('/config/') || sourcePath.startsWith('config/')) {
-    return path.join(docsDir, "architecture/reference/configuration", `${basename}.md`);
-  } else {
-    // Root files go to architecture/components
-    return path.join(docsDir, "architecture/components", `${basename}.md`);
-  }
+  // Simple: all docs go to root of docs folder for doc:organize to sort later
+  return path.join(docsDir, `${basename}.md`);
 }
 
 async function generateDocumentation(filepath, options) {
@@ -437,6 +364,7 @@ function generateMarkdownDoc(filepath, content, language) {
   const lines = content.split("\n");
   const basename = path.basename(filepath);
   const dirname = path.dirname(filepath);
+  const fileType = detectFileType(filepath, content);
 
   let doc = `# ${basename}\n\n`;
 
@@ -445,15 +373,13 @@ function generateMarkdownDoc(filepath, content, language) {
   doc += `- **Path**: \`${filepath}\`\n`;
   doc += `- **Language**: ${language}\n`;
   doc += `- **Lines**: ${lines.length}\n`;
-  doc += `- **Size**: ${(content.length / 1024).toFixed(1)}KB\n\n`;
+  doc += `- **Size**: ${(content.length / 1024).toFixed(1)}KB\n`;
+  doc += `- **Type**: ${fileType}\n`;
+  doc += `- **Last Modified**: ${new Date().toISOString()}\n\n`;
 
   // Extract and add overview
-  const overview = extractOverview(content, language);
-  if (overview) {
-    doc += `## Overview\n\n${overview}\n\n`;
-  } else {
-    doc += `## Overview\n\n*No overview found. Please add a file-level comment.*\n\n`;
-  }
+  const overview = extractOverview(content, language) || generateAutoOverview(filepath, content, fileType);
+  doc += `## Overview\n\n${overview}\n\n`;
 
   // Analyze code structure
   const analysis = analyzeCode(content, language);
@@ -530,24 +456,24 @@ function generateMarkdownDoc(filepath, content, language) {
     doc += "\n";
   }
 
-  // Usage example
-  doc += `## Usage\n\n`;
-  doc += "```" + language + "\n";
-
-  if (language === "javascript" || language === "typescript") {
-    const mainExport =
-      analysis.exports.find((e) => e.name === "default") || analysis.exports[0];
-    if (mainExport) {
-      doc += `import ${mainExport.name} from '${filepath}';\n\n`;
-      doc += `// TODO: Add usage example\n`;
-    } else {
-      doc += `// TODO: Add usage example\n`;
-    }
-  } else {
-    doc += `// TODO: Add usage example\n`;
+  // Add type-specific sections
+  if (fileType === "Script") {
+    doc += generateScriptSection(basename, content, analysis);
+  } else if (fileType === "Module") {
+    doc += generateModuleSection(basename, content, analysis);
+  } else if (fileType === "Configuration") {
+    doc += generateConfigSection(basename, content, analysis);
+  } else if (fileType === "Test") {
+    doc += generateTestSection(basename, content, analysis);
   }
 
-  doc += "```\n\n";
+  // Usage example
+  doc += `## Usage\n\n`;
+  doc += generateUsageExample(filepath, fileType, analysis, language);
+
+  // Related Documentation
+  doc += `## Related Documentation\n\n`;
+  doc += generateRelatedDocs(filepath, fileType, basename);
 
   // See also section
   doc += `## See Also\n\n`;
@@ -874,4 +800,174 @@ function generateReport(data) {
   report += "4. Consider lowering threshold if many small files lack docs\n";
 
   return report;
+}
+
+// Helper functions for enhanced documentation
+
+function detectFileType(filepath, content) {
+  const basename = path.basename(filepath);
+  
+  if (filepath.includes('/scripts/') || filepath.startsWith('scripts/')) return 'Script';
+  if (filepath.includes('/modules/') || filepath.startsWith('modules/')) return 'Module';
+  if (filepath.includes('/config/') || filepath.startsWith('config/')) return 'Configuration';
+  if (filepath.includes('/test/') || basename.includes('.test.') || basename.includes('.spec.')) return 'Test';
+  if (basename.includes('index.js')) return 'Entry Point';
+  if (basename.includes('server')) return 'Server Component';
+  if (basename.includes('router')) return 'Router';
+  if (basename.includes('formatter')) return 'Formatter';
+  if (basename.includes('install') || basename.includes('setup')) return 'Installation Script';
+  
+  return 'Component';
+}
+
+function generateAutoOverview(filepath, content, fileType) {
+  const basename = path.basename(filepath, path.extname(filepath));
+  
+  switch (fileType) {
+    case 'Script':
+      return `This script provides functionality for ${basename.replace(/-/g, ' ')}. It is part of the Apex Hive automation system.`;
+    case 'Module':
+      return `The ${basename} module provides reusable functionality that can be imported by other parts of the system.`;
+    case 'Configuration':
+      return `Configuration file that defines settings and patterns for ${basename.replace(/-/g, ' ')}.`;
+    case 'Test':
+      return `Test suite for ${basename.replace('.test', '').replace('.spec', '')} functionality.`;
+    case 'Entry Point':
+      return `Main entry point for the application. This file initializes and coordinates the system components.`;
+    case 'Server Component':
+      return `Server component that handles ${basename.includes('mcp') ? 'MCP (Model Context Protocol)' : 'server'} functionality.`;
+    case 'Router':
+      return `Routing component that handles command dispatch and natural language processing.`;
+    case 'Installation Script':
+      return `Installation and setup script for ${basename.replace(/-/g, ' ')}.`;
+    default:
+      return `Component that provides ${basename.replace(/-/g, ' ')} functionality.`;
+  }
+}
+
+function generateScriptSection(basename, content, analysis) {
+  let section = `## Script Details\n\n`;
+  
+  // Extract command name if it's an apex script
+  const commandName = basename.replace('.js', '');
+  section += `- **Command**: \`apex ${commandName}\`\n`;
+  
+  // Check if it accepts arguments
+  if (content.includes('args.') || content.includes('const {')) {
+    section += `- **Accepts Arguments**: Yes\n`;
+  }
+  
+  // Check for dry-run support
+  if (content.includes('dryRun')) {
+    section += `- **Supports Dry Run**: Yes\n`;
+  }
+  
+  section += `\n`;
+  return section;
+}
+
+function generateModuleSection(basename, content, analysis) {
+  let section = `## Module Details\n\n`;
+  
+  if (analysis.exports.length > 0) {
+    section += `This module exports ${analysis.exports.length} function(s)/class(es) for use by other components.\n\n`;
+  }
+  
+  // Check for singleton pattern
+  if (content.includes('instance') && content.includes('getInstance')) {
+    section += `- **Pattern**: Singleton\n`;
+  }
+  
+  // Check for caching
+  if (content.includes('cache') || content.includes('Cache')) {
+    section += `- **Features**: Caching support\n`;
+  }
+  
+  section += `\n`;
+  return section;
+}
+
+function generateConfigSection(basename, content, analysis) {
+  let section = `## Configuration Details\n\n`;
+  
+  // Count configuration entries
+  const configMatches = content.match(/['"][\w-]+['"]\s*:/g);
+  if (configMatches) {
+    section += `- **Configuration Entries**: ${configMatches.length}\n`;
+  }
+  
+  // Check for patterns
+  if (content.includes('pattern') || content.includes('regex')) {
+    section += `- **Type**: Pattern/Regex Configuration\n`;
+  }
+  
+  section += `\n`;
+  return section;
+}
+
+function generateTestSection(basename, content, analysis) {
+  let section = `## Test Details\n\n`;
+  
+  // Count test cases
+  const testMatches = content.match(/\b(it|test|describe)\s*\(/g);
+  if (testMatches) {
+    section += `- **Test Cases**: ${testMatches.filter(m => m.includes('it') || m.includes('test')).length}\n`;
+    section += `- **Test Suites**: ${testMatches.filter(m => m.includes('describe')).length}\n`;
+  }
+  
+  section += `\n`;
+  return section;
+}
+
+function generateUsageExample(filepath, fileType, analysis, language) {
+  let example = "```" + language + "\n";
+  
+  switch (fileType) {
+    case 'Script':
+      const scriptName = path.basename(filepath, '.js');
+      example += `// Run this script via the apex command\n`;
+      example += `apex ${scriptName}\n\n`;
+      example += `// With arguments\n`;
+      example += `apex ${scriptName} --arg value\n`;
+      break;
+      
+    case 'Module':
+      if (analysis.exports.length > 0) {
+        const mainExport = analysis.exports.find(e => e.name === 'default') || analysis.exports[0];
+        example += `import { ${mainExport.name} } from '${filepath}';\n\n`;
+        example += `// Use the module\n`;
+        example += `const result = await ${mainExport.name}();\n`;
+      }
+      break;
+      
+    case 'Configuration':
+      example += `import config from '${filepath}';\n\n`;
+      example += `// Access configuration\n`;
+      example += `const setting = config.someSetting;\n`;
+      break;
+      
+    default:
+      example += `// Import and use this component\n`;
+      example += `import Component from '${filepath}';\n`;
+  }
+  
+  example += "```\n\n";
+  return example;
+}
+
+function generateRelatedDocs(filepath, fileType, basename) {
+  let docs = "";
+  
+  if (fileType === 'Script') {
+    docs += `- [Apex Hive Commands Reference](../architecture/reference/commands/)\n`;
+    docs += `- [Script Development Guide](../development/scripts/)\n`;
+  } else if (fileType === 'Module') {
+    docs += `- [API Reference](../architecture/reference/api/)\n`;
+    docs += `- [Module Architecture](../architecture/components/)\n`;
+  } else if (fileType === 'Configuration') {
+    docs += `- [Configuration Guide](../architecture/reference/configuration/)\n`;
+  }
+  
+  docs += `\n`;
+  return docs;
 }

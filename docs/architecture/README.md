@@ -28,15 +28,22 @@ System architecture and design
     ├── commands
     │   └── recipes.md
     └── configuration
+        ├── apex-router.md
+        ├── generate-claude-md.md
+        ├── index.md
+        ├── jest.config.md
+        ├── mcp-server.md
+        ├── output-formatter.md
         ├── patterns-nl.md
         ├── patterns.md
         ├── prepare-release.md
-        └── registry.md
+        ├── registry.md
+        └── test-performance-runner.md
 ```
 
 ## Overview
 
-- Total documents: 23
+- Total documents: 27
 - Subfolders: 4
 
 ## Navigation

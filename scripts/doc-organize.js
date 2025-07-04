@@ -209,7 +209,7 @@ function determineTargetPath(doc, headers, content) {
   // Support both **File**: and **Path**: formats
   const sourceFileMatch = content.match(/\*\*(File|Path)\*\*:\s*`([^`]+)`/);
   if (sourceFileMatch) {
-    const sourcePath = sourceFileMatch[2]; // Index 2 because 1 is now the File|Path match
+    const sourcePath = sourceFileMatch[2].replace(/^\.\//, ''); // Strip leading ./ if present
     
     // For scripts
     if (sourcePath.startsWith('scripts/')) {

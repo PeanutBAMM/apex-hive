@@ -1,17 +1,17 @@
 # Issues Report
 
-Generated: 2025-07-04T08:58:15.457Z
+Generated: 2025-07-04T17:05:51.722Z
 
 ## Summary
 
-- Total Issues: 177
+- Total Issues: 170
 - Critical: 0
 - High: 0
-- Medium: 48
-- Low: 129
+- Medium: 46
+- Low: 124
 - Info: 0
 
-## 🟡 MEDIUM (48)
+## 🟡 MEDIUM (46)
 
 ### console-log
 - **Category**: code
@@ -163,7 +163,7 @@ Generated: 2025-07-04T08:58:15.457Z
 
 ### unsafe-regex
 - **Category**: security
-- **File**: scripts/doc-generate-missing.js:605
+- **File**: scripts/doc-generate-missing.js:754
 - **Message**: Dynamic RegExp construction (potential ReDoS)
 
 ### unsafe-regex
@@ -218,16 +218,6 @@ Generated: 2025-07-04T08:58:15.457Z
 
 ### unsafe-regex
 - **Category**: security
-- **File**: scripts/doc-validate-xml.js:240
-- **Message**: Dynamic RegExp construction (potential ReDoS)
-
-### unsafe-regex
-- **Category**: security
-- **File**: scripts/doc-validate-xml.js:242
-- **Message**: Dynamic RegExp construction (potential ReDoS)
-
-### unsafe-regex
-- **Category**: security
 - **File**: scripts/search.js:250
 - **Message**: Dynamic RegExp construction (potential ReDoS)
 
@@ -276,7 +266,7 @@ Generated: 2025-07-04T08:58:15.457Z
 - **File**: scripts/detect-issues.js:560
 - **Message**: Synchronous operation 'mkdirSync' found
 
-## 🔵 LOW (129)
+## 🔵 LOW (124)
 
 ### todo-comment
 - **Category**: code
@@ -500,32 +490,32 @@ Generated: 2025-07-04T08:58:15.457Z
 
 ### todo-comment
 - **Category**: code
-- **File**: scripts/doc-generate-missing.js:377
+- **File**: scripts/doc-generate-missing.js:526
 - **Message**: doc += `## TODO\n\n`;
 
 ### todo-comment
 - **Category**: code
-- **File**: scripts/doc-generate-missing.js:393
+- **File**: scripts/doc-generate-missing.js:542
 - **Message**: doc += `// TODO: Add usage example\n`;
 
 ### todo-comment
 - **Category**: code
-- **File**: scripts/doc-generate-missing.js:395
+- **File**: scripts/doc-generate-missing.js:544
 - **Message**: doc += `// TODO: Add usage example\n`;
 
 ### todo-comment
 - **Category**: code
-- **File**: scripts/doc-generate-missing.js:398
+- **File**: scripts/doc-generate-missing.js:547
 - **Message**: doc += `// TODO: Add usage example\n`;
 
 ### todo-comment
 - **Category**: code
-- **File**: scripts/doc-generate-missing.js:627
+- **File**: scripts/doc-generate-missing.js:776
 - **Message**: // Extract TODOs (language agnostic)
 
 ### todo-comment
 - **Category**: code
-- **File**: scripts/doc-generate-missing.js:628
+- **File**: scripts/doc-generate-missing.js:777
 - **Message**: const todoRegex = /(?:\/\/|#|\/\*)\s*TODO\s*:?\s*(.+?)(?:\*\/|$)/gi;
 
 ### todo-comment
@@ -545,7 +535,7 @@ Generated: 2025-07-04T08:58:15.457Z
 
 ### long-function
 - **Category**: code
-- **File**: scripts/doc-organize.js:347
+- **File**: scripts/doc-organize.js:348
 - **Message**: Function 'detectScriptType' is 68 lines long (max: 50)
 
 ### long-function
@@ -645,7 +635,7 @@ Generated: 2025-07-04T08:58:15.457Z
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/ci-monitor.js:4
+- **File**: scripts/ci-monitor.js:5
 - **Message**: 1 function missing JSDoc: run
 
 ### missing-jsdoc
@@ -685,11 +675,6 @@ Generated: 2025-07-04T08:58:15.457Z
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/doc-add-xml.js:5
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
 - **File**: scripts/doc-check.js:5
 - **Message**: 1 function missing JSDoc: run
 
@@ -705,7 +690,7 @@ Generated: 2025-07-04T08:58:15.457Z
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/doc-fix-links.js:5
+- **File**: scripts/doc-fix-links.js:6
 - **Message**: 1 function missing JSDoc: run
 
 ### missing-jsdoc
@@ -715,7 +700,7 @@ Generated: 2025-07-04T08:58:15.457Z
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/doc-generate-missing.js:6
+- **File**: scripts/doc-generate-missing.js:7
 - **Message**: 1 function missing JSDoc: run
 
 ### missing-jsdoc
@@ -760,11 +745,6 @@ Generated: 2025-07-04T08:58:15.457Z
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/doc-validate-xml.js:6
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
 - **File**: scripts/doc-validate.js:13
 - **Message**: 1 function missing JSDoc: run
 
@@ -780,7 +760,7 @@ Generated: 2025-07-04T08:58:15.457Z
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/git-commit.js:4
+- **File**: scripts/git-commit.js:6
 - **Message**: 1 function missing JSDoc: run
 
 ### missing-jsdoc
@@ -800,12 +780,12 @@ Generated: 2025-07-04T08:58:15.457Z
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/git-push.js:4
+- **File**: scripts/git-push.js:5
 - **Message**: 1 function missing JSDoc: run
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/git-status.js:4
+- **File**: scripts/git-status.js:5
 - **Message**: 1 function missing JSDoc: run
 
 ### missing-jsdoc
@@ -870,7 +850,7 @@ Generated: 2025-07-04T08:58:15.457Z
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/save-conversation.js:8
+- **File**: scripts/save-conversation.js:9
 - **Message**: 3 functions missing JSDoc: run, getRecentConversations, extractKeywords
 
 ### missing-jsdoc
@@ -900,26 +880,11 @@ Generated: 2025-07-04T08:58:15.457Z
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/xml-add.js:5
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/xml-clean.js:5
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/xml-validate.js:5
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
 - **File**: test/setup.js:14
 - **Message**: 5 functions missing JSDoc: setupTestCache, cleanupTestCache, delay, generateTestData, mockConsole
 
 ### missing-tests
 - **Category**: testing
 - **File**: multiple
-- **Message**: 93 files missing tests (showing first 10: apex-router.js, config/patterns-nl.js, config/patterns.js, config/registry.js, generate-claude-md.js, index.js, install-mcp.js, jest.config.js, mcp-server-debug.js, mcp-server-fixed.js, and 83 more)
+- **Message**: 88 files missing tests (showing first 10: apex-router.js, config/patterns-nl.js, config/patterns.js, config/registry.js, generate-claude-md.js, index.js, install-mcp.js, jest.config.js, mcp-server-debug.js, mcp-server-fixed.js, and 78 more)
 

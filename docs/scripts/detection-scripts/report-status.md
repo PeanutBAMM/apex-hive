@@ -1,15 +1,13 @@
 # report-status.js
 
-<module>report-status</module>
-<description>report-status.js - Generate comprehensive status reports</description>
-<category>Detection</category>
-
 ## File Information
 
-- **Path**: `scripts/report-status.js`
+- **Path**: `./scripts/report-status.js`
 - **Language**: javascript
 - **Lines**: 728
 - **Size**: 19.4KB
+- **Type**: Script
+- **Last Modified**: 2025-07-04T19:45:39.819Z
 
 ## Overview
 
@@ -136,14 +134,27 @@ function generateTextReport(data)
 **Parameters:**
 - `data`
 
+## Script Details
+
+- **Command**: `apex report-status`
+- **Accepts Arguments**: Yes
+- **Supports Dry Run**: Yes
+
 ## Usage
 
 ```javascript
-import async from 'scripts/report-status.js';
+// Run this script via the apex command
+apex report-status
 
-// TODO: Add usage example
+// With arguments
+apex report-status --arg value
 ```
+
+## Related Documentation
+
+- [Apex Hive Commands Reference](../architecture/reference/commands/)
+- [Script Development Guide](../development/scripts/)
 
 ## See Also
 
-- [Source Code](scripts/report-status.js)
+- [Source Code](./scripts/report-status.js)
