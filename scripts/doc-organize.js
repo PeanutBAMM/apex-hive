@@ -217,8 +217,15 @@ function determineTargetPath(doc, headers, content) {
       return ['scripts', detectScriptType(scriptName, headers)];
     }
     
-    // For modules (goes to components)
+    // For modules - categorize based on their function
     if (sourcePath.startsWith('modules/')) {
+      const moduleName = path.basename(sourcePath, '.js');
+      // Feature modules
+      if (moduleName.includes('rag-system') || moduleName.includes('file-ops') || 
+          moduleName.includes('unified-cache') || moduleName.includes('search')) {
+        return ['architecture', 'features'];
+      }
+      // Utility/component modules
       return ['architecture', 'components'];
     }
     
@@ -227,12 +234,42 @@ function determineTargetPath(doc, headers, content) {
       return ['architecture', 'reference', 'configuration'];
     }
     
-    // For root level tools (install-mcp.js etc)
+    // For root level files - better categorization
     if (sourcePath.endsWith('.js') && !sourcePath.includes('/')) {
-      if (sourcePath.includes('install') || sourcePath.includes('setup')) {
+      const rootFile = path.basename(sourcePath, '.js');
+      
+      // Installation and setup
+      if (rootFile.includes('install') || rootFile.includes('setup') || rootFile.includes('verify')) {
         return ['getting-started'];
       }
-      return ['architecture', 'reference', 'configuration'];
+      
+      // Architecture/design files
+      if (rootFile.includes('router') || rootFile.includes('server')) {
+        return ['architecture', 'design'];
+      }
+      
+      // Feature files
+      if (rootFile.includes('generate') || rootFile.includes('prepare')) {
+        return ['architecture', 'features'];
+      }
+      
+      // Component files
+      if (rootFile.includes('formatter') || rootFile === 'index') {
+        return ['architecture', 'components'];
+      }
+      
+      // Test files
+      if (rootFile.includes('test')) {
+        return ['development', 'testing'];
+      }
+      
+      // Config files
+      if (rootFile.includes('config')) {
+        return ['architecture', 'reference', 'configuration'];
+      }
+      
+      // Default for uncategorized root files
+      return ['architecture', 'components'];
     }
   }
   

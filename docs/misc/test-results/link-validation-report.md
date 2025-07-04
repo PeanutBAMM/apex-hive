@@ -439,7 +439,7 @@
 - **Line 121**: `./natural-language.md`
   - Text: "Natural Language Guide"
   - Reason: File not found
-  - Suggestion: Did you mean '../02-guides/natural-language.md'?
+  - Suggestion: Did you mean 'docs/architecture/features/natural-language.md'?
 
 - **Line 122**: `./recipes.md`
   - Text: "Recipes"
@@ -454,7 +454,7 @@
 - **Line 124**: `./troubleshooting.md`
   - Text: "Troubleshooting"
   - Reason: File not found
-  - Suggestion: Did you mean '../02-guides/troubleshooting.md'?
+  - Suggestion: Did you mean 'docs/troubleshooting/troubleshooting.md'?
 
 - **Line 14**: `https://github.com/apex-hive/apex-hive.git`
   - Text: "https://github.com/apex-hive/apex-hive.git"

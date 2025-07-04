@@ -384,11 +384,11 @@ const sizeLimits = {
 // Configurable in /scripts/cache-warm-docs.js
 const HIGH_VALUE_DOCS = [
   "docs/03-reference/commands-reference.md",
-  "docs/02-guides/architecture.md", 
-  "docs/02-guides/troubleshooting.md",
-  "docs/02-guides/development.md",
+  "docs/architecture/design/architecture.md", 
+  "docs/troubleshooting/troubleshooting.md",
+  "docs/development/development.md",
   "docs/03-reference/02-guides-unified-cache-system-complete.md",
-  "docs/02-guides/natural-language.md",
+  "docs/architecture/features/natural-language.md",
   "docs/02-guides/recipes.md",
   "docs/99-misc/getting-started.md"
 ];

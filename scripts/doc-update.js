@@ -367,6 +367,14 @@ async function updateSpecificDoc(target, sourceFile, dryRun, modules) {
   const content = await readFile(target);
   let updated = content;
 
+  // Check if doc is minimal and needs enrichment
+  if (content.length < 2048 && !target.includes("README") && !target.includes("CHANGELOG")) {
+    const enriched = await enrichMinimalDoc(target, content, modules);
+    if (enriched) {
+      updated = enriched;
+    }
+  }
+
   // Update based on file type
   if (target.endsWith("README.md")) {
     updated = await updateReadmeContent(content, modules);
@@ -375,6 +383,12 @@ async function updateSpecificDoc(target, sourceFile, dryRun, modules) {
   } else if (sourceFile) {
     // Update script documentation with new source content
     updated = await updateScriptDoc(content, sourceFile, modules);
+  } else if (!content.includes("## Overview") || content.length < 1000) {
+    // Try to enrich minimal documentation
+    const enriched = await enrichMinimalDoc(target, content, modules);
+    if (enriched) {
+      updated = enriched;
+    }
   } else {
     // Generic update - just update date
     const dateRegex = /\*Last updated:.+?\*/;
@@ -763,6 +777,359 @@ function generateClassesSection(classes) {
         section += `- **${method.name}**: ${method.description || "No description"}\n`;
       }
       section += "\n";
+    }
+  }
+  
+  return section;
+}
+
+async function enrichMinimalDoc(docPath, currentContent, modules) {
+  try {
+    // Extract source file path from documentation
+    const sourceMatch = currentContent.match(/\*\*(File|Path)\*\*:\s*`([^`]+)`/);
+    if (!sourceMatch) return null;
+    
+    const sourcePath = sourceMatch[2].replace(/^\.\//, '');
+    
+    // Check if source file exists
+    if (!(await pathExists(sourcePath))) {
+      console.error(`[DOC-UPDATE] Source file not found for enrichment: ${sourcePath}`);
+      return null;
+    }
+    
+    // Read source file
+    const sourceContent = await readFile(sourcePath);
+    const language = path.extname(sourcePath) === '.js' ? 'javascript' : 'typescript';
+    
+    // Extract symbols from source
+    const symbols = extractSymbols(sourceContent, language);
+    
+    // Start building enriched content
+    let enriched = currentContent;
+    
+    // Add or update Overview section if missing or minimal
+    if (!enriched.includes('## Overview') || 
+        (enriched.match(/## Overview\n\n(.+?)\n\n/s)?.[1] || '').length < 100) {
+      const overview = extractDetailedOverview(sourceContent, sourcePath, symbols);
+      if (overview) {
+        const overviewSection = `## Overview\n\n${overview}\n\n`;
+        if (enriched.includes('## Overview')) {
+          enriched = enriched.replace(/## Overview\n\n.*?\n\n(?=##|$)/s, overviewSection);
+        } else {
+          // Insert after File Information
+          const infoEnd = enriched.indexOf('\n\n', enriched.indexOf('## File Information'));
+          if (infoEnd > -1) {
+            enriched = enriched.slice(0, infoEnd + 2) + overviewSection + enriched.slice(infoEnd + 2);
+          }
+        }
+      }
+    }
+    
+    // Add Architecture section for complex modules
+    if (symbols.classes.length > 0 || symbols.functions.length > 5) {
+      const archSection = generateArchitectureSection(symbols, sourceContent);
+      if (archSection && !enriched.includes('## Architecture')) {
+        // Insert after Overview
+        const overviewEnd = enriched.indexOf('\n\n', enriched.indexOf('## Overview'));
+        if (overviewEnd > -1) {
+          enriched = enriched.slice(0, overviewEnd + 2) + archSection + enriched.slice(overviewEnd + 2);
+        }
+      }
+    }
+    
+    // Add Configuration section if relevant
+    if (sourceContent.includes('config') || sourceContent.includes('options')) {
+      const configSection = extractConfigSection(sourceContent);
+      if (configSection && !enriched.includes('## Configuration')) {
+        enriched = enriched.replace(/## Usage/s, configSection + '## Usage');
+      }
+    }
+    
+    // Add Implementation Details
+    const implSection = generateImplementationDetails(symbols, sourceContent);
+    if (implSection && !enriched.includes('## Implementation Details')) {
+      enriched = enriched.replace(/## Usage/s, implSection + '## Usage');
+    }
+    
+    // Update Usage section with real examples
+    const usageExamples = await findUsageExamples(sourcePath, modules);
+    if (usageExamples && usageExamples.length > 0) {
+      const usageSection = generateEnhancedUsageSection(usageExamples, sourcePath, symbols);
+      enriched = enriched.replace(/## Usage[\s\S]*?(?=##|$)/s, usageSection);
+    }
+    
+    return enriched;
+    
+  } catch (error) {
+    console.error(`[DOC-UPDATE] Error enriching doc: ${error.message}`);
+    return null;
+  }
+}
+
+function extractDetailedOverview(sourceContent, sourcePath, symbols) {
+  // Try to find file-level JSDoc comment
+  const jsdocMatch = sourceContent.match(/^\/\*\*([\s\S]*?)\*\//);
+  if (jsdocMatch) {
+    const jsdoc = jsdocMatch[1]
+      .split('\n')
+      .map(line => line.replace(/^\s*\*\s?/, ''))
+      .join('\n')
+      .trim();
+    if (jsdoc.length > 50) return jsdoc;
+  }
+  
+  // Build overview from analysis
+  const basename = path.basename(sourcePath, path.extname(sourcePath));
+  let overview = `The ${basename} module `;
+  
+  if (symbols.exports.length > 0) {
+    const mainExport = symbols.exports.find(e => e.name === 'run') || 
+                      symbols.exports.find(e => e.name === 'default') || 
+                      symbols.exports[0];
+    if (mainExport) {
+      overview += `provides the \`${mainExport.name}\` function `;
+    }
+  }
+  
+  if (sourcePath.includes('scripts/')) {
+    overview += `as part of the Apex Hive automation system. `;
+    const category = detectScriptCategory(basename);
+    overview += `This is a ${category} script that `;
+  } else if (sourcePath.includes('modules/')) {
+    overview += `that provides reusable functionality for `;
+  }
+  
+  // Add purpose based on imports/exports
+  const purposes = detectPurpose(sourceContent, symbols);
+  if (purposes.length > 0) {
+    overview += purposes.join(' and ') + '.';
+  }
+  
+  return overview;
+}
+
+function detectScriptCategory(scriptName) {
+  const prefix = scriptName.split('-')[0];
+  const categories = {
+    'ci': 'CI/CD automation',
+    'doc': 'documentation management', 
+    'git': 'version control',
+    'cache': 'cache management',
+    'quality': 'code quality',
+    'test': 'testing',
+    'backlog': 'backlog management'
+  };
+  return categories[prefix] || 'utility';
+}
+
+function detectPurpose(sourceContent, symbols) {
+  const purposes = [];
+  
+  // Detect based on imports
+  if (sourceContent.includes('file-ops')) purposes.push('handles file operations');
+  if (sourceContent.includes('git-ops')) purposes.push('manages git operations');
+  if (sourceContent.includes('unified-cache')) purposes.push('utilizes caching');
+  if (sourceContent.includes('execSync') || sourceContent.includes('exec')) purposes.push('executes system commands');
+  
+  // Detect based on function names
+  const funcNames = symbols.functions.map(f => f.name.toLowerCase());
+  if (funcNames.some(n => n.includes('parse'))) purposes.push('parses data');
+  if (funcNames.some(n => n.includes('validate'))) purposes.push('validates input');
+  if (funcNames.some(n => n.includes('generate'))) purposes.push('generates output');
+  if (funcNames.some(n => n.includes('fix'))) purposes.push('fixes issues');
+  
+  return purposes;
+}
+
+function generateArchitectureSection(symbols, sourceContent) {
+  let section = "## Architecture\n\n";
+  
+  if (symbols.classes.length > 0) {
+    section += "### Class Structure\n\n";
+    for (const cls of symbols.classes) {
+      section += `- **${cls.name}**`;
+      if (cls.extends) section += ` (extends ${cls.extends})`;
+      section += `: ${cls.methods.length} methods\n`;
+    }
+    section += "\n";
+  }
+  
+  section += "### Key Components\n\n";
+  
+  // Main entry points
+  const entryPoints = symbols.functions.filter(f => 
+    f.name === 'run' || f.name === 'main' || f.name === 'execute'
+  );
+  if (entryPoints.length > 0) {
+    section += `- **Entry Point**: \`${entryPoints[0].name}\` function\n`;
+  }
+  
+  // Helper functions
+  const helpers = symbols.functions.filter(f => 
+    !['run', 'main', 'execute'].includes(f.name)
+  );
+  if (helpers.length > 0) {
+    section += `- **Helper Functions**: ${helpers.length} supporting functions\n`;
+  }
+  
+  // Patterns detected
+  if (sourceContent.includes('async') || sourceContent.includes('await')) {
+    section += "- **Async Operations**: Uses async/await pattern\n";
+  }
+  if (sourceContent.includes('try') && sourceContent.includes('catch')) {
+    section += "- **Error Handling**: Implements try-catch blocks\n";
+  }
+  
+  section += "\n";
+  return section;
+}
+
+function extractConfigSection(sourceContent) {
+  let section = "## Configuration\n\n";
+  let hasConfig = false;
+  
+  // Look for default parameters
+  const defaultsMatch = sourceContent.match(/const\s*{\s*([^}]+)\s*}\s*=\s*args/);
+  if (defaultsMatch) {
+    section += "### Options\n\n";
+    const params = defaultsMatch[1].split(',').map(p => p.trim());
+    for (const param of params) {
+      const [name, defaultValue] = param.split('=').map(s => s.trim());
+      if (name && defaultValue) {
+        section += `- **${name}**: ${defaultValue}\n`;
+        hasConfig = true;
+      }
+    }
+    section += "\n";
+  }
+  
+  // Look for config objects
+  const configMatch = sourceContent.match(/const\s+config\s*=\s*{([^}]+)}/);
+  if (configMatch) {
+    section += "### Configuration Object\n\n```javascript\n";
+    section += `const config = {${configMatch[1]}}\n`;
+    section += "```\n\n";
+    hasConfig = true;
+  }
+  
+  return hasConfig ? section : null;
+}
+
+function generateImplementationDetails(symbols, sourceContent) {
+  let section = "## Implementation Details\n\n";
+  let hasDetails = false;
+  
+  // Main function flow
+  const mainFunc = symbols.functions.find(f => f.name === 'run') || symbols.functions[0];
+  if (mainFunc) {
+    section += "### Main Function Flow\n\n";
+    
+    // Extract function body and analyze flow
+    const funcBody = extractFunctionBody(sourceContent, mainFunc.name);
+    if (funcBody) {
+      const steps = analyzeExecutionFlow(funcBody);
+      if (steps.length > 0) {
+        section += "1. " + steps.join('\n2. ') + "\n\n";
+        hasDetails = true;
+      }
+    }
+  }
+  
+  // Key algorithms
+  if (sourceContent.includes('sort(') || sourceContent.includes('filter(') || 
+      sourceContent.includes('reduce(') || sourceContent.includes('map(')) {
+    section += "### Data Processing\n\n";
+    section += "This module uses functional programming patterns for data transformation.\n\n";
+    hasDetails = true;
+  }
+  
+  return hasDetails ? section : null;
+}
+
+function extractFunctionBody(sourceContent, funcName) {
+  const regex = new RegExp(`function\\s+${funcName}\\s*\\([^)]*\\)\\s*{([^}]+)}`);
+  const match = sourceContent.match(regex);
+  return match ? match[1] : null;
+}
+
+function analyzeExecutionFlow(funcBody) {
+  const steps = [];
+  
+  // Look for key operations
+  if (funcBody.includes('validate')) steps.push('Validates input parameters');
+  if (funcBody.includes('readFile') || funcBody.includes('listFiles')) steps.push('Reads file system data');
+  if (funcBody.includes('parse')) steps.push('Parses input data');
+  if (funcBody.includes('process') || funcBody.includes('transform')) steps.push('Processes/transforms data');
+  if (funcBody.includes('writeFile')) steps.push('Writes output to file system');
+  if (funcBody.includes('console.error')) steps.push('Logs progress information');
+  if (funcBody.includes('return')) steps.push('Returns structured result');
+  
+  return steps;
+}
+
+async function findUsageExamples(sourcePath, modules) {
+  try {
+    // Search for usage in test files
+    const basename = path.basename(sourcePath, path.extname(sourcePath));
+    const testFile = `test/${basename}.test.js`;
+    
+    if (await pathExists(testFile)) {
+      const testContent = await readFile(testFile);
+      const examples = extractTestExamples(testContent);
+      if (examples.length > 0) return examples;
+    }
+    
+    // Search for usage in other scripts
+    // This would need the search module
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function extractTestExamples(testContent) {
+  const examples = [];
+  const testRegex = /it\(['"]([^'"]+)['"],.*?{([\s\S]*?)}\)/g;
+  let match;
+  
+  while ((match = testRegex.exec(testContent)) !== null) {
+    examples.push({
+      description: match[1],
+      code: match[2].trim()
+    });
+  }
+  
+  return examples;
+}
+
+function generateEnhancedUsageSection(examples, sourcePath, symbols) {
+  let section = "## Usage\n\n";
+  
+  // Basic import
+  const basename = path.basename(sourcePath, path.extname(sourcePath));
+  section += "### Basic Usage\n\n```javascript\n";
+  
+  if (sourcePath.includes('scripts/')) {
+    section += `// Run via apex command\n`;
+    section += `apex ${basename}\n\n`;
+    section += `// With options\n`;
+    section += `apex ${basename} --option value\n`;
+  } else {
+    const mainExport = symbols.exports[0];
+    if (mainExport) {
+      section += `import { ${mainExport.name} } from './${sourcePath}';\n\n`;
+      section += `const result = await ${mainExport.name}(options);\n`;
+    }
+  }
+  
+  section += "```\n\n";
+  
+  // Examples from tests
+  if (examples && examples.length > 0) {
+    section += "### Examples\n\n";
+    for (const example of examples.slice(0, 3)) {
+      section += `**${example.description}**\n\n`;
+      section += "```javascript\n" + example.code + "\n```\n\n";
     }
   }
   

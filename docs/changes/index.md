@@ -9,7 +9,7 @@
 
 ### config
 
-- [patterns-nl.js](./patterns-nl.md) - 0.2KB
-- [patterns.js](./patterns.md) - 0.2KB
-- [registry.js](./registry.md) - 0.2KB
+- [patterns-nl.js](../architecture/reference/configuration/patterns-nl.md) - 0.2KB
+- [patterns.js](../architecture/reference/configuration/patterns.md) - 0.2KB
+- [registry.js](../architecture/reference/configuration/registry.md) - 0.2KB
 
