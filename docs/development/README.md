@@ -2,22 +2,23 @@
 
 Development guides
 
-## Subcategories
+## File Structure
 
-- [Contributing](./contributing/) - Contribution guidelines
-- [Testing](./testing/) - Testing documentation
-- [Building](./building/) - Build processes
+```
+├── testing
+│   └── testing.md
+└── development.md
+```
 
 ## Documents
 
-- [Development](./README.md)
-- [Build Scripts](./scripts-build-scripts.md)
-- [Test Scripts](./scripts-test-scripts.md)
+- [Development Guide](./development.md)
 
 ## Overview
 
-This category contains 3 documents.
+- Total documents: 2
+- Subfolders: 1
 
 ## Navigation
 
-- [← Back to Documentation](../)
+- [↑ Back to Main Documentation](../)
