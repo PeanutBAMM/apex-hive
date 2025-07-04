@@ -1,5 +1,24 @@
 [
   {
+    "file": "2025-07-04-23-21-52-ai-session-2025-07-04.md",
+    "title": "AI Session 2025-07-04",
+    "timestamp": "2025-07-04T21:21:44.259Z",
+    "tags": [],
+    "summary": [
+      "apex",
+      "router",
+      "patterns",
+      "registry",
+      "generate",
+      "claude",
+      "install",
+      "jest.config",
+      "server",
+      "debug"
+    ],
+    "narrativeSummary": "## Conversation Summary\n\nToday's development session focused on the **apex-hive** project on the `feature/intelligent-doc-organization` branch.\n\n### What We Accomplished\n\nThroughout this session, we m..."
+  },
+  {
     "file": "2025-07-04-19-01-00-ai-session-2025-07-04.md",
     "title": "AI Session 2025-07-04",
     "timestamp": "2025-07-04T17:00:51.233Z",
