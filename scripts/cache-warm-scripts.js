@@ -20,7 +20,7 @@ const FREQUENT_SCRIPTS = [
   "scripts/backlog-display.js",
   "scripts/test-runner.js",
   "scripts/cache-status.js",
-  "scripts/save-conversation.js"
+  "scripts/save-conversation.js",
 ];
 
 // Write to stderr to avoid stdout pollution
@@ -29,28 +29,27 @@ function logError(message) {
 }
 
 export async function run(args = {}) {
-  const {
-    dryRun = false,
-    verbose = false,
-    includeRecipes = true
-  } = args;
+  const { dryRun = false, verbose = false, includeRecipes = true } = args;
 
   logError("Warming frequently used scripts and recipes...");
 
   const results = {
     scripts: { cached: 0, failed: 0, skipped: 0, size: 0 },
     recipes: { cached: 0, failed: 0, skipped: 0, size: 0 },
-    errors: []
+    errors: [],
   };
 
   try {
     // Cache frequent scripts
     for (const scriptPath of FREQUENT_SCRIPTS) {
       const fullPath = join(rootDir, scriptPath);
-      
+
       try {
         // Check if file exists
-        const exists = await fs.access(fullPath).then(() => true).catch(() => false);
+        const exists = await fs
+          .access(fullPath)
+          .then(() => true)
+          .catch(() => false);
         if (!exists) {
           results.scripts.skipped++;
           if (verbose) logError(`Skipped (not found): ${scriptPath}`);
@@ -61,22 +60,23 @@ export async function run(args = {}) {
           // Check if already cached
           const cacheKey = `script:${scriptPath}`;
           const cached = await fileCache.get(cacheKey);
-          
+
           if (!cached || cached.expired) {
             const content = await readFile(fullPath);
             const stats = await fs.stat(fullPath);
-            
+
             await fileCache.set(cacheKey, {
               content,
               path: scriptPath,
               mtime: stats.mtime.toISOString(),
-              size: stats.size
+              size: stats.size,
             });
-            
+
             results.scripts.cached++;
             results.scripts.size += stats.size;
-            
-            if (verbose) logError(`Cached: ${scriptPath} (${stats.size} bytes)`);
+
+            if (verbose)
+              logError(`Cached: ${scriptPath} (${stats.size} bytes)`);
           } else {
             results.scripts.skipped++;
             if (verbose) logError(`Already cached: ${scriptPath}`);
@@ -85,7 +85,8 @@ export async function run(args = {}) {
           const stats = await fs.stat(fullPath);
           results.scripts.cached++;
           results.scripts.size += stats.size;
-          if (verbose) logError(`Would cache: ${scriptPath} (${stats.size} bytes)`);
+          if (verbose)
+            logError(`Would cache: ${scriptPath} (${stats.size} bytes)`);
         }
       } catch (error) {
         results.scripts.failed++;
@@ -97,26 +98,26 @@ export async function run(args = {}) {
     // Cache recipes
     if (includeRecipes) {
       const recipesPath = join(rootDir, "config/recipes.json");
-      
+
       try {
         if (!dryRun) {
           const cacheKey = "config:recipes";
           const cached = await fileCache.get(cacheKey);
-          
+
           if (!cached || cached.expired) {
             const content = await readFile(recipesPath);
             const stats = await fs.stat(recipesPath);
-            
+
             await fileCache.set(cacheKey, {
               content,
               path: "config/recipes.json",
               mtime: stats.mtime.toISOString(),
-              size: stats.size
+              size: stats.size,
             });
-            
+
             results.recipes.cached++;
             results.recipes.size += stats.size;
-            
+
             if (verbose) logError(`Cached recipes.json (${stats.size} bytes)`);
           } else {
             results.recipes.skipped++;
@@ -126,7 +127,8 @@ export async function run(args = {}) {
           const stats = await fs.stat(recipesPath);
           results.recipes.cached++;
           results.recipes.size += stats.size;
-          if (verbose) logError(`Would cache recipes.json (${stats.size} bytes)`);
+          if (verbose)
+            logError(`Would cache recipes.json (${stats.size} bytes)`);
         }
       } catch (error) {
         results.recipes.failed++;
@@ -150,19 +152,18 @@ export async function run(args = {}) {
         totalSize: formatSize(totalSize),
         totalSkipped,
         totalFailed,
-        errors: results.errors
+        errors: results.errors,
       },
       message: dryRun
         ? `Would cache ${totalCached} scripts/recipes (${formatSize(totalSize)})`
-        : `Cached ${totalCached} scripts/recipes (${formatSize(totalSize)})`
+        : `Cached ${totalCached} scripts/recipes (${formatSize(totalSize)})`,
     };
-
   } catch (error) {
     logError(`Error: ${error.message}`);
     return {
       success: false,
       error: error.message,
-      message: "Failed to warm script cache"
+      message: "Failed to warm script cache",
     };
   }
 }

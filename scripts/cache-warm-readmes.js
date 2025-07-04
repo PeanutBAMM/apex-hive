@@ -3,7 +3,12 @@ import { promises as fs } from "fs";
 import { execSync } from "child_process";
 import path from "path";
 import os from "os";
-import { readFile, getFileStats, pathExists, batchRead } from "../modules/file-ops.js";
+import {
+  readFile,
+  getFileStats,
+  pathExists,
+  batchRead,
+} from "../modules/file-ops.js";
 import { fileCache } from "../modules/unified-cache.js";
 
 export async function run(args = {}) {

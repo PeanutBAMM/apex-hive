@@ -12,7 +12,9 @@ export async function run(args = {}) {
     encoding = "utf8",
   } = args;
 
-  process.stderr.write("[CACHE-WARM-ALL] Starting comprehensive cache warming...\n");
+  process.stderr.write(
+    "[CACHE-WARM-ALL] Starting comprehensive cache warming...\n",
+  );
 
   try {
     const results = {
@@ -32,7 +34,9 @@ export async function run(args = {}) {
 
     // Step 1: Warm README files
     if (verbose) {
-      process.stderr.write("[CACHE-WARM-ALL] Phase 1: Warming README files...\n");
+      process.stderr.write(
+        "[CACHE-WARM-ALL] Phase 1: Warming README files...\n",
+      );
     }
 
     results.readmes = await warmReadmes({
@@ -44,7 +48,7 @@ export async function run(args = {}) {
 
     if (!results.readmes.success) {
       process.stderr.write(
-        `[CACHE-WARM-ALL] README warming failed: ${results.readmes.error}\n`
+        `[CACHE-WARM-ALL] README warming failed: ${results.readmes.error}\n`,
       );
       results.combined.success = false;
     } else {
@@ -61,7 +65,7 @@ export async function run(args = {}) {
     // Step 2: Warm high-value documentation
     if (verbose) {
       process.stderr.write(
-        "[CACHE-WARM-ALL] Phase 2: Warming high-value documentation...\n"
+        "[CACHE-WARM-ALL] Phase 2: Warming high-value documentation...\n",
       );
     }
 
@@ -74,7 +78,7 @@ export async function run(args = {}) {
 
     if (!results.docs.success) {
       process.stderr.write(
-        `[CACHE-WARM-ALL] Documentation warming failed: ${results.docs.error}\n`
+        `[CACHE-WARM-ALL] Documentation warming failed: ${results.docs.error}\n`,
       );
       results.combined.success = false;
     } else {
@@ -95,7 +99,9 @@ export async function run(args = {}) {
 
     // Step 3: Warm conversations
     if (verbose) {
-      process.stderr.write("[CACHE-WARM-ALL] Phase 3: Warming conversations...\n");
+      process.stderr.write(
+        "[CACHE-WARM-ALL] Phase 3: Warming conversations...\n",
+      );
     }
 
     results.conversations = await warmConversations({
@@ -106,7 +112,7 @@ export async function run(args = {}) {
 
     if (!results.conversations.success) {
       process.stderr.write(
-        `[CACHE-WARM-ALL] Conversation warming failed: ${results.conversations.error}\n`
+        `[CACHE-WARM-ALL] Conversation warming failed: ${results.conversations.error}\n`,
       );
       results.combined.success = false;
     } else {
@@ -124,7 +130,9 @@ export async function run(args = {}) {
 
     // Step 4: Warm frequently used scripts and recipes
     if (verbose) {
-      process.stderr.write("[CACHE-WARM-ALL] Phase 4: Warming scripts and recipes...\n");
+      process.stderr.write(
+        "[CACHE-WARM-ALL] Phase 4: Warming scripts and recipes...\n",
+      );
     }
 
     results.scripts = await warmScripts({
@@ -135,7 +143,7 @@ export async function run(args = {}) {
 
     if (!results.scripts.success) {
       process.stderr.write(
-        `[CACHE-WARM-ALL] Script warming failed: ${results.scripts.error}\n`
+        `[CACHE-WARM-ALL] Script warming failed: ${results.scripts.error}\n`,
       );
       results.combined.success = false;
     } else {
@@ -202,7 +210,9 @@ export async function run(args = {}) {
 
     if (verbose) {
       process.stderr.write("[CACHE-WARM-ALL] Cache warming summary:\n");
-      process.stderr.write(`  READMEs: ${results.readmes?.data?.cached || 0} files\n`);
+      process.stderr.write(
+        `  READMEs: ${results.readmes?.data?.cached || 0} files\n`,
+      );
       process.stderr.write(
         `  Documentation: ${results.docs?.data?.cached || 0} files\n`,
       );
@@ -215,7 +225,9 @@ export async function run(args = {}) {
       process.stderr.write(
         `  Total: ${results.combined.totalCached} items (${formatSize(results.combined.totalSize)})\n`,
       );
-      process.stderr.write(`  Categories: ${JSON.stringify(results.combined.categories)}\n`);
+      process.stderr.write(
+        `  Categories: ${JSON.stringify(results.combined.categories)}\n`,
+      );
     }
 
     process.stderr.write(`[CACHE-WARM-ALL] ${summary.message}\n`);

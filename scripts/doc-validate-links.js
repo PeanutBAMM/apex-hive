@@ -1,5 +1,11 @@
 // doc-validate-links.js - Validate links in documentation files
-import { readFile, writeFile, pathExists, listFiles, getFileStats } from "../modules/file-ops.js";
+import {
+  readFile,
+  writeFile,
+  pathExists,
+  listFiles,
+  getFileStats,
+} from "../modules/file-ops.js";
 import { promises as fs } from "fs"; // Still need for mkdir
 import { execSync } from "child_process";
 import path from "path";
@@ -330,7 +336,7 @@ async function validateInternalLinks(links, baseDir) {
       // Check if file exists
       try {
         const exists = await pathExists(targetPath);
-    if (!exists) throw new Error("File not found");
+        if (!exists) throw new Error("File not found");
 
         // If there's a fragment, validate it
         if (fragment) {

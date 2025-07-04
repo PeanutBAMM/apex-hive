@@ -213,7 +213,7 @@ async function getGitHubStatus(options) {
       const workflowsDir = ".github/workflows";
       try {
         const workflowList = await listFiles(workflowsDir);
-        const workflows = workflowList.map(f => f.name);
+        const workflows = workflowList.map((f) => f.name);
         status.workflows = workflows.filter(
           (f) => f.endsWith(".yml") || f.endsWith(".yaml"),
         );

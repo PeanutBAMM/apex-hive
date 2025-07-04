@@ -1,6 +1,11 @@
 // doc-post-merge.js - Post-merge documentation tasks
 import { execSync } from "child_process";
-import { readFile, writeFile, pathExists, listFiles } from "../modules/file-ops.js";
+import {
+  readFile,
+  writeFile,
+  pathExists,
+  listFiles,
+} from "../modules/file-ops.js";
 import { promises as fs } from "fs"; // Still need for mkdir
 import path from "path";
 

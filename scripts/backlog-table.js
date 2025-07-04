@@ -75,10 +75,7 @@ export async function run(args = {}) {
           break;
 
         case "json":
-          await writeFile(
-            `${filename}.json`,
-            JSON.stringify(items, null, 2),
-          );
+          await writeFile(`${filename}.json`, JSON.stringify(items, null, 2));
           break;
 
         default:

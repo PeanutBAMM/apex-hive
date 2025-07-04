@@ -1,4 +1,4 @@
-// registry.js - Script registry (66 scripts total)
+// registry.js - Script registry (67 scripts total)
 
 export default {
   // CI Scripts (6)
@@ -10,7 +10,7 @@ export default {
   "ci:smart-push": "./scripts/ci-smart-push.js",
   "ci:status": "./scripts/ci-status.js",
 
-  // Documentation Scripts (15)
+  // Documentation Scripts (17)
   "doc:generate": "./scripts/doc-generate.js",
   "doc:generate-changed": "./scripts/doc-generate-changed.js",
   "doc:generate-missing": "./scripts/doc-generate-missing.js",
@@ -21,11 +21,13 @@ export default {
   "doc:validate-links": "./scripts/doc-validate-links.js",
   "doc:fix-links": "./scripts/doc-fix-links.js",
   "doc:organize": "./scripts/doc-organize.js",
+  "doc:cleanup": "./scripts/doc-cleanup.js",
   "doc:sync": "./scripts/doc-sync.js",
   "doc:add-xml": "./scripts/doc-add-xml.js",
   "doc:search": "./scripts/doc-search.js",
   "doc:post-merge": "./scripts/doc-post-merge.js",
   "doc:check": "./scripts/doc-check.js",
+  "doc:cleanup-prefixes": "./scripts/doc-cleanup-prefixes.js",
 
   // Quality Scripts (8)
   "quality:lint": "./scripts/quality-lint.js",
@@ -88,7 +90,7 @@ export default {
   "cache:warm-all": "./scripts/cache-warm-all.js",
   "cache:clear": "./scripts/cache-clear.js",
   "cache:status": "./scripts/cache-status.js",
-  
+
   // Context Scripts (1)
   "startup-context": "./scripts/startup-context.js",
 

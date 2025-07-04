@@ -1,49 +1,16 @@
-// doc-organize.js - Organize documentation into structured categories
+// doc-organize.js - Organize documentation with deterministic rules
 import { readFile, writeFile, pathExists, listFiles, getFileStats } from "../modules/file-ops.js";
-import { promises as fs } from "fs"; // Still need for mkdir
+import { promises as fs } from "fs"; 
 import path from "path";
 
 export async function run(args) {
-  const { source = "docs", dryRun = false, createIndex = true, modules } = args;
+  const { source = "docs", dryRun = false, createIndex = true } = args;
 
   console.error("[DOC-ORGANIZE] Organizing documentation...");
 
   try {
-    // Define documentation categories
-    const categories = {
-      "getting-started": {
-        patterns: [/README/i, /INSTALL/i, /SETUP/i, /QUICKSTART/i, /TUTORIAL/i],
-        description: "Installation and setup guides",
-      },
-      guides: {
-        patterns: [/GUIDE/i, /HOWTO/i, /EXAMPLE/i, /USAGE/i],
-        description: "How-to guides and examples",
-      },
-      reference: {
-        patterns: [/API/i, /REFERENCE/i, /CONFIG/i, /SCHEMA/i],
-        description: "API and configuration reference",
-      },
-      concepts: {
-        patterns: [/CONCEPT/i, /ARCHITECTURE/i, /DESIGN/i, /OVERVIEW/i],
-        description: "Conceptual documentation",
-      },
-      development: {
-        patterns: [/DEVELOPMENT/i, /CONTRIBUTING/i, /BUILD/i, /TEST/i],
-        description: "Development and contribution guides",
-      },
-      deployment: {
-        patterns: [/DEPLOY/i, /RELEASE/i, /PRODUCTION/i, /HOSTING/i],
-        description: "Deployment and operations",
-      },
-      troubleshooting: {
-        patterns: [/TROUBLESHOOT/i, /FAQ/i, /ERROR/i, /DEBUG/i, /ISSUE/i],
-        description: "Troubleshooting and FAQs",
-      },
-      misc: {
-        patterns: [],
-        description: "Other documentation",
-      },
-    };
+    // Define simple documentation structure
+    const structure = getDocumentationStructure();
 
     // Find all markdown files
     const allDocs = await findAllDocs(source);
@@ -56,33 +23,30 @@ export async function run(args) {
       };
     }
 
-    // Categorize documents
-    const categorized = await categorizeDocs(allDocs, categories);
+    // Categorize documents using deterministic rules
+    const categorized = await categorizeDocs(allDocs);
 
-    // Organize files
-    const moves = await planMoves(categorized, source, categories);
+    // Plan moves
+    const moves = await planMoves(categorized, source);
 
     if (moves.length === 0) {
       return {
         status: "organized",
         message: "Documentation is already well organized",
-        categories: Object.keys(categorized).map((cat) => ({
-          name: cat,
-          count: categorized[cat].length,
-        })),
+        stats: getCategoryStats(categorized),
       };
     }
 
     // Execute moves
     let executed = 0;
     if (!dryRun) {
-      executed = await executeMoves(moves, modules);
+      executed = await executeMoves(moves);
     }
 
     // Create index files
     let indexFiles = [];
     if (createIndex && !dryRun) {
-      indexFiles = await createIndexFiles(source, categorized, categories);
+      indexFiles = await createIndexFiles(source, categorized, structure);
     }
 
     return {
@@ -91,11 +55,7 @@ export async function run(args) {
       moves: moves.length,
       executed,
       indexFiles: indexFiles.length,
-      categories: Object.keys(categorized).map((cat) => ({
-        name: cat,
-        count: categorized[cat].length,
-        description: categories[cat].description,
-      })),
+      stats: getCategoryStats(categorized),
       message: dryRun
         ? `Would move ${moves.length} file(s) and create ${indexFiles.length} index file(s)`
         : `Moved ${executed} file(s) and created ${indexFiles.length} index file(s)`,
@@ -110,6 +70,52 @@ export async function run(args) {
   }
 }
 
+// Simple documentation structure
+function getDocumentationStructure() {
+  return {
+    'getting-started': {
+      description: 'Installation and setup guides',
+      subfolders: []
+    },
+    'architecture': {
+      description: 'System architecture and design',
+      subfolders: ['design', 'features', 'components', 'patterns', 'reference', 'reference/api', 'reference/commands', 'reference/configuration']
+    },
+    'scripts': {
+      description: 'Script documentation',
+      subfolders: [
+        'ci-scripts',
+        'documentation-scripts', 
+        'quality-scripts',
+        'git-scripts',
+        'cache-scripts',
+        'backlog-scripts',
+        'deployment-scripts',
+        'core-scripts',
+        'detection-scripts',
+        'context-scripts'
+      ]
+    },
+    'development': {
+      description: 'Development guides',
+      subfolders: ['testing', 'contributing', 'best-practices', 'deployment', 'monitoring']
+    },
+    'troubleshooting': {
+      description: 'Troubleshooting and debugging',
+      subfolders: ['known-issues', 'debugging', 'solutions']
+    },
+    'changes': {
+      description: 'Change logs and updates',
+      subfolders: []
+    },
+    'misc': {
+      description: 'Other documentation',
+      subfolders: ['test-results']
+    }
+  };
+}
+
+// Find all markdown files
 async function findAllDocs(sourceDir) {
   const docs = [];
 
@@ -121,9 +127,9 @@ async function findAllDocs(sourceDir) {
         const relativePath = path.join(base, entry.name);
         const fullPath = path.join(dir, entry.name);
 
-        if ((typeof entry.isDirectory === "function" ? entry.isDirectory() : entry._isDirectory) && !entry.name.startsWith(".")) {
+        if (isDirectory(entry) && !entry.name.startsWith(".")) {
           await scan(fullPath, relativePath);
-        } else if (entry.name.endsWith(".md")) {
+        } else if (entry.name.endsWith(".md") && entry.name !== "README.md") {
           docs.push({
             name: entry.name,
             path: relativePath,
@@ -140,117 +146,306 @@ async function findAllDocs(sourceDir) {
   return docs;
 }
 
-async function categorizeDocs(docs, categories) {
-  const categorized = {};
-
-  // Initialize categories
-  for (const cat of Object.keys(categories)) {
-    categorized[cat] = [];
+// Extract headers from content (simplified)
+function extractHeaders(content) {
+  const headers = {
+    title: '',
+    h2: [],
+    h3: []
+  };
+  
+  const lines = content.split('\n').slice(0, 30);
+  for (const line of lines) {
+    if (line.match(/^#\s+(.+)/) && !headers.title) {
+      headers.title = line.substring(2).trim();
+    } else if (line.match(/^##\s+(.+)/)) {
+      headers.h2.push(line.substring(3).trim());
+    } else if (line.match(/^###\s+(.+)/)) {
+      headers.h3.push(line.substring(4).trim());
+    }
   }
+  
+  return headers;
+}
+
+// Deterministic categorization based on content and headers
+async function categorizeDocs(docs) {
+  const categorized = {};
+  const structure = getDocumentationStructure();
+  
+  // Initialize categories
+  Object.keys(structure).forEach(cat => {
+    categorized[cat] = [];
+  });
 
   for (const doc of docs) {
-    let category = "misc";
-
-    // Try to categorize by filename and content
     const content = await readFile(doc.fullPath).catch(() => "");
-    const firstLine = content.split("\n")[0] || "";
-    const combinedText = `${doc.name} ${firstLine}`;
-
-    // Check each category's patterns
-    for (const [cat, config] of Object.entries(categories)) {
-      if (cat === "misc") continue;
-
-      for (const pattern of config.patterns) {
-        if (pattern.test(combinedText)) {
-          category = cat;
-          break;
-        }
-      }
-
-      if (category !== "misc") break;
-    }
-
-    // Special case: README in subdirectories
-    if (doc.name.toLowerCase() === "readme.md" && doc.path.includes("/")) {
-      // Categorize based on parent directory
-      const parentDir = path.dirname(doc.path).toLowerCase();
-      for (const [cat, config] of Object.entries(categories)) {
-        if (cat === "misc") continue;
-        if (config.patterns.some((p) => p.test(parentDir))) {
-          category = cat;
-          break;
-        }
-      }
-    }
-
-    categorized[category].push(doc);
+    const headers = extractHeaders(content);
+    const targetPath = determineTargetPath(doc, headers, content);
+    
+    
+    const category = targetPath[0] || 'misc';
+    categorized[category].push({
+      ...doc,
+      targetPath
+    });
   }
 
   return categorized;
 }
 
-async function planMoves(categorized, sourceDir, categories) {
+// Determine target path using deterministic rules
+function determineTargetPath(doc, headers, content) {
+  const name = doc.name.toLowerCase();
+  const title = headers.title || '';
+  const path = doc.path.toLowerCase();
+  
+  // API documentation
+  if (name.startsWith('api-')) {
+    return ['architecture', 'reference', 'api'];
+  }
+  
+  // Documentation that references source files
+  const sourceFileMatch = content.match(/\*\*File\*\*:\s*`([^`]+)`/);
+  if (sourceFileMatch) {
+    const sourcePath = sourceFileMatch[1];
+    
+    // For scripts
+    if (sourcePath.startsWith('scripts/')) {
+      const scriptName = sourcePath.split('/').pop().replace('.js', '');
+      return ['scripts', detectScriptType(scriptName, headers)];
+    }
+    
+    // For modules (goes to components)
+    if (sourcePath.startsWith('modules/')) {
+      return ['architecture', 'components'];
+    }
+    
+    // For config files
+    if (sourcePath.startsWith('config/')) {
+      return ['architecture', 'reference', 'configuration'];
+    }
+    
+    // For root level tools (install-mcp.js etc)
+    if (sourcePath.endsWith('.js') && !sourcePath.includes('/')) {
+      if (sourcePath.includes('install') || sourcePath.includes('setup')) {
+        return ['getting-started'];
+      }
+      return ['architecture', 'reference', 'configuration'];
+    }
+  }
+  
+  // Changes documentation
+  if (name.includes('changes-') || path.includes('changes/')) {
+    return ['changes'];
+  }
+  
+  // System features (architecture/features)
+  if (title.includes('System') && 
+      (headers.h2.some(h => h.includes('Architecture') || h.includes('Implementation')) ||
+       content.includes('implementation'))) {
+    if (name.includes('cache') || title.includes('Cache')) {
+      return ['architecture', 'features'];
+    }
+    if (name.includes('backlog') || title.includes('Backlog')) {
+      return ['architecture', 'features'];
+    }
+    if (name.includes('rag') || title.includes('RAG')) {
+      return ['architecture', 'features'];
+    }
+    if (name.includes('memory') || title.includes('Memory')) {
+      return ['architecture', 'features'];
+    }
+  }
+  
+  // Architecture documentation
+  if (title.includes('Architecture') && !title.includes('System')) {
+    return ['architecture', 'design'];
+  }
+  
+  // Components and utilities
+  if ((title.includes('Module') || title.includes('Component') || title.includes('Utility')) &&
+      !title.includes('System')) {
+    return ['architecture', 'components'];
+  }
+  
+  // MCP Integration (part of architecture design)
+  if (name.includes('mcp') || title.includes('MCP')) {
+    return ['architecture', 'design'];
+  }
+  
+  // Natural Language feature
+  if (name.includes('natural-language') || title.includes('Natural Language')) {
+    return ['architecture', 'features'];
+  }
+  
+  // Script documentation
+  if (name.includes('-scripts') || name.includes('script') || 
+      title.includes('Script') || headers.h2.some(h => h.includes('Usage') || h.includes('Command'))) {
+    const scriptType = detectScriptType(name, headers);
+    return ['scripts', scriptType];
+  }
+  
+  // Recipes and workflows
+  if (title.includes('Recipe') || title.includes('Workflow') || 
+      headers.h2.some(h => h.includes('Recipe') || h.includes('Workflow'))) {
+    return ['architecture', 'reference', 'commands'];
+  }
+  
+  // Troubleshooting
+  if (title.includes('Troubleshoot') || title.includes('Debug') || title.includes('Error') ||
+      headers.h2.some(h => h.includes('Debug') || h.includes('Error') || h.includes('Issue'))) {
+    return ['troubleshooting'];
+  }
+  
+  // Test results, reports, and verification documents
+  if (name.includes('test-results') || name.includes('test-plan') || 
+      name.includes('verification-results') || name.includes('validation-report') ||
+      name.includes('report') || name.includes('results')) {
+    return ['misc', 'test-results'];
+  }
+  
+  // Getting started
+  if (title.includes('Getting Started') || title.includes('Installation') || 
+      title.includes('Setup') || title.includes('Quick Start')) {
+    return ['getting-started'];
+  }
+  
+  // Development
+  if (title.includes('Development') || title.includes('Contributing') || 
+      title.includes('Testing') || title.includes('Best Practice')) {
+    if (title.includes('Test') || headers.h2.some(h => h.includes('Test'))) {
+      return ['development', 'testing'];
+    }
+    if (title.includes('Contribut')) {
+      return ['development', 'contributing'];
+    }
+    if (title.includes('Best Practice') || title.includes('Convention')) {
+      return ['development', 'best-practices'];
+    }
+    return ['development'];
+  }
+  
+  // Deployment and monitoring
+  if (title.includes('Deploy') || title.includes('Release') || title.includes('Production')) {
+    return ['development', 'deployment'];
+  }
+  if (title.includes('Monitor') || title.includes('Metric')) {
+    return ['development', 'monitoring'];
+  }
+  
+  // Reference (catch remaining)
+  if (title.includes('Reference') || title.includes('Command') || title.includes('Configuration')) {
+    return ['architecture', 'reference'];
+  }
+  
+  // Default
+  return ['misc'];
+}
+
+// Detect script type from name and headers
+function detectScriptType(name, headers) {
+  // Remove common prefixes and suffixes
+  const clean = name
+    .replace(/^scripts-/, '')
+    .replace(/-scripts\.md$/, '.md')
+    .replace(/\.md$/, '');
+  
+  // Extract prefix
+  const prefix = clean.split('-')[0];
+  
+  // Map to script categories based on registry.js
+  const scriptMap = {
+    // CI Scripts
+    'ci': 'ci-scripts',
+    
+    // Documentation Scripts
+    'doc': 'documentation-scripts',
+    'xml': 'documentation-scripts',
+    'organize': 'documentation-scripts',
+    'generate': 'documentation-scripts',
+    'validate': 'documentation-scripts',
+    'update': 'documentation-scripts',
+    'sync': 'documentation-scripts',
+    
+    // Quality Scripts
+    'quality': 'quality-scripts',
+    'test': 'quality-scripts',
+    'lint': 'quality-scripts',
+    'format': 'quality-scripts',
+    'console': 'quality-scripts',
+    
+    // Git Scripts
+    'git': 'git-scripts',
+    'commit': 'git-scripts',
+    'push': 'git-scripts',
+    'tag': 'git-scripts',
+    'branch': 'git-scripts',
+    'pull': 'git-scripts',
+    
+    // Cache Scripts
+    'cache': 'cache-scripts',
+    'warm': 'cache-scripts',
+    'clear': 'cache-scripts',
+    
+    // Backlog Scripts
+    'backlog': 'backlog-scripts',
+    
+    // Deployment Scripts
+    'deploy': 'deployment-scripts',
+    'build': 'deployment-scripts',
+    'release': 'deployment-scripts',
+    'version': 'deployment-scripts',
+    'changelog': 'deployment-scripts',
+    
+    // Detection Scripts
+    'detect': 'detection-scripts',
+    'fix': 'detection-scripts',
+    'report': 'detection-scripts',
+    
+    // Core Scripts
+    'init': 'core-scripts',
+    'search': 'core-scripts',
+    'save': 'core-scripts',
+    'code': 'core-scripts',
+    
+    // Context Scripts
+    'startup': 'context-scripts',
+    'context': 'context-scripts'
+  };
+  
+  return scriptMap[prefix] || 'core-scripts';
+}
+
+// Plan file moves
+async function planMoves(categorized, sourceDir) {
   const moves = [];
 
   for (const [category, docs] of Object.entries(categorized)) {
-    if (category === "misc" && docs.length < 3) {
-      // Don't create misc folder for just a few files
-      continue;
-    }
-
-    const categoryDir = getCategoryDir(category);
-
     for (const doc of docs) {
-      // Check if already in correct location
       const currentDir = path.dirname(doc.path);
+      const targetDir = doc.targetPath.join(path.sep);
 
-      if (currentDir === "." || currentDir === "") {
-        // File is in root, should be moved
-        moves.push({
-          from: doc.fullPath,
-          to: path.join(sourceDir, categoryDir, doc.name),
-          category,
-        });
-      } else if (
-        currentDir !== categoryDir &&
-        !currentDir.startsWith(categoryDir)
-      ) {
-        // File is in wrong category
-        const newName =
-          currentDir === category
-            ? doc.name
-            : `${currentDir.replace(/\//g, "-")}-${doc.name}`;
-        moves.push({
-          from: doc.fullPath,
-          to: path.join(sourceDir, categoryDir, newName),
-          category,
-        });
+      // Skip if already in correct location
+      if (currentDir === targetDir) {
+        continue;
       }
+
+      moves.push({
+        from: doc.fullPath,
+        to: path.join(sourceDir, targetDir, doc.name),
+        category,
+        targetPath: doc.targetPath,
+      });
     }
   }
 
   return moves;
 }
 
-function getCategoryDir(category) {
-  // Convert category to directory name
-  const dirNames = {
-    "getting-started": "01-getting-started",
-    guides: "02-guides",
-    reference: "03-reference",
-    concepts: "04-concepts",
-    development: "05-development",
-    deployment: "06-deployment",
-    troubleshooting: "07-troubleshooting",
-    misc: "99-misc",
-  };
-
-  return dirNames[category] || category;
-}
-
-async function executeMoves(moves, modules) {
+// Execute file moves
+async function executeMoves(moves) {
   let executed = 0;
-  const fileOps = modules?.fileOps;
 
   for (const move of moves) {
     try {
@@ -259,18 +454,10 @@ async function executeMoves(moves, modules) {
       await fs.mkdir(targetDir, { recursive: true });
 
       // Move file
-      if (fileOps) {
-        // Use fileOps for better handling
-        const content = await fileOps.read(move.from);
-        await fileOps.write(move.to, content);
-        await fileOps.delete(move.from);
-      } else {
-        // Direct move
-        await fs.rename(move.from, move.to);
-      }
+      await fs.rename(move.from, move.to);
 
       console.error(
-        `[DOC-ORGANIZE] Moved ${path.basename(move.from)} to ${move.category}`,
+        `[DOC-ORGANIZE] Moved ${path.basename(move.from)} to ${move.targetPath.join("/")}`,
       );
       executed++;
     } catch (error) {
@@ -287,59 +474,49 @@ async function executeMoves(moves, modules) {
   return executed;
 }
 
-async function createIndexFiles(sourceDir, categorized, categories) {
+// Create index files (only main level - no subfolder READMEs)
+async function createIndexFiles(sourceDir, categorized, structure) {
   const indexFiles = [];
 
   // Create main index
-  const mainIndex = await createMainIndex(sourceDir, categorized, categories);
+  const mainIndex = await createMainIndex(sourceDir, categorized, structure);
   if (mainIndex) indexFiles.push(mainIndex);
 
-  // Create category indexes
+  // Create category indexes (hoofdfolders only)
   for (const [category, docs] of Object.entries(categorized)) {
     if (docs.length === 0) continue;
-
+    
+    // Main category README with complete file tree
     const categoryIndex = await createCategoryIndex(
       sourceDir,
-      category,
+      [category],
       docs,
-      categories[category],
+      structure[category],
+      true  // Include full tree showing all sub/subsub folders
     );
     if (categoryIndex) indexFiles.push(categoryIndex);
+    
+    // NO subfolder READMEs - hoofdfolder README shows everything already
   }
 
   return indexFiles;
 }
 
-async function createMainIndex(sourceDir, categorized, categories) {
+// Create main README
+async function createMainIndex(sourceDir, categorized, structure) {
   const indexPath = path.join(sourceDir, "README.md");
 
   let content = "# Documentation\n\n";
   content += "Welcome to the Apex Hive documentation.\n\n";
   content += "## Categories\n\n";
 
-  for (const [category, config] of Object.entries(categories)) {
-    const docs = categorized[category];
-    if (docs.length === 0) continue;
+  for (const [category, config] of Object.entries(structure)) {
+    const docs = categorized[category] || [];
+    if (docs.length === 0 && category !== 'misc') continue;
 
-    const categoryDir = getCategoryDir(category);
-    content += `### [${formatCategoryName(category)}](./${categoryDir}/)\n\n`;
+    content += `### [${formatName(category)}](./${category}/)\n\n`;
     content += `${config.description}\n\n`;
     content += `- ${docs.length} document${docs.length === 1 ? "" : "s"}\n\n`;
-  }
-
-  content += "## Quick Links\n\n";
-
-  // Add important docs
-  const importantDocs = [
-    { name: "Getting Started", path: "./01-getting-started/README.md" },
-    { name: "API Reference", path: "./03-reference/README.md" },
-    { name: "Troubleshooting", path: "./07-troubleshooting/README.md" },
-  ];
-
-  for (const doc of importantDocs) {
-    if (await fileExists(path.join(sourceDir, doc.path))) {
-      content += `- [${doc.name}](${doc.path})\n`;
-    }
   }
 
   content += `\n---\n*Generated by Apex Hive on ${new Date().toISOString()}*\n`;
@@ -348,78 +525,147 @@ async function createMainIndex(sourceDir, categorized, categories) {
   return indexPath;
 }
 
-async function createCategoryIndex(sourceDir, category, docs, config) {
-  const categoryDir = getCategoryDir(category);
-  const indexPath = path.join(sourceDir, categoryDir, "README.md");
+// Create category README with file tree
+async function createCategoryIndex(sourceDir, pathParts, docs, config, includeTree = false) {
+  const indexPath = path.join(sourceDir, ...pathParts, "README.md");
 
-  let content = `# ${formatCategoryName(category)}\n\n`;
+  let content = `# ${pathParts.map(formatName).join(" / ")}\n\n`;
   content += `${config.description}\n\n`;
-  content += "## Documents\n\n";
-
-  // Sort docs by name
-  docs.sort((a, b) => a.name.localeCompare(b.name));
-
-  for (const doc of docs) {
-    const title =
-      (await getDocTitle(doc.fullPath)) || doc.name.replace(".md", "");
-    content += `- [${title}](./${doc.name})\n`;
+  
+  if (includeTree) {
+    // Generate file tree
+    content += "## File Structure\n\n";
+    content += "```\n";
+    content += await generateFileTree(docs, pathParts);
+    content += "```\n\n";
   }
+  
+  // List direct documents
+  const directDocs = docs.filter(doc => doc.targetPath.length === pathParts.length);
+  if (directDocs.length > 0) {
+    content += "## Documents\n\n";
+    
+    directDocs.sort((a, b) => a.name.localeCompare(b.name));
+    for (const doc of directDocs) {
+      const title = await getDocTitle(doc.fullPath) || doc.name.replace(".md", "");
+      content += `- [${title}](./${doc.name})\n`;
+    }
+    content += "\n";
+  }
+  
+  // Statistics
+  content += "## Overview\n\n";
+  const totalDocs = docs.length;
+  const subfolderCount = new Set(
+    docs.filter(d => d.targetPath.length > pathParts.length)
+        .map(d => d.targetPath[pathParts.length])
+  ).size;
+  
+  content += `- Total documents: ${totalDocs}\n`;
+  if (subfolderCount > 0) {
+    content += `- Subfolders: ${subfolderCount}\n`;
+  }
+  content += "\n";
 
-  content += `\n## Overview\n\n`;
-  content += `This category contains ${docs.length} document${docs.length === 1 ? "" : "s"}.\n\n`;
-
-  // Add navigation
+  // Navigation
   content += "## Navigation\n\n";
-  content += "- [← Back to Documentation](../)\n";
+  if (pathParts.length > 1) {
+    content += `- [← Back to ${formatName(pathParts[pathParts.length - 2])}](../)\n`;
+  }
+  content += `- [↑ Back to Main Documentation](${"../".repeat(pathParts.length)})\n`;
 
   await writeFile(indexPath, content);
   return indexPath;
 }
 
+// Generate file tree
+async function generateFileTree(docs, basePath) {
+  const tree = {};
+  
+  // Build tree structure
+  for (const doc of docs) {
+    const relativePath = doc.targetPath.slice(basePath.length);
+    
+    let current = tree;
+    for (const part of relativePath) {
+      if (!current[part]) {
+        current[part] = {};
+      }
+      current = current[part];
+    }
+    
+    current[doc.name] = null; // null = file
+  }
+  
+  // Convert to string
+  function treeToString(node, prefix = "", isLast = true) {
+    let result = "";
+    const entries = Object.entries(node).sort(([a], [b]) => {
+      const aIsFile = a.endsWith('.md');
+      const bIsFile = b.endsWith('.md');
+      if (aIsFile !== bIsFile) return aIsFile ? 1 : -1;
+      return a.localeCompare(b);
+    });
+    
+    entries.forEach(([name, children], index) => {
+      const isLastEntry = index === entries.length - 1;
+      const connector = isLastEntry ? "└── " : "├── ";
+      result += prefix + connector + name + "\n";
+      
+      if (children !== null) {
+        const newPrefix = prefix + (isLastEntry ? "    " : "│   ");
+        result += treeToString(children, newPrefix);
+      }
+    });
+    
+    return result;
+  }
+  
+  return Object.keys(tree).length === 0 ? "(empty)\n" : treeToString(tree);
+}
+
+// Get document title
 async function getDocTitle(filePath) {
   try {
     const content = await readFile(filePath);
-    const lines = content.split("\n");
-
-    // Find first heading
-    for (const line of lines) {
-      const match = line.match(/^#\s+(.+)/);
-      if (match) {
-        return match[1];
-      }
-    }
+    const match = content.match(/^#\s+(.+)/m);
+    return match ? match[1] : null;
   } catch {
-    // Ignore errors
+    return null;
   }
-
-  return null;
 }
 
-function formatCategoryName(category) {
-  return category
-    .split("-")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
-
+// Clean empty directories
 async function cleanEmptyDirs(dir) {
   try {
     const entries = await listFiles(dir, { withFileTypes: true, includeDirectories: true });
-
-    if (entries.length === 0) {
+    if (entries.length === 0 && dir !== "docs") {
       await fs.rmdir(dir);
+      console.error(`[DOC-ORGANIZE] Removed empty directory: ${dir}`);
     }
   } catch {
     // Ignore errors
   }
 }
 
-async function fileExists(filePath) {
-  try {
-    const exists = await pathExists(filePath);
-    if (!exists) throw new Error("File not found");
-    return true;
-  } catch {
-    return false;
-  }
+// Helper functions
+function isDirectory(entry) {
+  return typeof entry.isDirectory === "function" 
+    ? entry.isDirectory() 
+    : entry._isDirectory;
+}
+
+function formatName(name) {
+  return name
+    .split("-")
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+function getCategoryStats(categorized) {
+  return Object.entries(categorized).map(([name, docs]) => ({
+    name,
+    count: docs.length,
+    description: getDocumentationStructure()[name]?.description || ""
+  }));
 }

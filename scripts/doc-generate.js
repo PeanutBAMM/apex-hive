@@ -1,5 +1,10 @@
 // doc-generate.js - Generate documentation for project files
-import { readFile, writeFile, listFiles, getFileStats } from "../modules/file-ops.js";
+import {
+  readFile,
+  writeFile,
+  listFiles,
+  getFileStats,
+} from "../modules/file-ops.js";
 import { promises as fs } from "fs"; // Still need for mkdir
 import path from "path";
 import { execSync } from "child_process";
@@ -108,7 +113,7 @@ async function generateAPIDocs(outputDir, modules) {
 
   // Generate docs for modules
   const moduleList = await listFiles("./modules");
-  const moduleFiles = moduleList.map(f => f.name);
+  const moduleFiles = moduleList.map((f) => f.name);
   for (const file of moduleFiles) {
     if (file.endsWith(".js")) {
       const docPath = path.join(apiDir, file.replace(".js", ".md"));
@@ -339,7 +344,7 @@ async function generateForPath(targetPath, outputDir, modules) {
     if (stat.isDirectory()) {
       // Generate docs for all files in directory
       const fileList = await listFiles(targetPath);
-      const files = fileList.map(f => f.name);
+      const files = fileList.map((f) => f.name);
       for (const file of files) {
         if (file.endsWith(".js")) {
           const docPath = path.join(outputDir, file.replace(".js", ".md"));
