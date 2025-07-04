@@ -14,11 +14,11 @@ The `update-all-docs` recipe made extensive changes across 164 files in the docu
 **Result**: Processed 15 files: 6 new, 0 updated, 9 skipped
 
 ### New Documentation Generated:
-- `docs/changes/config/patterns-nl.md` - Dutch language patterns documentation
-- `docs/changes/config/patterns.md` - Pattern matching configuration
-- `docs/changes/config/registry.md` - Script registry documentation
-- `docs/changes/scripts/doc-generate-changed.md` - Generate changed docs script
-- `docs/changes/scripts/doc-update.md` - Update documentation script
+- `docs/architecture/reference/configuration/patterns-nl.md` - Dutch language patterns documentation
+- `docs/architecture/reference/configuration/patterns.md` - Pattern matching configuration
+- `docs/architecture/reference/configuration/registry.md` - Script registry documentation
+- `docs/scripts/documentation-scripts/doc-generate-changed.md` - Generate changed docs script
+- `docs/scripts/documentation-scripts/doc-update.md` - Update documentation script
 - `docs/changes/scripts/doc-validate-and-fix-xml.md` - XML validation and fix script
 
 ### Files Skipped (already had docs):

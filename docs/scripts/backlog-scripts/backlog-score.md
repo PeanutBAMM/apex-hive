@@ -85,8 +85,8 @@ apex backlog-score --arg value
 
 ## Related Documentation
 
-- [Apex Hive Commands Reference](../architecture/reference/commands/)
-- [Script Development Guide](../development/scripts/)
+- [Apex Hive Commands Reference](../../architecture/reference/commands/)
+- [Script Development Guide](../../development/scripts/)
 
 ## See Also
 

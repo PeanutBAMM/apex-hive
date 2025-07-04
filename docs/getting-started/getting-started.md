@@ -120,7 +120,7 @@ apex "commit en push"
 
 1. Explore [Natural Language Guide](../architecture/features/natural-language.md)
 2. Learn about [Recipes](../architecture/reference/commands/recipes.md)
-3. See all [Commands](../scripts/core-scripts/commands-reference.md)
+3. See all [Commands](../architecture/reference/commands/commands-reference.md)
 4. Read [Troubleshooting](../troubleshooting/troubleshooting.md) if needed
 
 ## 🆘 Quick Help

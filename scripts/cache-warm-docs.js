@@ -11,7 +11,7 @@ const HIGH_VALUE_DOCS = [
   "docs/development/development.md",
   "docs/architecture/features/unified-cache-system-complete.md",
   "docs/architecture/features/natural-language.md",
-  "docs/scripts/recipes-overview.md",
+  "docs/architecture/reference/commands/recipes.md",
   "docs/getting-started/getting-started.md",
 ];
 

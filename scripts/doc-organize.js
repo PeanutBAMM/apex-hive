@@ -1,7 +1,7 @@
 // doc-organize.js - Organize documentation with deterministic rules
 import { readFile, writeFile, pathExists, listFiles, getFileStats } from "../modules/file-ops.js";
 import { promises as fs } from "fs"; 
-import path from "path";
+import * as path from "path";
 
 export async function run(args) {
   const { source = "docs", dryRun = false, createIndex = true } = args;
@@ -198,7 +198,7 @@ async function categorizeDocs(docs) {
 function determineTargetPath(doc, headers, content) {
   const name = doc.name.toLowerCase();
   const title = headers.title || '';
-  const path = doc.path.toLowerCase();
+  const docPath = doc.path.toLowerCase();
   
   // API documentation
   if (name.startsWith('api-')) {
@@ -274,7 +274,7 @@ function determineTargetPath(doc, headers, content) {
   }
   
   // Changes documentation
-  if (name.includes('changes-') || path.includes('changes/')) {
+  if (name.includes('changes-') || docPath.includes('changes/')) {
     return ['changes'];
   }
   

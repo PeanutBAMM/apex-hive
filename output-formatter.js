@@ -16,8 +16,12 @@ export async function formatOutput(result, context = {}) {
     if (result.recipe) {
       return formatRecipeResult(result);
     }
-    if (result.files || result.matches) {
+    if (result.matches || (result.files && Array.isArray(result.files))) {
       return formatSearchResult(result);
+    }
+    if (result.status && result.details) {
+      // Handle doc:fix-links and similar results
+      return formatDocResult(result);
     }
     if (result.error) {
       return formatError(result);
@@ -50,6 +54,11 @@ function formatArray(items, context) {
 }
 
 function formatFileList(files) {
+  // Ensure files is an array
+  if (!Array.isArray(files)) {
+    return 'No files to display';
+  }
+  
   const byDir = new Map();
   
   files.forEach(file => {
@@ -135,6 +144,40 @@ function formatSearchResult(result) {
   if (result.matches) {
     output.push(`\n${result.matches.length} matches found:`);
     return output.join('\n') + formatSearchMatches(result.matches);
+  }
+  
+  return output.join('\n');
+}
+
+function formatDocResult(result) {
+  const output = [];
+  
+  // Status header
+  if (result.status === 'fixed') {
+    output.push(`✅ ${result.message || 'Documentation fixed'}`);
+  } else if (result.status === 'no-issues') {
+    output.push(`✓ ${result.message || 'No issues found'}`);
+  } else if (result.status === 'no-files') {
+    output.push(`ℹ️  ${result.message || 'No files found'}`);
+  } else {
+    output.push(result.message || 'Operation completed');
+  }
+  
+  // Show details if available
+  if (result.details && result.details.length > 0) {
+    output.push('\nFiles processed:');
+    result.details.forEach(detail => {
+      output.push(`\n📄 ${detail.file} (${detail.count} fixes)`);
+      if (detail.fixes && detail.fixes.length > 0) {
+        // Show first few fixes as examples
+        detail.fixes.slice(0, 3).forEach(fix => {
+          output.push(`  • ${fix.type}: ${fix.original} → ${fix.fixed}`);
+        });
+        if (detail.fixes.length > 3) {
+          output.push(`  • ... and ${detail.fixes.length - 3} more`);
+        }
+      }
+    });
   }
   
   return output.join('\n');
