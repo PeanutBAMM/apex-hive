@@ -1,5 +1,30 @@
 [
   {
+    "file": "2025-07-04-10-43-27-enhanced-documentation-organization-system.md",
+    "title": "Enhanced documentation organization system",
+    "timestamp": "2025-07-04T08:43:15.960Z",
+    "tags": [
+      "documentation",
+      "organization",
+      "doc-organize",
+      "restructuring",
+      "cleanup"
+    ],
+    "summary": [
+      "apex",
+      "router",
+      "patterns",
+      "registry",
+      "generate",
+      "claude",
+      "install",
+      "jest.config",
+      "server",
+      "debug"
+    ],
+    "narrativeSummary": "## Conversation Summary\n\nToday's development session focused on the **apex-hive** project on the `feature/intelligent-doc-organization` branch.\n\n### What We Accomplished\n\nThroughout this session, we m..."
+  },
+  {
     "file": "2025-07-02-14-21-51-rollback-na-mislukte-parallel-file-ops-implementat.md",
     "title": "Rollback na mislukte parallel file-ops implementatie",
     "timestamp": "2025-07-02T12:21:43.019Z",

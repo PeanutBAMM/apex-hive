@@ -1,5 +1,9 @@
 # Conversation Index
 
+## 2025-07-04
+
+- [Enhanced documentation organization system](2025-07-04-10-43-27-enhanced-documentation-organization-system.md) - `documentation`, `organization`, `doc-organize`, `restructuring`, `cleanup`
+
 ## 2025-07-02
 
 - [Rollback na mislukte parallel file-ops implementatie](2025-07-02-14-21-51-rollback-na-mislukte-parallel-file-ops-implementat.md) - `rollback`, `file-ops`, `reality-check`, `testing`
