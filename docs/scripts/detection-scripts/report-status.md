@@ -1,108 +1,149 @@
 # report-status.js
 
-**File**: `scripts/report-status.js`
-**Language**: javascript
-**Lines**: 728
-**Last Modified**: 2025-07-01T19:09:45.766Z
+<module>report-status</module>
+<description>report-status.js - Generate comprehensive status reports</description>
+<category>Detection</category>
+
+## File Information
+
+- **Path**: `scripts/report-status.js`
+- **Language**: javascript
+- **Lines**: 728
+- **Size**: 19.4KB
+
+## Overview
+
+report-status.js - Generate comprehensive status reports
+
+## Dependencies
+
+- `child_process`
+- `fs`
+- `path`
+
+## Exports
+
+- `async` (value)
 
 ## Functions
 
 ### run
 
-**Parameters:**
-- `args`: No description
-
+**Signature:**
 ```javascript
 export async function run(args = {})
 ```
 
+**Parameters:**
+- `args = {}`
+
 ### generateOverview
 
+**Signature:**
 ```javascript
 async function generateOverview()
 ```
 
 ### generateGitStatus
 
+**Signature:**
 ```javascript
 async function generateGitStatus()
 ```
 
 ### generateCIStatus
 
-**Parameters:**
-- `modules`: No description
-
+**Signature:**
 ```javascript
 async function generateCIStatus(modules)
 ```
 
+**Parameters:**
+- `modules`
+
 ### generateDependencyStatus
 
+**Signature:**
 ```javascript
 async function generateDependencyStatus()
 ```
 
 ### generateCodeMetrics
 
+**Signature:**
 ```javascript
 async function generateCodeMetrics()
 ```
 
 ### generateIssuesStatus
 
-**Parameters:**
-- `modules`: No description
-
+**Signature:**
 ```javascript
 async function generateIssuesStatus(modules)
 ```
 
+**Parameters:**
+- `modules`
+
 ### generateTestStatus
 
+**Signature:**
 ```javascript
 async function generateTestStatus()
 ```
 
 ### generateDocStatus
 
+**Signature:**
 ```javascript
 async function generateDocStatus()
 ```
 
 ### generatePerformanceStatus
 
+**Signature:**
 ```javascript
 async function generatePerformanceStatus()
 ```
 
 ### generateMarkdownReport
 
-**Parameters:**
-- `data`: No description
-
+**Signature:**
 ```javascript
 function generateMarkdownReport(data)
 ```
 
+**Parameters:**
+- `data`
+
 ### generateHTMLReport
 
-**Parameters:**
-- `data`: No description
-
+**Signature:**
 ```javascript
 function generateHTMLReport(data)
 ```
 
+**Parameters:**
+- `data`
+
 ### generateTextReport
 
-**Parameters:**
-- `data`: No description
-
+**Signature:**
 ```javascript
 function generateTextReport(data)
 ```
 
-## Source Code
+**Parameters:**
+- `data`
 
-View the full source code: [report-status.js](scripts/report-status.js)
+## Usage
+
+```javascript
+import async from 'scripts/report-status.js';
+
+// TODO: Add usage example
+```
+
+## See Also
+
+- [Source Code](scripts/report-status.js)

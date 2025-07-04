@@ -1,37 +1,63 @@
-# Git Scripts
+# git-status.js
 
-This category contains 8 scripts.
+<module>git-status</module>
+<description>- `args`: No description</description>
+<category>Git</category>
 
-## Available Commands
+**File**: `scripts/git-status.js`
+**Language**: javascript
+**Lines**: 308
+**Last Modified**: 2025-07-04T10:25:49.064Z
 
-| Command | Description | Script |
-|---------|-------------|--------|
-| `git:commit` | commit.js - Create a git commit with smart message generation | git-commit.js |
-| `git:push` | push.js - Push commits to remote repository | git-push.js |
-| `git:status` | status.js - Enhanced git status with detailed information | git-status.js |
-| `git:pull` | pull.js - Pull changes from remote repository | git-pull.js |
-| `git:tag` | tag.js - Create and manage git tags | git-tag.js |
-| `git:push-tags` | push-tags.js - Push git tags to remote repository | git-push-tags.js |
-| `git:init` | init.js - Initialize a new git repository | git-init.js |
-| `git:branch` | branch.js - Manage git branches | git-branch.js |
+## Functions
 
-## Usage Examples
+### run
 
-### git:commit
+**Parameters:**
+- `args`: No description
 
-```bash
-apex git:commit
+```javascript
+export async function run(args)
 ```
 
-### git:push
+### getGitStatus
 
-```bash
-apex git:push
+**Parameters:**
+- `verbose`: No description
+- `showIgnored`: No description
+
+```javascript
+async function getGitStatus(verbose, showIgnored)
 ```
 
-### git:status
+### getChangeType
 
-```bash
-apex git:status
+**Parameters:**
+- `statusCode`: No description
+
+```javascript
+function getChangeType(statusCode)
 ```
 
+### formatStatus
+
+**Parameters:**
+- `status`: No description
+- `verbose`: No description
+
+```javascript
+function formatStatus(status, verbose)
+```
+
+### getStatusIcon
+
+**Parameters:**
+- `type`: No description
+
+```javascript
+function getStatusIcon(type)
+```
+
+## Source Code
+
+View the full source code: [git-status.js](scripts/git-status.js)

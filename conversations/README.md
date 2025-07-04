@@ -2,6 +2,8 @@
 
 ## 2025-07-04
 
+- [AI Session 2025-07-04](2025-07-04-19-01-00-ai-session-2025-07-04.md)
+- [Test conversation](2025-07-04-12-28-15-test-conversation.md)
 - [Enhanced documentation organization system](2025-07-04-10-43-27-enhanced-documentation-organization-system.md) - `documentation`, `organization`, `doc-organize`, `restructuring`, `cleanup`
 
 ## 2025-07-02

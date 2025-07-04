@@ -206,9 +206,10 @@ function determineTargetPath(doc, headers, content) {
   }
   
   // Documentation that references source files
-  const sourceFileMatch = content.match(/\*\*File\*\*:\s*`([^`]+)`/);
+  // Support both **File**: and **Path**: formats
+  const sourceFileMatch = content.match(/\*\*(File|Path)\*\*:\s*`([^`]+)`/);
   if (sourceFileMatch) {
-    const sourcePath = sourceFileMatch[1];
+    const sourcePath = sourceFileMatch[2]; // Index 2 because 1 is now the File|Path match
     
     // For scripts
     if (sourcePath.startsWith('scripts/')) {

@@ -1,5 +1,8 @@
 # verify-installation.js
 
+<module>verify-installation</module>
+<description>- `name`: No description</description>
+
 **File**: `verify-installation.js`
 **Language**: javascript
 **Lines**: 128

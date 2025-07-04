@@ -1,5 +1,8 @@
 # install-mcp.js
 
+<module>install-mcp</module>
+<description>View the full source code: [install-mcp.js](install-mcp.js)</description>
+
 **File**: `install-mcp.js`
 **Language**: javascript
 **Lines**: 114

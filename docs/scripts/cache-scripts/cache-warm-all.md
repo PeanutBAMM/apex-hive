@@ -1,5 +1,9 @@
 # cache-warm-all.js
 
+<module>cache-warm-all</module>
+<description>- `args`: No description</description>
+<category>Cache</category>
+
 **File**: `scripts/cache-warm-all.js`
 **Language**: javascript
 **Lines**: 266

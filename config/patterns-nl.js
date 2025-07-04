@@ -28,6 +28,21 @@ export default [
     recipe: "end-day",
   },
   {
+    name: "volledige-afsluiting-nl",
+    match: /sluit.*volledig.*af|volledige.*afsluiting|sla.*alles.*op.*en.*sluit.*af|alles.*opslaan/i,
+    recipe: "full-close",
+  },
+  {
+    name: "snel-opslaan-nl",
+    match: /snel.*opslaan|quick.*save|sla.*snel.*op/i,
+    recipe: "snel-opslaan",
+  },
+  {
+    name: "update-alle-docs-nl",
+    match: /update.*alle.*doc|documentatie.*bijwerken|genereer.*alle.*doc/i,
+    recipe: "update-all-docs",
+  },
+  {
     name: "wat-is-kapot-nl",
     match: /wat.*kapot|wat.*stuk|toon.*problemen/i,
     command: "detect-issues",

@@ -1,15 +1,17 @@
 // doc-generate-missing.js - Generate documentation for files without docs
+import { readFile, writeFile, listFiles, pathExists } from "../modules/file-ops.js";
 import { promises as fs } from "fs";
 import { execSync } from "child_process";
 import path from "path";
 
 export async function run(args = {}) {
   const {
-    source = "src",
+    source,  // Legacy single source
+    sources = source ? [source] : ["."], // Scan entire project by default
     docsDir = "docs",
     extensions = [".js", ".ts", ".jsx", ".tsx"],
     format = "markdown",
-    threshold = 100,
+    threshold = 10, // Lower threshold to catch more files
     dryRun = false,
     modules = {},
   } = args;
@@ -17,10 +19,12 @@ export async function run(args = {}) {
   console.error(
     "[DOC-GENERATE-MISSING] Finding files without documentation...",
   );
+  console.error(`[DOC-GENERATE-MISSING] Searching in: ${sources.join(", ")}`);
 
   try {
-    // Find all source files
-    const sourceFiles = await findSourceFiles(source, extensions);
+    // Find all source files from multiple sources
+    const sourceFiles = await findAllSourceFiles(sources, extensions);
+    console.error(`[DOC-GENERATE-MISSING] Total files found: ${sourceFiles.length}`);
 
     if (sourceFiles.length === 0) {
       return {
@@ -38,8 +42,8 @@ export async function run(args = {}) {
       `[DOC-GENERATE-MISSING] Found ${sourceFiles.length} source files`,
     );
 
-    // Find corresponding docs
-    const missingDocs = await findMissingDocs(sourceFiles, docsDir);
+    // Find corresponding docs with intelligent location mapping
+    const missingDocs = await findMissingDocsIntelligent(sourceFiles, docsDir);
 
     if (missingDocs.length === 0) {
       return {
@@ -102,7 +106,7 @@ export async function run(args = {}) {
           await fs.mkdir(path.dirname(docPath), { recursive: true });
 
           // Write documentation
-          await fs.writeFile(docPath, docContent);
+          await writeFile(docPath, docContent);
         }
 
         generated.push({
@@ -130,7 +134,7 @@ export async function run(args = {}) {
         threshold,
       });
 
-      await fs.writeFile(reportPath, report);
+      await writeFile(reportPath, report);
     }
 
     return {
@@ -160,24 +164,60 @@ export async function run(args = {}) {
   }
 }
 
+async function findAllSourceFiles(sources, extensions) {
+  const allFiles = new Set();
+
+  for (const sourceDir of sources) {
+    const files = await findSourceFiles(sourceDir, extensions);
+    files.forEach(f => allFiles.add(f));
+  }
+
+  // Filter out files we don't want to document
+  const filteredFiles = Array.from(allFiles).filter(file => {
+    // Skip test files
+    if (file.includes('.test.') || file.includes('.spec.')) return false;
+    // Skip config files that are not main configs
+    if (file.includes('jest.config') || file.includes('webpack.config')) return false;
+    // Skip generated or debug files
+    if (file.includes('-debug.') || file.includes('-fixed.')) return false;
+    // Skip node_modules, coverage, etc (already handled by find command)
+    return true;
+  });
+
+  return filteredFiles;
+}
+
 async function findSourceFiles(sourceDir, extensions) {
   const files = [];
 
   try {
-    // Build find command
+    // Build find command with more exclusions
     const extPatterns = extensions.map((ext) => `-name "*${ext}"`).join(" -o ");
-    const command = `find ${sourceDir} -type f \\( ${extPatterns} \\) -not -path "*/node_modules/*" -not -path "*/dist/*" -not -path "*/build/*"`;
+    const excludePaths = [
+      "*/node_modules/*",
+      "*/dist/*", 
+      "*/build/*",
+      "*/coverage/*",
+      "*/.git/*",
+      "*/test/*", // Exclude test directories
+      "*/.cache/*",
+      "*/tmp/*"
+    ].map(p => `-not -path "${p}"`).join(" ");
+    
+    const command = `find ${sourceDir} -type f \\( ${extPatterns} \\) ${excludePaths}`;
 
     const output = execSync(command, { encoding: "utf8" });
     const foundFiles = output
       .trim()
       .split("\n")
       .filter((f) => f);
+    
+    console.error(`[DOC-GENERATE-MISSING] Find command found ${foundFiles.length} files in ${sourceDir}`);
 
     // Verify files exist
     for (const file of foundFiles) {
       try {
-        await fs.access(file);
+        if (!(await pathExists(file))) throw new Error();
         files.push(file);
       } catch {
         // File doesn't exist
@@ -190,17 +230,13 @@ async function findSourceFiles(sourceDir, extensions) {
   return files;
 }
 
-async function findMissingDocs(sourceFiles, docsDir) {
+async function findMissingDocsIntelligent(sourceFiles, docsDir) {
   const missing = [];
 
   for (const sourceFile of sourceFiles) {
-    const docPath = getDocPath(sourceFile, "", docsDir);
-
-    try {
-      await fs.access(docPath);
-      // Doc exists
-    } catch {
-      // Doc doesn't exist
+    const existingDoc = await findExistingDocForFile(sourceFile, docsDir);
+    
+    if (!existingDoc) {
       missing.push(sourceFile);
     }
   }
@@ -208,9 +244,98 @@ async function findMissingDocs(sourceFiles, docsDir) {
   return missing;
 }
 
+async function findExistingDocForFile(sourceFile, docsDir) {
+  const basename = path.basename(sourceFile, path.extname(sourceFile));
+  const possibleLocations = [];
+
+  // Determine possible documentation locations based on file type
+  if (sourceFile.startsWith('./scripts/') || sourceFile.startsWith('scripts/')) {
+    // Script files
+    const scriptName = basename;
+    const prefix = scriptName.split('-')[0];
+    
+    const scriptFolders = {
+      ci: "scripts/ci-scripts",
+      doc: "scripts/documentation-scripts",
+      quality: "scripts/quality-scripts",
+      git: "scripts/git-scripts",
+      cache: "scripts/cache-scripts",
+      backlog: "scripts/backlog-scripts",
+      detect: "scripts/detection-scripts",
+      fix: "scripts/detection-scripts",
+      report: "scripts/detection-scripts",
+      startup: "scripts/context-scripts",
+      test: "scripts/quality-scripts",
+      deploy: "scripts/deployment-scripts",
+      version: "scripts/deployment-scripts",
+      changelog: "scripts/deployment-scripts",
+      release: "scripts/deployment-scripts",
+      init: "scripts/core-scripts",
+      build: "scripts/deployment-scripts",
+      search: "scripts/core-scripts",
+      save: "scripts/core-scripts",
+      code: "scripts/core-scripts",
+    };
+
+    const folder = scriptFolders[prefix] || "scripts";
+    possibleLocations.push(
+      path.join(docsDir, folder, `${basename}.md`),
+      path.join(docsDir, folder, `${basename}-overview.md`),
+      path.join(docsDir, folder, `${basename}-documentation.md`)
+    );
+  } else if (sourceFile.startsWith('./modules/') || sourceFile.startsWith('modules/')) {
+    // Module files
+    possibleLocations.push(
+      path.join(docsDir, "architecture/reference/api", `api-${basename}.md`),
+      path.join(docsDir, "architecture/components", `modules-${basename}.md`),
+      path.join(docsDir, "architecture/features", `${basename}-system.md`),
+      path.join(docsDir, "modules", basename, "README.md")
+    );
+  } else if (sourceFile.startsWith('./config/') || sourceFile.startsWith('config/')) {
+    // Config files
+    possibleLocations.push(
+      path.join(docsDir, "architecture/reference/configuration", `${basename}.md`),
+      path.join(docsDir, "configuration", `${basename}.md`)
+    );
+  } else if (sourceFile === './index.js' || sourceFile === 'index.js') {
+    // Main entry point
+    possibleLocations.push(
+      path.join(docsDir, "getting-started", "index.md"),
+      path.join(docsDir, "architecture", "index.md")
+    );
+  } else {
+    // Root level files
+    possibleLocations.push(
+      path.join(docsDir, "architecture/components", `${basename}.md`),
+      path.join(docsDir, "architecture", `${basename}.md`),
+      path.join(docsDir, "development", `${basename}.md`)
+    );
+  }
+
+  // Check each possible location
+  for (const docPath of possibleLocations) {
+    if (await pathExists(docPath)) {
+      // Verify it documents this source file
+      try {
+        const content = await readFile(docPath);
+        // Check if the doc references the source file
+        if (content.includes(basename) || 
+            content.includes(`**File**: \`${sourceFile}\``) ||
+            content.includes(`**Path**: \`${sourceFile}\``)) {
+          return docPath;
+        }
+      } catch {
+        // Continue checking
+      }
+    }
+  }
+
+  return null;
+}
+
 async function countLines(filepath) {
   try {
-    const content = await fs.readFile(filepath, "utf8");
+    const content = await readFile(filepath);
     return content.split("\n").length;
   } catch {
     return 0;
@@ -218,25 +343,49 @@ async function countLines(filepath) {
 }
 
 function getDocPath(sourcePath, sourceRoot, docsDir) {
-  // Remove source root if provided
-  let relativePath = sourcePath;
-  if (sourceRoot && sourcePath.startsWith(sourceRoot)) {
-    relativePath = sourcePath.substring(sourceRoot.length);
+  const basename = path.basename(sourcePath, path.extname(sourcePath));
+  
+  // Intelligent location based on file type
+  if (sourcePath.includes('/scripts/') || sourcePath.startsWith('scripts/')) {
+    const prefix = basename.split('-')[0];
+    const scriptFolders = {
+      ci: "scripts/ci-scripts",
+      doc: "scripts/documentation-scripts",
+      quality: "scripts/quality-scripts",
+      git: "scripts/git-scripts",
+      cache: "scripts/cache-scripts",
+      backlog: "scripts/backlog-scripts",
+      detect: "scripts/detection-scripts",
+      fix: "scripts/detection-scripts",
+      report: "scripts/detection-scripts",
+      startup: "scripts/context-scripts",
+      test: "scripts/quality-scripts",
+      deploy: "scripts/deployment-scripts",
+      version: "scripts/deployment-scripts",
+      changelog: "scripts/deployment-scripts",
+      release: "scripts/deployment-scripts",
+      init: "scripts/core-scripts",
+      build: "scripts/deployment-scripts",
+      search: "scripts/core-scripts",
+      save: "scripts/core-scripts",
+      code: "scripts/core-scripts",
+    };
+    
+    const folder = scriptFolders[prefix] || "scripts";
+    return path.join(docsDir, folder, `${basename}.md`);
+  } else if (sourcePath.includes('/modules/') || sourcePath.startsWith('modules/')) {
+    return path.join(docsDir, "architecture/reference/api", `api-${basename}.md`);
+  } else if (sourcePath.includes('/config/') || sourcePath.startsWith('config/')) {
+    return path.join(docsDir, "architecture/reference/configuration", `${basename}.md`);
+  } else {
+    // Root files go to architecture/components
+    return path.join(docsDir, "architecture/components", `${basename}.md`);
   }
-
-  // Remove leading slash
-  relativePath = relativePath.replace(/^\//, "");
-
-  // Change extension to .md
-  const ext = path.extname(relativePath);
-  const docPath = relativePath.replace(ext, ".md");
-
-  return path.join(docsDir, "api", docPath);
 }
 
 async function generateDocumentation(filepath, options) {
   try {
-    const content = await fs.readFile(filepath, "utf8");
+    const content = await readFile(filepath);
     const ext = path.extname(filepath);
     const basename = path.basename(filepath);
     const language = getLanguage(ext);

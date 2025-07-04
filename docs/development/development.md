@@ -199,7 +199,7 @@ In `config/patterns.js`:
 
 ### Running Tests
 
-Apex Hive uses **Jest** for testing with full ES module support. See our comprehensive [Testing Guide](./testing.md) for detailed information about writing and running tests.
+Apex Hive uses **Jest** for testing with full ES module support. See our comprehensive [Testing Guide](testing) for detailed information about writing and running tests.
 
 #### Quick Test Commands
 ```bash
@@ -295,7 +295,7 @@ For more details on:
 - Coverage reports
 - Troubleshooting
 
-See the complete [Testing Guide](./testing.md).
+See the complete [Testing Guide](testing).
 
 ## 📏 Code Standards
 

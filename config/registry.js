@@ -1,4 +1,4 @@
-// registry.js - Script registry (67 scripts total)
+// registry.js - Script registry (61 scripts total)
 
 export default {
   // CI Scripts (6)
@@ -10,20 +10,18 @@ export default {
   "ci:smart-push": "./scripts/ci-smart-push.js",
   "ci:status": "./scripts/ci-status.js",
 
-  // Documentation Scripts (17)
+  // Documentation Scripts (14)
   "doc:generate": "./scripts/doc-generate.js",
   "doc:generate-changed": "./scripts/doc-generate-changed.js",
   "doc:generate-missing": "./scripts/doc-generate-missing.js",
   "doc:update": "./scripts/doc-update.js",
   "doc:update-readme": "./scripts/doc-update-readme.js",
   "doc:validate": "./scripts/doc-validate.js",
-  "doc:validate-xml": "./scripts/doc-validate-xml.js",
   "doc:validate-links": "./scripts/doc-validate-links.js",
   "doc:fix-links": "./scripts/doc-fix-links.js",
   "doc:organize": "./scripts/doc-organize.js",
   "doc:cleanup": "./scripts/doc-cleanup.js",
   "doc:sync": "./scripts/doc-sync.js",
-  "doc:add-xml": "./scripts/doc-add-xml.js",
   "doc:search": "./scripts/doc-search.js",
   "doc:post-merge": "./scripts/doc-post-merge.js",
   "doc:check": "./scripts/doc-check.js",
@@ -46,10 +44,6 @@ export default {
   "backlog:display": "./scripts/backlog-display.js",
   "backlog:table": "./scripts/backlog-table.js",
 
-  // XML Scripts (3)
-  "xml:validate": "./scripts/xml-validate.js",
-  "xml:add": "./scripts/xml-add.js",
-  "xml:clean": "./scripts/xml-clean.js",
 
   // Git Scripts (8)
   "git:commit": "./scripts/git-commit.js",

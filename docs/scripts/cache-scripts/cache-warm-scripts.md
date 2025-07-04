@@ -1,39 +1,72 @@
 # cache-warm-scripts.js
 
-**File**: `scripts/cache-warm-scripts.js`
-**Language**: javascript
-**Lines**: 181
-**Last Modified**: 2025-07-02T14:01:31.634Z
+<module>cache-warm-scripts</module>
+<description>cache-warm-scripts.js - Pre-cache frequently used scripts and recipes</description>
+<category>Cache</category>
+
+## File Information
+
+- **Path**: `scripts/cache-warm-scripts.js`
+- **Language**: javascript
+- **Lines**: 183
+- **Size**: 5.5KB
+
+## Overview
+
+cache-warm-scripts.js - Pre-cache frequently used scripts and recipes
+
+## Dependencies
+
+- `../modules/file-ops.js`
+- `../modules/unified-cache.js`
+- `path`
+- `url`
+- `fs`
+
+## Exports
+
+- `async` (value)
 
 ## Functions
 
 ### logError
 
-**Parameters:**
-- `message`: No description
-
+**Signature:**
 ```javascript
 function logError(message)
 ```
 
+**Parameters:**
+- `message`
+
 ### run
 
-**Parameters:**
-- `args`: No description
-
+**Signature:**
 ```javascript
 export async function run(args = {})
 ```
 
+**Parameters:**
+- `args = {}`
+
 ### formatSize
 
-**Parameters:**
-- `bytes`: No description
-
+**Signature:**
 ```javascript
 function formatSize(bytes)
 ```
 
-## Source Code
+**Parameters:**
+- `bytes`
 
-View the full source code: [cache-warm-scripts.js](scripts/cache-warm-scripts.js)
+## Usage
+
+```javascript
+import async from 'scripts/cache-warm-scripts.js';
+
+// TODO: Add usage example
+```
+
+## See Also
+
+- [Source Code](scripts/cache-warm-scripts.js)

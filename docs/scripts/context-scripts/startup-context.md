@@ -1,5 +1,9 @@
 # startup-context.js
 
+<module>startup-context</module>
+<description>- `message`: No description</description>
+<category>Context</category>
+
 **File**: `scripts/startup-context.js`
 **Language**: javascript
 **Lines**: 356

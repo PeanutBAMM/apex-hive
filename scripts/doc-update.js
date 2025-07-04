@@ -9,7 +9,7 @@ import { promises as fs } from "fs"; // Still need for readdir in some cases
 import path from "path";
 
 export async function run(args) {
-  const { target = "all", dryRun = false, modules } = args;
+  const { target = "all", sourceFile, dryRun = false, modules } = args;
 
   console.error("[DOC-UPDATE] Updating documentation...");
 
@@ -35,7 +35,7 @@ export async function run(args) {
 
       default:
         // Update specific file
-        updates.push(await updateSpecificDoc(target, dryRun, modules));
+        updates.push(await updateSpecificDoc(target, sourceFile, dryRun, modules));
     }
 
     // Filter out null results
@@ -354,7 +354,7 @@ async function updateAPIDoc(docPath, dryRun, modules) {
   }
 }
 
-async function updateSpecificDoc(target, dryRun, modules) {
+async function updateSpecificDoc(target, sourceFile, dryRun, modules) {
   if (!(await fileExists(target))) {
     throw new Error(`File not found: ${target}`);
   }
@@ -372,6 +372,9 @@ async function updateSpecificDoc(target, dryRun, modules) {
     updated = await updateReadmeContent(content, modules);
   } else if (target.endsWith("CHANGELOG.md")) {
     updated = await updateChangelogContent(content, modules);
+  } else if (sourceFile) {
+    // Update script documentation with new source content
+    updated = await updateScriptDoc(content, sourceFile, modules);
   } else {
     // Generic update - just update date
     const dateRegex = /\*Last updated:.+?\*/;
@@ -495,4 +498,273 @@ async function fileExists(filePath) {
   } catch {
     return false;
   }
+}
+
+async function updateScriptDoc(docContent, sourceFile, modules) {
+  if (!(await fileExists(sourceFile))) {
+    console.error(`[DOC-UPDATE] Source file not found: ${sourceFile}`);
+    return docContent;
+  }
+
+  const sourceContent = await readFile(sourceFile);
+  let updated = docContent;
+
+  // Update file stats
+  const lines = sourceContent.split("\n");
+  const statsRegex = /\*\*Lines\*\*:\s*\d+/;
+  if (statsRegex.test(updated)) {
+    updated = updated.replace(statsRegex, `**Lines**: ${lines.length}`);
+  }
+
+  // Update last modified date
+  const dateRegex = /\*\*Last Modified\*\*:\s*.+/;
+  if (dateRegex.test(updated)) {
+    updated = updated.replace(
+      dateRegex,
+      `**Last Modified**: ${new Date().toISOString()}`,
+    );
+  }
+
+  // Extract new functions/classes from source
+  const language = path.extname(sourceFile) === ".js" ? "javascript" : "typescript";
+  const symbols = extractSymbols(sourceContent, language);
+
+  // Update functions section
+  if (symbols.functions.length > 0) {
+    const functionsSection = generateFunctionsSection(symbols.functions, language);
+    const funcRegex = /## Functions[\s\S]*?(?=##|$)/;
+    
+    if (funcRegex.test(updated)) {
+      updated = updated.replace(funcRegex, functionsSection + "\n");
+    } else {
+      // Add functions section if it doesn't exist
+      const sourceCodeIndex = updated.indexOf("## Source Code");
+      if (sourceCodeIndex > -1) {
+        updated = updated.slice(0, sourceCodeIndex) + functionsSection + "\n" + updated.slice(sourceCodeIndex);
+      }
+    }
+  }
+
+  // Update classes section if present
+  if (symbols.classes.length > 0) {
+    const classesSection = generateClassesSection(symbols.classes);
+    const classRegex = /## Classes[\s\S]*?(?=##|$)/;
+    
+    if (classRegex.test(updated)) {
+      updated = updated.replace(classRegex, classesSection + "\n");
+    }
+  }
+
+  return updated;
+}
+
+function extractSymbols(content, language) {
+  const symbols = {
+    functions: [],
+    classes: [],
+  };
+
+  if (["javascript", "typescript"].includes(language)) {
+    // Extract functions
+    const funcRegex = /(?:\/\*\*([\s\S]*?)\*\/\s*)?(?:export\s+)?(?:async\s+)?function\s+(\w+)\s*\(([^)]*)\)/g;
+    let match;
+
+    while ((match = funcRegex.exec(content)) !== null) {
+      const jsdoc = match[1] || "";
+      const name = match[2];
+      const params = match[3];
+
+      const func = {
+        name,
+        signature: match[0].replace(/\/\*\*[\s\S]*?\*\/\s*/, ""),
+        params: parseParams(params, jsdoc),
+        description: extractDescription(jsdoc),
+        returns: extractReturns(jsdoc),
+      };
+
+      symbols.functions.push(func);
+    }
+
+    // Extract arrow functions with const
+    const arrowRegex = /(?:\/\*\*([\s\S]*?)\*\/\s*)?(?:export\s+)?const\s+(\w+)\s*=\s*(?:async\s+)?\(([^)]*)\)\s*=>/g;
+
+    while ((match = arrowRegex.exec(content)) !== null) {
+      const jsdoc = match[1] || "";
+      const name = match[2];
+      const params = match[3];
+
+      const func = {
+        name,
+        signature: match[0].replace(/\/\*\*[\s\S]*?\*\/\s*/, ""),
+        params: parseParams(params, jsdoc),
+        description: extractDescription(jsdoc),
+        returns: extractReturns(jsdoc),
+      };
+
+      symbols.functions.push(func);
+    }
+
+    // Extract classes
+    const classRegex = /(?:\/\*\*([\s\S]*?)\*\/\s*)?(?:export\s+)?class\s+(\w+)/g;
+
+    while ((match = classRegex.exec(content)) !== null) {
+      const jsdoc = match[1] || "";
+      const name = match[2];
+
+      const cls = {
+        name,
+        description: extractDescription(jsdoc),
+        methods: extractClassMethods(content, name),
+      };
+
+      symbols.classes.push(cls);
+    }
+  }
+
+  return symbols;
+}
+
+function parseParams(paramString, jsdoc) {
+  const params = [];
+
+  if (paramString.trim()) {
+    // Parse parameter names from signature
+    const paramNames = paramString
+      .split(",")
+      .map((p) => {
+        const match = p.trim().match(/(\w+)/);
+        return match ? match[1] : null;
+      })
+      .filter(Boolean);
+
+    // Extract param descriptions from JSDoc
+    const paramRegex = /@param\s+(?:\{([^}]+)\}\s+)?(\w+)\s*-?\s*(.+)/g;
+    const jsdocParams = {};
+    let match;
+
+    while ((match = paramRegex.exec(jsdoc)) !== null) {
+      jsdocParams[match[2]] = {
+        type: match[1],
+        description: match[3],
+      };
+    }
+
+    // Combine
+    for (const name of paramNames) {
+      params.push({
+        name,
+        type: jsdocParams[name]?.type || null,
+        description: jsdocParams[name]?.description || null,
+      });
+    }
+  }
+
+  return params;
+}
+
+function extractDescription(jsdoc) {
+  if (!jsdoc) return null;
+
+  // Remove @tags and get first paragraph
+  const lines = jsdoc
+    .split("\n")
+    .map((line) => line.replace(/^\s*\*\s?/, ""))
+    .filter((line) => !line.startsWith("@"));
+
+  // Find first non-empty line
+  for (const line of lines) {
+    if (line.trim()) {
+      return line.trim();
+    }
+  }
+
+  return null;
+}
+
+function extractReturns(jsdoc) {
+  if (!jsdoc) return null;
+
+  const match = jsdoc.match(/@returns?\s+(?:\{([^}]+)\}\s+)?(.+)/);
+  if (match) {
+    return match[2].trim();
+  }
+
+  return null;
+}
+
+function extractClassMethods(content, className) {
+  const methods = [];
+
+  // Look for methods after class declaration
+  const classStart = content.indexOf(`class ${className}`);
+  if (classStart === -1) return methods;
+
+  const afterClass = content.substring(classStart);
+  const methodRegex = /(?:async\s+)?(\w+)\s*\([^)]*\)\s*\{/g;
+  let match;
+
+  while ((match = methodRegex.exec(afterClass)) !== null) {
+    const name = match[1];
+    if (name !== "constructor") {
+      methods.push({
+        name,
+        description: null, // Would need more parsing for descriptions
+      });
+    }
+  }
+
+  return methods;
+}
+
+function generateFunctionsSection(functions, language) {
+  let section = "## Functions\n\n";
+  
+  for (const func of functions) {
+    section += `### ${func.name}\n\n`;
+    
+    if (func.description) {
+      section += `${func.description}\n\n`;
+    }
+    
+    if (func.params.length > 0) {
+      section += "**Parameters:**\n";
+      for (const param of func.params) {
+        section += `- \`${param.name}\`${param.type ? ` (${param.type})` : ""}: ${param.description || "No description"}\n`;
+      }
+      section += "\n";
+    }
+    
+    if (func.returns) {
+      section += `**Returns:** ${func.returns}\n\n`;
+    }
+
+    // Add signature
+    section += "```" + language + "\n";
+    section += func.signature + "\n";
+    section += "```\n\n";
+  }
+  
+  return section;
+}
+
+function generateClassesSection(classes) {
+  let section = "## Classes\n\n";
+  
+  for (const cls of classes) {
+    section += `### ${cls.name}\n\n`;
+    
+    if (cls.description) {
+      section += `${cls.description}\n\n`;
+    }
+
+    if (cls.methods.length > 0) {
+      section += "#### Methods\n\n";
+      for (const method of cls.methods) {
+        section += `- **${method.name}**: ${method.description || "No description"}\n`;
+      }
+      section += "\n";
+    }
+  }
+  
+  return section;
 }

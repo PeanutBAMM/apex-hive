@@ -49,13 +49,22 @@ Script documentation
 │   ├── report-scripts-overview.md
 │   └── report-status.md
 ├── documentation-scripts
+│   ├── doc-fix-links.md
+│   ├── doc-generate-changed.md
+│   ├── doc-generate-missing.md
 │   ├── doc-generate.md
+│   ├── doc-organize-documentation.md
+│   ├── doc-scripts-improvements.md
 │   ├── doc-scripts-overview.md
+│   ├── doc-update.md
+│   ├── doc-validate-and-fix-xml.md
+│   ├── doc-validate-xml.md
 │   ├── xml-scripts-overview.md
 │   └── xml-validate.md
 ├── git-scripts
 │   ├── git-commit-overview.md
 │   ├── git-commit.md
+│   ├── git-push.md
 │   ├── git-status.md
 │   └── push-scripts-overview.md
 └── quality-scripts
@@ -67,7 +76,7 @@ Script documentation
 
 ## Overview
 
-- Total documents: 48
+- Total documents: 58
 - Subfolders: 10
 
 ## Navigation

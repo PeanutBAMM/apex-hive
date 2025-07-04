@@ -1,5 +1,8 @@
 # backlog-parser.js
 
+<module>backlog-parser</module>
+<description>Parse BACKLOG.md file into structured backlog items</description>
+
 **File**: `modules/backlog-parser.js`
 **Language**: javascript
 **Lines**: 296

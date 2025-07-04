@@ -32,6 +32,29 @@
     "git:status",
     "save-conversation"
   ],
+  "full-close": [
+    "git:status",
+    "doc:generate-changed",
+    "doc:fix-links",
+    "doc:organize",
+    "save-conversation",
+    "git:commit",
+    "git:push",
+    "ci:monitor"
+  ],
+  "update-all-docs": [
+    "doc:generate-changed",
+    "doc:update",
+    "doc:fix-links",
+    "doc:organize"
+  ],
+  "snel-opslaan": [
+    "git:status",
+    "doc:generate-changed",
+    "save-conversation",
+    "git:commit",
+    "git:push"
+  ],
   "fix": [
     "detect-issues",
     "fix-detected",

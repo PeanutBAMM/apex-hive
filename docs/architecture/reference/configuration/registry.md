@@ -1,9 +1,12 @@
 # registry.js
 
+<module>registry</module>
+<description>View the full source code: [registry.js](config/registry.js)</description>
+
 **File**: `config/registry.js`
 **Language**: javascript
-**Lines**: 102
-**Last Modified**: 2025-07-02T14:01:31.626Z
+**Lines**: 105
+**Last Modified**: 2025-07-04T14:31:25.418Z
 
 ## Source Code
 

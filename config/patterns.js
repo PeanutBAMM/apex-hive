@@ -28,6 +28,21 @@ export default [
     recipe: "end-day",
   },
   {
+    name: "full-close",
+    match: /full.*close|complete.*shutdown|save.*everything|close.*everything/i,
+    recipe: "full-close",
+  },
+  {
+    name: "quick-save",
+    match: /quick.*save|fast.*save|rapid.*save/i,
+    recipe: "snel-opslaan",
+  },
+  {
+    name: "update-all-docs",
+    match: /update.*all.*doc|generate.*all.*doc/i,
+    recipe: "update-all-docs",
+  },
+  {
     name: "whats-broken",
     match: /what.*broken|what.*wrong|show.*issues/i,
     command: "detect-issues",

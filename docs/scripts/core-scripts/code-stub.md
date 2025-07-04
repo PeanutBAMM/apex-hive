@@ -1,5 +1,9 @@
 # code-stub.js
 
+<module>code-stub</module>
+<description>- `args`: No description</description>
+<category>Core</category>
+
 **File**: `scripts/code-stub.js`
 **Language**: javascript
 **Lines**: 1904

@@ -1,4 +1,5 @@
 // doc-fix-links.js - Fix broken links in documentation
+import { readFile, writeFile, listFiles, pathExists } from "../modules/file-ops.js";
 import { promises as fs } from "fs";
 import path from "path";
 
@@ -53,7 +54,7 @@ export async function run(args) {
 }
 
 async function fixFileLinks(filePath, dryRun, updateHttps, modules) {
-  const content = await fs.readFile(filePath, "utf8");
+  const content = await readFile(filePath);
   let updated = content;
   const fixes = [];
 
@@ -116,7 +117,7 @@ async function fixFileLinks(filePath, dryRun, updateHttps, modules) {
 
   // Save if changes were made
   if (!dryRun && updated !== content) {
-    await fs.writeFile(filePath, updated);
+    await writeFile(filePath, updated);
   }
 
   return fixes;
@@ -198,7 +199,7 @@ async function findFileByName(fileName, searchDir) {
       for (const entry of entries) {
         const fullPath = path.join(dir, entry.name);
 
-        if (entry.isFile() && entry.name === fileName) {
+        if ((typeof entry.isFile === "function" ? entry.isFile() : entry._isFile) && entry.name === fileName) {
           candidates.push(fullPath);
         } else if (
           (typeof entry.isDirectory === "function"
@@ -263,10 +264,5 @@ async function findMarkdownFiles(dir) {
 }
 
 async function fileExists(filePath) {
-  try {
-    await fs.access(filePath);
-    return true;
-  } catch {
-    return false;
-  }
+  return await pathExists(filePath);
 }

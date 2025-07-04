@@ -1,5 +1,9 @@
 # quality-console-clean.js
 
+<module>quality-console-clean</module>
+<description>- `args`: No description</description>
+<category>Quality</category>
+
 **File**: `scripts/quality-console-clean.js`
 **Language**: javascript
 **Lines**: 118
