@@ -1,14 +1,14 @@
 # Issues Report
 
-Generated: 2025-07-04T17:05:51.722Z
+Generated: 2025-07-05T16:53:29.757Z
 
 ## Summary
 
-- Total Issues: 170
+- Total Issues: 166
 - Critical: 0
 - High: 0
 - Medium: 46
-- Low: 124
+- Low: 120
 - Info: 0
 
 ## 🟡 MEDIUM (46)
@@ -141,12 +141,6 @@ Generated: 2025-07-04T17:05:51.722Z
 
 ### console-log
 - **Category**: code
-- **File**: test-performance-runner.js:9
-- **Message**: 31 console.log statements found (lines: 9, 12, 13, 16, 20, 26, 32, 43, 44, 45, 46, 47, 48, 49, 56, 57, 58, 59, 64, 119, 120, 121, 122, 132, 140, 147, 148, 149, 150, 151, 153)
-- **Fixable**: Yes - Remove console.log statements
-
-### console-log
-- **Category**: code
 - **File**: verify-installation.js:12
 - **Message**: 5 console.log statements found (lines: 12, 25, 28, 32, 108)
 - **Fixable**: Yes - Remove console.log statements
@@ -163,7 +157,7 @@ Generated: 2025-07-04T17:05:51.722Z
 
 ### unsafe-regex
 - **Category**: security
-- **File**: scripts/doc-generate-missing.js:754
+- **File**: scripts/doc-generate-missing.js:680
 - **Message**: Dynamic RegExp construction (potential ReDoS)
 
 ### unsafe-regex
@@ -179,6 +173,11 @@ Generated: 2025-07-04T17:05:51.722Z
 ### unsafe-regex
 - **Category**: security
 - **File**: scripts/doc-update-readme.js:350
+- **Message**: Dynamic RegExp construction (potential ReDoS)
+
+### unsafe-regex
+- **Category**: security
+- **File**: scripts/doc-update.js:1050
 - **Message**: Dynamic RegExp construction (potential ReDoS)
 
 ### unsafe-regex
@@ -266,7 +265,7 @@ Generated: 2025-07-04T17:05:51.722Z
 - **File**: scripts/detect-issues.js:560
 - **Message**: Synchronous operation 'mkdirSync' found
 
-## 🔵 LOW (124)
+## 🔵 LOW (120)
 
 ### todo-comment
 - **Category**: code
@@ -490,32 +489,17 @@ Generated: 2025-07-04T17:05:51.722Z
 
 ### todo-comment
 - **Category**: code
-- **File**: scripts/doc-generate-missing.js:526
+- **File**: scripts/doc-generate-missing.js:452
 - **Message**: doc += `## TODO\n\n`;
 
 ### todo-comment
 - **Category**: code
-- **File**: scripts/doc-generate-missing.js:542
-- **Message**: doc += `// TODO: Add usage example\n`;
-
-### todo-comment
-- **Category**: code
-- **File**: scripts/doc-generate-missing.js:544
-- **Message**: doc += `// TODO: Add usage example\n`;
-
-### todo-comment
-- **Category**: code
-- **File**: scripts/doc-generate-missing.js:547
-- **Message**: doc += `// TODO: Add usage example\n`;
-
-### todo-comment
-- **Category**: code
-- **File**: scripts/doc-generate-missing.js:776
+- **File**: scripts/doc-generate-missing.js:702
 - **Message**: // Extract TODOs (language agnostic)
 
 ### todo-comment
 - **Category**: code
-- **File**: scripts/doc-generate-missing.js:777
+- **File**: scripts/doc-generate-missing.js:703
 - **Message**: const todoRegex = /(?:\/\/|#|\/\*)\s*TODO\s*:?\s*(.+?)(?:\*\/|$)/gi;
 
 ### todo-comment
@@ -535,13 +519,8 @@ Generated: 2025-07-04T17:05:51.722Z
 
 ### long-function
 - **Category**: code
-- **File**: scripts/doc-organize.js:348
+- **File**: scripts/doc-organize.js:385
 - **Message**: Function 'detectScriptType' is 68 lines long (max: 50)
-
-### long-function
-- **Category**: code
-- **File**: test-performance-runner.js:80
-- **Message**: Function 'main' is 53 lines long (max: 50)
 
 ### outdated-dependency
 - **Category**: dependencies
@@ -886,5 +865,5 @@ Generated: 2025-07-04T17:05:51.722Z
 ### missing-tests
 - **Category**: testing
 - **File**: multiple
-- **Message**: 88 files missing tests (showing first 10: apex-router.js, config/patterns-nl.js, config/patterns.js, config/registry.js, generate-claude-md.js, index.js, install-mcp.js, jest.config.js, mcp-server-debug.js, mcp-server-fixed.js, and 78 more)
+- **Message**: 87 files missing tests (showing first 10: apex-router.js, config/patterns-nl.js, config/patterns.js, config/registry.js, generate-claude-md.js, index.js, install-mcp.js, jest.config.js, mcp-server-debug.js, mcp-server-fixed.js, and 77 more)
 
