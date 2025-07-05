@@ -17,6 +17,7 @@ export async function run(args = {}) {
     format = "markdown",
     output = "docs/changes",
     includeTests = false,
+    updateExisting = false,
     dryRun = false,
     modules = {},
   } = args;
@@ -63,12 +64,67 @@ export async function run(args = {}) {
     );
 
     const generated = [];
+    const updated = [];
+    const skipped = [];
     const failed = [];
     const docsToWrite = {};
 
     // Generate documentation for each file
     for (const file of filesToDocument) {
       try {
+        // Check if documentation already exists
+        const existingDocPath = await findExistingDoc(file);
+        
+        if (existingDocPath) {
+          if (updateExisting && modules["doc:update"]) {
+            console.error(
+              `[DOC-GENERATE-CHANGED] Updating existing documentation for ${file} at ${existingDocPath}...`
+            );
+            
+            try {
+              const updateResult = await modules["doc:update"].run({
+                target: existingDocPath,
+                sourceFile: file,
+                dryRun,
+                modules,
+              });
+              
+              if (updateResult.status === "updated" || updateResult.status === "dry-run") {
+                updated.push({
+                  source: file,
+                  doc: existingDocPath,
+                });
+              } else {
+                skipped.push({
+                  source: file,
+                  doc: existingDocPath,
+                  reason: "No changes needed",
+                });
+              }
+              continue;
+            } catch (error) {
+              console.error(
+                `[DOC-GENERATE-CHANGED] Failed to update ${existingDocPath}: ${error.message}`
+              );
+              failed.push({
+                file,
+                error: `Update failed: ${error.message}`,
+              });
+              continue;
+            }
+          } else {
+            console.error(
+              `[DOC-GENERATE-CHANGED] Documentation already exists for ${file} at ${existingDocPath}, skipping...`
+            );
+            skipped.push({
+              source: file,
+              doc: existingDocPath,
+              reason: "Already documented",
+            });
+            continue;
+          }
+        }
+
         const docResult = await generateFileDoc(file, { format, modules });
 
         if (docResult.success) {
@@ -125,12 +181,14 @@ export async function run(args = {}) {
       data: {
         files: filesToDocument.length,
         generated: generated.map((g) => g.doc),
+        updated: updated.map((u) => u.doc),
+        skipped: skipped.length,
         failed: failed.length,
         index: generated.length > 1 ? path.join(output, "index.md") : null,
       },
       message: dryRun
-        ? `Would generate docs for ${generated.length} changed files`
-        : `Generated docs for ${generated.length} changed files`,
+        ? `Would process ${filesToDocument.length} files: ${generated.length} new, ${updated.length} updated, ${skipped.length} skipped`
+        : `Processed ${filesToDocument.length} files: ${generated.length} new, ${updated.length} updated, ${skipped.length} skipped`,
     };
   } catch (error) {
     console.error("[DOC-GENERATE-CHANGED] Error:", error.message);
@@ -624,4 +682,80 @@ function generateIndex(generated, options) {
   }
 
   return index;
+}
+
+async function findExistingDoc(sourceFile) {
+  // Common documentation locations to check
+  const docsLocations = [
+    "docs",
+    "docs/scripts",
+    "docs/architecture",
+    "docs/api",
+  ];
+
+  // For scripts, check specific subdirectories
+  if (sourceFile.startsWith("scripts/")) {
+    const scriptName = path.basename(sourceFile, ".js");
+    const prefix = scriptName.split("-")[0];
+    
+    const scriptFolders = {
+      ci: "docs/scripts/ci-scripts",
+      doc: "docs/scripts/documentation-scripts",
+      quality: "docs/scripts/quality-scripts",
+      git: "docs/scripts/git-scripts",
+      cache: "docs/scripts/cache-scripts",
+      backlog: "docs/scripts/backlog-scripts",
+      xml: "docs/scripts/documentation-scripts",
+      detect: "docs/scripts/detection-scripts",
+      fix: "docs/scripts/detection-scripts",
+      report: "docs/scripts/detection-scripts",
+      startup: "docs/scripts/context-scripts",
+      test: "docs/scripts/quality-scripts",
+      deploy: "docs/scripts/deployment-scripts",
+      version: "docs/scripts/deployment-scripts",
+      changelog: "docs/scripts/deployment-scripts",
+      release: "docs/scripts/deployment-scripts",
+      init: "docs/scripts/core-scripts",
+      build: "docs/scripts/deployment-scripts",
+      search: "docs/scripts/core-scripts",
+      save: "docs/scripts/core-scripts",
+      code: "docs/scripts/core-scripts",
+    };
+
+    if (scriptFolders[prefix]) {
+      docsLocations.unshift(scriptFolders[prefix]);
+    }
+  }
+
+  // Check each location for matching documentation
+  const basename = path.basename(sourceFile, path.extname(sourceFile));
+  
+  for (const location of docsLocations) {
+    const possiblePaths = [
+      path.join(location, `${basename}.md`),
+      path.join(location, `${basename}-overview.md`),
+      path.join(location, `${basename}-documentation.md`),
+    ];
+
+    for (const docPath of possiblePaths) {
+      if (await pathExists(docPath)) {
+        // Read the file to verify it documents this source file
+        try {
+          const content = await readFile(docPath);
+          // Check if the doc references the source file
+          if (
+            content.includes(`**File**: \`${sourceFile}\``) ||
+            content.includes(`**Path**: \`${sourceFile}\``) ||
+            content.includes(basename)
+          ) {
+            return docPath;
+          }
+        } catch {
+          // Continue checking other paths
+        }
+      }
+    }
+  }
+
+  return null;
 }

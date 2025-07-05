@@ -1,35 +1,68 @@
-# Cache Scripts
+# cache-status.js
 
-This category contains 6 scripts.
+## File Information
 
-## Available Commands
+- **Path**: `./scripts/cache-status.js`
+- **Language**: javascript
+- **Lines**: 138
+- **Size**: 3.5KB
+- **Type**: Script
+- **Last Modified**: 2025-07-04T19:45:39.503Z
 
-| Command | Description | Script |
-|---------|-------------|--------|
-| `cache:warm-readmes` | warm-readmes.js - Pre-cache README files for fast access | cache-warm-readmes.js |
-| `cache:warm-docs` | warm-docs.js - Pre-cache high-value documentation files for fast access | cache-warm-docs.js |
-| `cache:warm-conversations` | warm-conversations.js - Pre-cache recent conversations for fast access | cache-warm-conversations.js |
-| `cache:warm-all` | warm-all.js - Combined cache warming for READMEs, high-value documentation, and conversations | cache-warm-all.js |
-| `cache:clear` | clear.js - Clear the apex cache using unified cache system | cache-clear.js |
-| `cache:status` | status.js - Display cache statistics and status | cache-status.js |
+## Overview
 
-## Usage Examples
+cache-status.js - Display cache statistics and status
 
-### cache:warm-readmes
+## Dependencies
 
-```bash
-apex cache:warm-readmes
+- `../modules/unified-cache.js`
+
+## Exports
+
+- `async` (value)
+
+## Functions
+
+### run
+
+**Signature:**
+```javascript
+export async function run(args = {})
 ```
 
-### cache:warm-docs
+**Parameters:**
+- `args = {}`
 
-```bash
-apex cache:warm-docs
+### formatDuration
+
+**Signature:**
+```javascript
+function formatDuration(ms)
 ```
 
-### cache:warm-conversations
+**Parameters:**
+- `ms`
 
-```bash
-apex cache:warm-conversations
+## Script Details
+
+- **Command**: `apex cache-status`
+- **Accepts Arguments**: Yes
+
+## Usage
+
+```javascript
+// Run this script via the apex command
+apex cache-status
+
+// With arguments
+apex cache-status --arg value
 ```
 
+## Related Documentation
+
+- [Apex Hive Commands Reference](../../architecture/reference/commands/)
+- [Script Development Guide](../../development/scripts/)
+
+## See Also
+
+- [Source Code](./scripts/cache-status.js)

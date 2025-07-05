@@ -1,37 +1,61 @@
-# Quality Scripts
+# quality-lint.js
 
-This category contains 8 scripts.
+## File Information
 
-## Available Commands
+- **Path**: `./scripts/quality-lint.js`
+- **Language**: javascript
+- **Lines**: 157
+- **Size**: 3.8KB
+- **Type**: Script
+- **Last Modified**: 2025-07-04T19:45:39.781Z
 
-| Command | Description | Script |
-|---------|-------------|--------|
-| `quality:lint` | lint.js - Run ESLint on the codebase | quality-lint.js |
-| `quality:fix-versions` | fix-versions.js - Fix version issues in package.json | quality-fix-versions.js |
-| `quality:console-clean` | console-clean.js - Remove console.log statements from code | quality-console-clean.js |
-| `quality:fix-all` | fix-all.js - Fix all quality issues (lint, console.log, versions, etc.) | quality-fix-all.js |
-| `quality:validate` | validate.js - Validate code quality standards | quality-validate.js |
-| `quality:format` | format.js - Format code using prettier or similar | quality-format.js |
-| `quality:setup` | setup.js - Setup quality tools and configurations | quality-setup.js |
-| `quality:check` | check.js - Run all quality checks and report status | quality-check.js |
+## Overview
 
-## Usage Examples
+quality-lint.js - Run ESLint on the codebase
 
-### quality:lint
+## Dependencies
 
-```bash
-apex quality:lint
+- `child_process`
+- `fs`
+- `path`
+
+## Exports
+
+- `async` (value)
+
+## Functions
+
+### run
+
+**Signature:**
+```javascript
+export async function run(args = {})
 ```
 
-### quality:fix-versions
+**Parameters:**
+- `args = {}`
 
-```bash
-apex quality:fix-versions
+## Script Details
+
+- **Command**: `apex quality-lint`
+- **Accepts Arguments**: Yes
+- **Supports Dry Run**: Yes
+
+## Usage
+
+```javascript
+// Run this script via the apex command
+apex quality-lint
+
+// With arguments
+apex quality-lint --arg value
 ```
 
-### quality:console-clean
+## Related Documentation
 
-```bash
-apex quality:console-clean
-```
+- [Apex Hive Commands Reference](../../architecture/reference/commands/)
+- [Script Development Guide](../../development/scripts/)
 
+## See Also
+
+- [Source Code](./scripts/quality-lint.js)

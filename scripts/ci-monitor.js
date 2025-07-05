@@ -1,4 +1,5 @@
 // ci-monitor.js - Monitor GitHub Actions CI status
+import { readFile, writeFile, listFiles, pathExists } from "../modules/file-ops.js";
 import { execSync } from "child_process";
 
 export async function run(args) {

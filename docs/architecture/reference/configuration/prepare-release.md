@@ -1,5 +1,8 @@
 # prepare-release.js
 
+<module>prepare-release</module>
+<description>- `name`: No description</description>
+
 **File**: `prepare-release.js`
 **Language**: javascript
 **Lines**: 122

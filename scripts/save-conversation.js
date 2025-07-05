@@ -1,4 +1,5 @@
 // save-conversation.js - Save AI conversation context
+import { readFile, writeFile, pathExists, listFiles } from "../modules/file-ops.js";
 import { promises as fs } from "fs";
 import path from "path";
 import { execSync } from "child_process";
@@ -96,7 +97,7 @@ export async function run(args = {}) {
       await fs.mkdir(directory, { recursive: true });
 
       // Write conversation
-      await fs.writeFile(filepath, content);
+      await writeFile(filepath, content);
 
       // Update index
       await updateConversationIndex(directory, {
@@ -237,7 +238,7 @@ async function generateSummary() {
 
   // Analyze files for technologies
   try {
-    const packageJson = JSON.parse(await fs.readFile("package.json", "utf8"));
+    const packageJson = JSON.parse(await readFile("package.json"));
 
     // Extract key dependencies
     const deps = Object.keys(packageJson.dependencies || {});
@@ -329,7 +330,7 @@ async function gatherMetadata() {
 
   // Get project name
   try {
-    const pkg = JSON.parse(await fs.readFile("package.json", "utf8"));
+    const pkg = JSON.parse(await readFile("package.json"));
     metadata.projectName = pkg.name;
   } catch {
     // No package.json
@@ -506,7 +507,7 @@ async function updateConversationIndex(directory, conversationData) {
 
   // Load existing index
   try {
-    const existing = await fs.readFile(indexPath, "utf8");
+    const existing = await readFile(indexPath);
     index = JSON.parse(existing);
   } catch {
     // No index yet
@@ -528,7 +529,7 @@ async function updateConversationIndex(directory, conversationData) {
   index = index.slice(0, 100);
 
   // Save updated index
-  await fs.writeFile(indexPath, JSON.stringify(index, null, 2));
+  await writeFile(indexPath, JSON.stringify(index, null, 2));
 
   // Also create a markdown index
   let mdIndex = "# Conversation Index\n\n";
@@ -553,7 +554,7 @@ async function updateConversationIndex(directory, conversationData) {
     mdIndex += "\n";
   }
 
-  await fs.writeFile(path.join(directory, "README.md"), mdIndex);
+  await writeFile(path.join(directory, "README.md"), mdIndex);
 }
 
 // Helper function to retrieve recent conversations from cache

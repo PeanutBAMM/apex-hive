@@ -211,7 +211,7 @@ apex save-conversation --title "Test" --dryRun
 ## 📚 Related Documentation
 
 - [Unified Cache System](./unified-cache.md)
-- [Natural Language Patterns](../02-guides/natural-language.md)
+- [Natural Language Patterns](natural-language.md)
 - [Cache Management](../02-guides/cache-management.md)
 
 ---

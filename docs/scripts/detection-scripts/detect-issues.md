@@ -1,5 +1,9 @@
 # detect-issues.js
 
+<module>detect-issues</module>
+<description>- `args`: No description</description>
+<category>Detection</category>
+
 **File**: `scripts/detect-issues.js`
 **Language**: javascript
 **Lines**: 761

@@ -1,5 +1,9 @@
 # cache-warm-scripts.js
 
+<module>cache-warm-scripts</module>
+<description>- `message`: No description</description>
+<category>Cache</category>
+
 **File**: `scripts/cache-warm-scripts.js`
 **Language**: javascript
 **Lines**: 181

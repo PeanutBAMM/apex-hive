@@ -2,8 +2,8 @@
 
 **File**: `config/registry.js`
 **Language**: javascript
-**Lines**: 102
-**Last Modified**: 2025-07-02T14:01:31.626Z
+**Lines**: 98
+**Last Modified**: 2025-07-04T17:00:51.094Z
 
 ## Source Code
 

@@ -21,7 +21,7 @@ export async function run(args) {
 
     // Check 4: Key documentation files
     const keyDocs = [
-      { path: "docs/getting-started.md", name: "Getting Started guide" },
+      { path: "docs/getting-started/getting-started.md", name: "Getting Started guide" },
       { path: "docs/api.md", name: "API documentation" },
       { path: "docs/contributing.md", name: "Contributing guide" },
     ];

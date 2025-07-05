@@ -1,5 +1,7 @@
 // git-commit.js - Create a git commit with smart message generation
+import { readFile, writeFile, listFiles, pathExists } from "../modules/file-ops.js";
 import { execSync } from "child_process";
+import path from "path";
 
 export async function run(args = {}) {
   const {
@@ -84,7 +86,15 @@ export async function run(args = {}) {
     // Execute commit
     if (!dryRun) {
       try {
-        const output = execSync(`git commit ${commitArgs.join(" ")}`, {
+        // Use array form to properly escape the commit message
+        const args = ["commit", ...commitArgs];
+        const output = execSync(`git ${args.map(arg => {
+          // Properly quote arguments that contain special characters
+          if (arg.includes(" ") || arg.includes("(") || arg.includes(")") || arg.includes("'") || arg.includes('"')) {
+            return `"${arg.replace(/"/g, '\\"')}"`;
+          }
+          return arg;
+        }).join(" ")}`, {
           encoding: "utf8",
           stdio: ["pipe", "pipe", "pipe"],
         });

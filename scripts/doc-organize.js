@@ -1,7 +1,7 @@
 // doc-organize.js - Organize documentation with deterministic rules
 import { readFile, writeFile, pathExists, listFiles, getFileStats } from "../modules/file-ops.js";
 import { promises as fs } from "fs"; 
-import path from "path";
+import * as path from "path";
 
 export async function run(args) {
   const { source = "docs", dryRun = false, createIndex = true } = args;
@@ -198,7 +198,7 @@ async function categorizeDocs(docs) {
 function determineTargetPath(doc, headers, content) {
   const name = doc.name.toLowerCase();
   const title = headers.title || '';
-  const path = doc.path.toLowerCase();
+  const docPath = doc.path.toLowerCase();
   
   // API documentation
   if (name.startsWith('api-')) {
@@ -206,9 +206,10 @@ function determineTargetPath(doc, headers, content) {
   }
   
   // Documentation that references source files
-  const sourceFileMatch = content.match(/\*\*File\*\*:\s*`([^`]+)`/);
+  // Support both **File**: and **Path**: formats
+  const sourceFileMatch = content.match(/\*\*(File|Path)\*\*:\s*`([^`]+)`/);
   if (sourceFileMatch) {
-    const sourcePath = sourceFileMatch[1];
+    const sourcePath = sourceFileMatch[2].replace(/^\.\//, ''); // Strip leading ./ if present
     
     // For scripts
     if (sourcePath.startsWith('scripts/')) {
@@ -216,8 +217,15 @@ function determineTargetPath(doc, headers, content) {
       return ['scripts', detectScriptType(scriptName, headers)];
     }
     
-    // For modules (goes to components)
+    // For modules - categorize based on their function
     if (sourcePath.startsWith('modules/')) {
+      const moduleName = path.basename(sourcePath, '.js');
+      // Feature modules
+      if (moduleName.includes('rag-system') || moduleName.includes('file-ops') || 
+          moduleName.includes('unified-cache') || moduleName.includes('search')) {
+        return ['architecture', 'features'];
+      }
+      // Utility/component modules
       return ['architecture', 'components'];
     }
     
@@ -226,17 +234,47 @@ function determineTargetPath(doc, headers, content) {
       return ['architecture', 'reference', 'configuration'];
     }
     
-    // For root level tools (install-mcp.js etc)
+    // For root level files - better categorization
     if (sourcePath.endsWith('.js') && !sourcePath.includes('/')) {
-      if (sourcePath.includes('install') || sourcePath.includes('setup')) {
+      const rootFile = path.basename(sourcePath, '.js');
+      
+      // Installation and setup
+      if (rootFile.includes('install') || rootFile.includes('setup') || rootFile.includes('verify')) {
         return ['getting-started'];
       }
-      return ['architecture', 'reference', 'configuration'];
+      
+      // Architecture/design files
+      if (rootFile.includes('router') || rootFile.includes('server')) {
+        return ['architecture', 'design'];
+      }
+      
+      // Feature files
+      if (rootFile.includes('generate') || rootFile.includes('prepare')) {
+        return ['architecture', 'features'];
+      }
+      
+      // Component files
+      if (rootFile.includes('formatter') || rootFile === 'index') {
+        return ['architecture', 'components'];
+      }
+      
+      // Test files
+      if (rootFile.includes('test')) {
+        return ['development', 'testing'];
+      }
+      
+      // Config files
+      if (rootFile.includes('config')) {
+        return ['architecture', 'reference', 'configuration'];
+      }
+      
+      // Default for uncategorized root files
+      return ['architecture', 'components'];
     }
   }
   
   // Changes documentation
-  if (name.includes('changes-') || path.includes('changes/')) {
+  if (name.includes('changes-') || docPath.includes('changes/')) {
     return ['changes'];
   }
   

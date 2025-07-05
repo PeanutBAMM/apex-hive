@@ -1,44 +1,148 @@
-# Doc Scripts
+# doc-generate.js
 
-This category contains 15 scripts.
+## File Information
 
-## Available Commands
+- **Path**: `./scripts/doc-generate.js`
+- **Language**: javascript
+- **Lines**: 404
+- **Size**: 10.2KB
+- **Type**: Script
+- **Last Modified**: 2025-07-04T19:45:39.636Z
 
-| Command | Description | Script |
-|---------|-------------|--------|
-| `doc:generate` | generate.js - Generate documentation for project files | doc-generate.js |
-| `doc:generate-changed` | generate-changed.js - Generate documentation for changed files | doc-generate-changed.js |
-| `doc:generate-missing` | generate-missing.js - Generate documentation for files without docs | doc-generate-missing.js |
-| `doc:update` | update.js - Update existing documentation | doc-update.js |
-| `doc:update-readme` | update-readme.js - Update README.md with current project information | doc-update-readme.js |
-| `doc:validate` | validate.js - Validate documentation for completeness and accuracy | doc-validate.js |
-| `doc:validate-xml` | validate-xml.js - Validate XML documentation files | doc-validate-xml.js |
-| `doc:validate-links` | validate-links.js - Validate links in documentation files | doc-validate-links.js |
-| `doc:fix-links` | fix-links.js - Fix broken links in documentation | doc-fix-links.js |
-| `doc:organize` | organize.js - Organize documentation into structured categories | doc-organize.js |
-| `doc:sync` | sync.js - Sync documentation across repositories | doc-sync.js |
-| `doc:add-xml` | add-xml.js - Add XML documentation tags to files | doc-add-xml.js |
-| `doc:search` | search.js - Search within documentation files | doc-search.js |
-| `doc:post-merge` | post-merge.js - Post-merge documentation tasks | doc-post-merge.js |
-| `doc:check` | check.js - Quick documentation health check | doc-check.js |
+## Overview
 
-## Usage Examples
+doc-generate.js - Generate documentation for project files
 
-### doc:generate
+## Dependencies
 
-```bash
-apex doc:generate
+- `../modules/file-ops.js`
+- `fs`
+- `path`
+- `child_process`
+
+## Exports
+
+- `async` (value)
+
+## Functions
+
+### run
+
+**Signature:**
+```javascript
+export async function run(args)
 ```
 
-### doc:generate-changed
+**Parameters:**
+- `args`
 
-```bash
-apex doc:generate-changed
+### generateAPIDocs
+
+**Signature:**
+```javascript
+async function generateAPIDocs(outputDir, modules)
 ```
 
-### doc:generate-missing
+**Parameters:**
+- `outputDir`
+- `modules`
 
-```bash
-apex doc:generate-missing
+### generateScriptDocs
+
+**Signature:**
+```javascript
+async function generateScriptDocs(outputDir, modules)
 ```
 
+**Parameters:**
+- `outputDir`
+- `modules`
+
+### generateModuleDoc
+
+**Signature:**
+```javascript
+async function generateModuleDoc(modulePath)
+```
+
+**Parameters:**
+- `modulePath`
+
+### generateCategoryDoc
+
+**Signature:**
+```javascript
+async function generateCategoryDoc(category, scripts)
+```
+
+**Parameters:**
+- `category`
+- `scripts`
+
+### getScriptDescription
+
+**Signature:**
+```javascript
+async function getScriptDescription(scriptPath)
+```
+
+**Parameters:**
+- `scriptPath`
+
+### generateReadme
+
+**Signature:**
+```javascript
+async function generateReadme(modules)
+```
+
+**Parameters:**
+- `modules`
+
+### generateForPath
+
+**Signature:**
+```javascript
+async function generateForPath(targetPath, outputDir, modules)
+```
+
+**Parameters:**
+- `targetPath`
+- `outputDir`
+- `modules`
+
+### generateIndex
+
+**Signature:**
+```javascript
+async function generateIndex(docs, outputDir)
+```
+
+**Parameters:**
+- `docs`
+- `outputDir`
+
+## Script Details
+
+- **Command**: `apex doc-generate`
+- **Accepts Arguments**: Yes
+- **Supports Dry Run**: Yes
+
+## Usage
+
+```javascript
+// Run this script via the apex command
+apex doc-generate
+
+// With arguments
+apex doc-generate --arg value
+```
+
+## Related Documentation
+
+- [Apex Hive Commands Reference](../../architecture/reference/commands/)
+- [Script Development Guide](../../development/scripts/)
+
+## See Also
+
+- [Source Code](./scripts/doc-generate.js)

@@ -7,16 +7,28 @@ Script documentation
 ```
 ├── backlog-scripts
 │   ├── backlog-analyze.md
-│   └── backlog-scripts-overview.md
+│   ├── backlog-display.md
+│   ├── backlog-score.md
+│   ├── backlog-scripts-overview.md
+│   ├── backlog-sync.md
+│   └── backlog-table.md
 ├── cache-scripts
+│   ├── cache-clear.md
 │   ├── cache-status.md
 │   ├── cache-warm-all.md
+│   ├── cache-warm-conversations.md
+│   ├── cache-warm-docs.md
+│   ├── cache-warm-readmes.md
 │   ├── cache-warm-scripts.md
 │   └── cache-warm.md
 ├── ci-scripts
+│   ├── ci-fix.md
+│   ├── ci-heal.md
 │   ├── ci-monitor.md
+│   ├── ci-parse.md
 │   ├── ci-smart-push.md
-│   └── ci-status.md
+│   ├── ci-status.md
+│   └── ci-watch.md
 ├── context-scripts
 │   └── startup-context.md
 ├── core-scripts
@@ -49,25 +61,51 @@ Script documentation
 │   ├── report-scripts-overview.md
 │   └── report-status.md
 ├── documentation-scripts
+│   ├── doc-check.md
+│   ├── doc-cleanup-prefixes.md
+│   ├── doc-cleanup.md
+│   ├── doc-fix-links.md
+│   ├── doc-generate-changed.md
+│   ├── doc-generate-missing.md
 │   ├── doc-generate.md
+│   ├── doc-organize-documentation.md
+│   ├── doc-post-merge.md
+│   ├── doc-scripts-improvements.md
 │   ├── doc-scripts-overview.md
-│   ├── xml-scripts-overview.md
-│   └── xml-validate.md
+│   ├── doc-search.md
+│   ├── doc-sync.md
+│   ├── doc-update.md
+│   ├── doc-validate-links.md
+│   ├── doc-validate.md
+│   └── xml-scripts-overview.md
 ├── git-scripts
+│   ├── git-branch.md
 │   ├── git-commit-overview.md
 │   ├── git-commit.md
+│   ├── git-init.md
+│   ├── git-pull.md
+│   ├── git-push-tags.md
+│   ├── git-push.md
 │   ├── git-status.md
+│   ├── git-tag.md
 │   └── push-scripts-overview.md
 └── quality-scripts
+    ├── quality-check.md
     ├── quality-console-clean.md
+    ├── quality-fix-all.md
+    ├── quality-fix-versions.md
+    ├── quality-format.md
     ├── quality-lint.md
+    ├── quality-setup.md
+    ├── quality-validate.md
     ├── test-runner.md
-    └── test-scripts-overview.md
+    ├── test-scripts-overview.md
+    └── test-setup.md
 ```
 
 ## Overview
 
-- Total documents: 48
+- Total documents: 100
 - Subfolders: 10
 
 ## Navigation

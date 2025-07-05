@@ -5,14 +5,14 @@ import { fileCache } from "../modules/unified-cache.js";
 
 // High-value documentation files prioritized for caching
 const HIGH_VALUE_DOCS = [
-  "docs/03-reference/commands-reference.md",
-  "docs/02-guides/architecture.md",
-  "docs/02-guides/troubleshooting.md",
-  "docs/02-guides/development.md",
-  "docs/03-reference/02-guides-unified-cache-system-complete.md",
-  "docs/02-guides/natural-language.md",
-  "docs/02-guides/recipes.md",
-  "docs/99-misc/getting-started.md",
+  "docs/architecture/reference/commands/commands-reference.md",
+  "docs/architecture/design/architecture.md",
+  "docs/troubleshooting/troubleshooting.md",
+  "docs/development/development.md",
+  "docs/architecture/features/unified-cache-system-complete.md",
+  "docs/architecture/features/natural-language.md",
+  "docs/architecture/reference/commands/recipes.md",
+  "docs/getting-started/getting-started.md",
 ];
 
 export async function run(args = {}) {

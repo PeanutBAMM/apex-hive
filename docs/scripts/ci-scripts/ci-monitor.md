@@ -1,36 +1,25 @@
-# Ci Scripts
+# ci-monitor.js
 
-This category contains 7 scripts.
+<module>ci-monitor</module>
+<description>- `args`: No description</description>
+<category>CI/CD</category>
 
-## Available Commands
+**File**: `scripts/ci-monitor.js`
+**Language**: javascript
+**Lines**: 111
+**Last Modified**: 2025-07-04T10:25:49.005Z
 
-| Command | Description | Script |
-|---------|-------------|--------|
-| `ci:monitor` | monitor.js - Monitor GitHub Actions CI status | ci-monitor.js |
-| `ci:parse` | parse.js - Parse CI logs and extract error information | ci-parse.js |
-| `ci:fix` | fix.js - Automatically fix common CI issues | ci-fix.js |
-| `ci:heal` | heal.js - Self-healing CI system that monitors and fixes issues automatically | ci-heal.js |
-| `ci:watch` | watch.js - Watch CI progress in real-time | ci-watch.js |
-| `ci:smart-push` | smart-push.js - Smart git push with CI monitoring and auto-healing | ci-smart-push.js |
-| `ci:status` | status.js - Check CI status across different platforms | ci-status.js |
+## Functions
 
-## Usage Examples
+### run
 
-### ci:monitor
+**Parameters:**
+- `args`: No description
 
-```bash
-apex ci:monitor
+```javascript
+export async function run(args)
 ```
 
-### ci:parse
+## Source Code
 
-```bash
-apex ci:parse
-```
-
-### ci:fix
-
-```bash
-apex ci:fix
-```
-
+View the full source code: [ci-monitor.js](scripts/ci-monitor.js)

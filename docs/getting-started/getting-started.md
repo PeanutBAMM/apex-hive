@@ -118,10 +118,10 @@ apex "commit en push"
 
 ## 📚 Next Steps
 
-1. Explore [Natural Language Guide](./natural-language.md)
-2. Learn about [Recipes](./recipes.md)
-3. See all [Commands](./commands-reference.md)
-4. Read [Troubleshooting](./troubleshooting.md) if needed
+1. Explore [Natural Language Guide](../architecture/features/natural-language.md)
+2. Learn about [Recipes](../architecture/reference/commands/recipes.md)
+3. See all [Commands](../architecture/reference/commands/commands-reference.md)
+4. Read [Troubleshooting](../troubleshooting/troubleshooting.md) if needed
 
 ## 🆘 Quick Help
 

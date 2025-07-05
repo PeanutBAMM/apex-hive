@@ -1,5 +1,9 @@
 # ci-status.js
 
+<module>ci-status</module>
+<description>- `args`: No description</description>
+<category>CI/CD</category>
+
 **File**: `scripts/ci-status.js`
 **Language**: javascript
 **Lines**: 620
