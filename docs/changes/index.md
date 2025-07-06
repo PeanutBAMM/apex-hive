@@ -1,6 +1,6 @@
 # Changed Files Documentation
 
-**Generated**: 2025-07-06T10:02:22.443Z
+**Generated**: 2025-07-06T10:57:22.190Z
 **Changes Since**: HEAD~1
 
 **Total Files**: 4
@@ -9,11 +9,14 @@
 
 ### config
 
-- [patterns-nl.js](config/patterns-nl.md) - 0.2KB
-- [patterns.js](config/patterns.md) - 0.2KB
-- [registry.js](config/registry.md) - 0.2KB
+- [registry.js](./registry.md) - 0.2KB
 
-### .
+### modules
 
-- [output-formatter.js](./output-formatter.md) - 1.3KB
+- [unified-cache.js](./unified-cache.md) - 1.2KB
+
+### scripts
+
+- [cache-warm-all-docs.js](./cache-warm-all-docs.md) - 0.6KB
+- [cache-warm-js.js](./cache-warm-js.md) - 0.4KB
 

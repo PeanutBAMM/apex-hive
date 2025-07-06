@@ -1,14 +1,14 @@
 # Issues Report
 
-Generated: 2025-07-05T16:53:29.757Z
+Generated: 2025-07-06T10:54:49.135Z
 
 ## Summary
 
-- Total Issues: 166
+- Total Issues: 168
 - Critical: 0
 - High: 0
 - Medium: 46
-- Low: 120
+- Low: 122
 - Info: 0
 
 ## 🟡 MEDIUM (46)
@@ -265,7 +265,7 @@ Generated: 2025-07-05T16:53:29.757Z
 - **File**: scripts/detect-issues.js:560
 - **Message**: Synchronous operation 'mkdirSync' found
 
-## 🔵 LOW (120)
+## 🔵 LOW (122)
 
 ### todo-comment
 - **Category**: code
@@ -574,7 +574,12 @@ Generated: 2025-07-05T16:53:29.757Z
 
 ### missing-jsdoc
 - **Category**: documentation
-- **File**: scripts/cache-warm-all.js:7
+- **File**: scripts/cache-warm-all-docs.js:7
+- **Message**: 1 function missing JSDoc: run
+
+### missing-jsdoc
+- **Category**: documentation
+- **File**: scripts/cache-warm-all.js:9
 - **Message**: 1 function missing JSDoc: run
 
 ### missing-jsdoc
@@ -585,6 +590,11 @@ Generated: 2025-07-05T16:53:29.757Z
 ### missing-jsdoc
 - **Category**: documentation
 - **File**: scripts/cache-warm-docs.js:18
+- **Message**: 1 function missing JSDoc: run
+
+### missing-jsdoc
+- **Category**: documentation
+- **File**: scripts/cache-warm-js.js:7
 - **Message**: 1 function missing JSDoc: run
 
 ### missing-jsdoc
@@ -865,5 +875,5 @@ Generated: 2025-07-05T16:53:29.757Z
 ### missing-tests
 - **Category**: testing
 - **File**: multiple
-- **Message**: 87 files missing tests (showing first 10: apex-router.js, config/patterns-nl.js, config/patterns.js, config/registry.js, generate-claude-md.js, index.js, install-mcp.js, jest.config.js, mcp-server-debug.js, mcp-server-fixed.js, and 77 more)
+- **Message**: 89 files missing tests (showing first 10: apex-router.js, config/patterns-nl.js, config/patterns.js, config/registry.js, generate-claude-md.js, index.js, install-mcp.js, jest.config.js, mcp-server-debug.js, mcp-server-fixed.js, and 79 more)
 
