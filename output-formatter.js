@@ -4,12 +4,50 @@
  * Format output based on result type and context
  * No hard limits - just smart formatting
  */
+
+// Emoji mapping for apex operations
+const APEX_EMOJI = {
+  ci: '🚀',
+  doc: '📚',
+  quality: '✨',
+  backlog: '📋',
+  git: '🔀',
+  cache: '💾',
+  test: '🧪',
+  build: '🔨',
+  search: '🔍',
+  init: '🎯',
+  deploy: '🌐',
+  recipe: '📦'
+};
+
+// Get emoji for command
+function getCommandEmoji(command) {
+  if (!command) return '🔧';
+  
+  const category = command.split(':')[0];
+  return APEX_EMOJI[category] || '🔧';
+}
+
+// Format timing info
+function formatTiming(ms) {
+  if (ms < 1000) return `${ms}ms`;
+  return `${(ms / 1000).toFixed(1)}s`;
+}
+
 export async function formatOutput(result, context = {}) {
   const { command, args } = context;
+  const emoji = getCommandEmoji(command);
+  
+  // Add command header if available
+  let output = '';
+  if (command) {
+    output = `${emoji} apex ${command}\n`;
+  }
   
   // Handle different result types
   if (Array.isArray(result)) {
-    return formatArray(result, context);
+    return output + formatArray(result, context);
   }
   
   if (result && typeof result === 'object') {
@@ -17,21 +55,39 @@ export async function formatOutput(result, context = {}) {
       return formatRecipeResult(result);
     }
     if (result.matches || (result.files && Array.isArray(result.files))) {
-      return formatSearchResult(result);
+      return output + formatSearchResult(result);
     }
     if (result.status && result.details) {
       // Handle doc:fix-links and similar results
-      return formatDocResult(result);
+      return output + formatDocResult(result);
     }
+    
+    // CI status formatting
+    if (command && command.startsWith('ci:') && result.workflows) {
+      return formatCIStatus(result, command);
+    }
+    
+    // Cache status formatting
+    if (command && command.startsWith('cache:') && result.totalCaches) {
+      return formatCacheStatus(result, command);
+    }
+    
     if (result.error) {
-      return formatError(result);
+      return output + formatError(result);
     }
+    
+    // Handle success/data/message pattern
+    if (result.success !== undefined && result.message) {
+      const status = result.success ? '✅' : '❌';
+      return output + `${status} ${result.message}`;
+    }
+    
     // Handle generic objects by converting to readable JSON
-    return JSON.stringify(result, null, 2);
+    return output + JSON.stringify(result, null, 2);
   }
   
   // Default: return as string
-  return String(result);
+  return output + String(result);
 }
 
 function formatArray(items, context) {
@@ -107,17 +163,25 @@ function formatSearchMatches(matches) {
 }
 
 function formatRecipeResult(result) {
-  const output = [`Recipe: ${result.recipe}`];
+  const totalTime = result.steps.reduce((sum, step) => sum + (step.time || 0), 0);
+  const cachedSteps = result.steps.filter(step => step.cached).length;
+  
+  const output = [`${APEX_EMOJI.recipe} apex ${result.recipe}`];
   
   if (result.success) {
-    output.push('✅ All steps completed successfully\n');
+    output.push(`✅ ${result.steps.length}/${result.steps.length} steps complete • ${formatTiming(totalTime)}`);
   } else {
-    output.push('❌ Recipe failed\n');
+    const completed = result.steps.filter(s => s.success).length;
+    output.push(`❌ ${completed}/${result.steps.length} steps complete • ${formatTiming(totalTime)}`);
   }
+  
+  output.push('');
   
   result.steps.forEach((step, i) => {
     const icon = step.success ? '✓' : '✗';
-    output.push(`${i + 1}. ${icon} ${step.step}`);
+    const time = step.time ? ` (${formatTiming(step.time)})` : '';
+    const cached = step.cached ? ' ⚡' : '';
+    output.push(`${i + 1}. ${icon} ${step.step}${time}${cached}`);
     
     if (step.error) {
       output.push(`   → Error: ${step.error}`);
@@ -125,6 +189,10 @@ function formatRecipeResult(result) {
       output.push(`   → ${step.result.message}`);
     }
   });
+  
+  if (cachedSteps > 0) {
+    output.push(`\n⚡ = used cache (${cachedSteps} operations)`);
+  }
   
   return output.join('\n');
 }
@@ -198,6 +266,50 @@ function formatError(result) {
   if (result.suggestion) {
     output.push('\n💡 Suggestion:');
     output.push(result.suggestion);
+  }
+  
+  return output.join('\n');
+}
+
+function formatCIStatus(result, command) {
+  const output = [`${APEX_EMOJI.ci} apex ${command}`];
+  
+  if (result.workflows && result.workflows.length > 0) {
+    const passing = result.workflows.filter(w => w.conclusion === 'success').length;
+    output.push(`✅ ${passing}/${result.workflows.length} workflows passing • ${formatTiming(result.totalTime || 0)}`);
+    output.push('');
+    
+    output.push('Recent runs:');
+    result.workflows.slice(0, 4).forEach(workflow => {
+      const icon = workflow.conclusion === 'success' ? '✅' : '❌';
+      const time = workflow.duration ? ` - ${formatTiming(workflow.duration)}` : '';
+      output.push(`• ${icon} ${workflow.name}${time}`);
+    });
+  } else {
+    output.push('✅ No active CI runs');
+  }
+  
+  return output.join('\n');
+}
+
+function formatCacheStatus(result, command) {
+  const output = [`${APEX_EMOJI.cache} apex ${command}`];
+  
+  if (result.totalCaches) {
+    const hitRate = (parseFloat(result.averageHitRate) * 100).toFixed(0);
+    output.push(`✅ ${result.totalItems} items • ${result.totalSize} • ${hitRate}% hit rate`);
+    output.push('');
+    
+    output.push('Cache breakdown:');
+    Object.entries(result.caches).forEach(([name, cache]) => {
+      const hitPercent = cache.hitRate ? `${(cache.hitRate * 100).toFixed(0)}%` : '0%';
+      const cached = cache.hits > 0 ? ' ⚡' : '';
+      output.push(`• ${name}: ${cache.items} items, ${cache.size}, ${hitPercent} hits${cached}`);
+    });
+    
+    if (result.totalHits > 0) {
+      output.push(`\n⚡ = cache hits (${result.totalHits} total)`);
+    }
   }
   
   return output.join('\n');
