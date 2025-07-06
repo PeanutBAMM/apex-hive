@@ -5,7 +5,7 @@ import { fileCache } from "../modules/unified-cache.js";
 
 // High-value documentation files prioritized for caching
 const HIGH_VALUE_DOCS = [
-  "docs/architecture/reference/commands/commands-reference.md",
+  "docs/scripts/core-scripts/commands-reference.md",
   "docs/architecture/design/architecture.md",
   "docs/troubleshooting/troubleshooting.md",
   "docs/development/development.md",
