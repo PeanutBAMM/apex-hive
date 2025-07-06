@@ -13,7 +13,7 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema 
 } from '@modelcontextprotocol/sdk/types.js';
-import { readFile, writeFile, batchRead } from './modules/file-ops.js';
+import { readFile, writeFile, batchRead, cachedFind, cachedGrep } from './modules/file-ops.js';
 import { promises as fs } from 'fs';
 import path from 'path';
 import {
@@ -212,7 +212,30 @@ const FILESYSTEM_TOOLS = [
   },
   {
     name: 'search_files',
-    description: 'Recursively search for files/directories',
+    description: 'Recursively search for files/directories by name',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        path: {
+          type: 'string',
+          description: 'Starting directory for search'
+        },
+        pattern: {
+          type: 'string',
+          description: 'Filename pattern (case-insensitive)'
+        },
+        excludePatterns: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Patterns to exclude from search'
+        }
+      },
+      required: ['path', 'pattern']
+    }
+  },
+  {
+    name: 'grep_files',
+    description: 'Search file contents using cache-first approach (super fast)',
     inputSchema: {
       type: 'object',
       properties: {
@@ -231,6 +254,32 @@ const FILESYSTEM_TOOLS = [
         }
       },
       required: ['path', 'pattern']
+    }
+  },
+  {
+    name: 'grep_files',
+    description: 'Search file contents using cache-first approach (super fast)',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        path: {
+          type: 'string',
+          description: 'Starting directory for search'
+        },
+        pattern: {
+          type: 'string',
+          description: 'Content pattern to search for'
+        },
+        ignoreCase: {
+          type: 'boolean',
+          description: 'Case-insensitive search (default: true)'
+        },
+        maxMatches: {
+          type: 'number',
+          description: 'Maximum matches per file (default: 5)'
+        }
+      },
+      required: ['pattern']
     }
   },
   {
@@ -588,43 +637,22 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       
       case 'search_files': {
         const startTime = Date.now();
-        const results = [];
         
-        async function searchDir(dir) {
-          const entries = await fs.readdir(dir, { withFileTypes: true });
-          
-          for (const entry of entries) {
-            const fullPath = path.join(dir, entry.name);
-            
-            // Check excludePatterns
-            if (args.excludePatterns?.some(pattern => 
-              entry.name.toLowerCase().includes(pattern.toLowerCase())
-            )) {
-              continue;
-            }
-            
-            // Check if matches pattern (case-insensitive)
-            if (entry.name.toLowerCase().includes(args.pattern.toLowerCase())) {
-              results.push(fullPath);
-            }
-            
-            // Recurse into directories
-            if (entry.isDirectory()) {
-              try {
-                await searchDir(fullPath);
-              } catch (e) {
-                // Skip inaccessible directories
-              }
-            }
-          }
-        }
+        // Use cache-first find for filename search
+        const searchResults = await cachedFind(args.pattern, {
+          paths: [args.path],
+          ignoreCase: true,
+          excludePatterns: args.excludePatterns
+        });
         
-        await searchDir(args.path);
+        const results = searchResults.files || [];
         const searchTime = Date.now() - startTime;
         
-        // Create formatted output
+        // Create formatted output with cache stats
         const summary = formatSearchOperation(args.pattern, args.path, results, {
-          time: searchTime
+          time: searchTime,
+          cacheHits: searchResults.stats?.cacheHits || 0,
+          diskHits: searchResults.stats?.diskHits || 0
         });
         
         const nativeFormat = results.length > 0 
@@ -632,6 +660,45 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           : 'No matches found';
         
         return formatResponse(nativeFormat, summary, 'search');
+      }
+      
+      case 'grep_files': {
+        const startTime = Date.now();
+        
+        // Use cache-first grep for content search
+        const grepResults = await cachedGrep(args.pattern, {
+          paths: [args.path || '.'],
+          ignoreCase: args.ignoreCase !== false,
+          maxMatches: args.maxMatches || 5,  // Good context per file, still token-efficient
+          maxDiskResults: 500  // Limit only disk results, cache is unlimited!
+        });
+        
+        const grepTime = Date.now() - startTime;
+        
+        // Format matches for display
+        const formattedMatches = grepResults.matches.map(match => ({
+          file: match.file,
+          line: match.matches?.[0]?.line || match.line,
+          text: match.matches?.[0]?.text || match.text,
+          cached: match.cached
+        }));
+        
+        // Create formatted output
+        const summary = formatSearchOperation(args.pattern, args.path || '.', formattedMatches, {
+          time: grepTime,
+          cacheHits: grepResults.stats?.cacheHits || 0,
+          diskHits: grepResults.stats?.diskHits || 0,
+          isGrep: true
+        });
+        
+        // Native format shows matches with context
+        const nativeFormat = formattedMatches.length > 0
+          ? formattedMatches.map(m => 
+              `${m.file}:${m.line}: ${m.text}`
+            ).join('\n')
+          : 'No matches found';
+        
+        return formatResponse(nativeFormat, summary, 'grep');
       }
       
       case 'get_file_info': {

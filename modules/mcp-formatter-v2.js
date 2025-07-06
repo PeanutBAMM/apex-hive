@@ -251,21 +251,38 @@ export function formatSearchOperation(pattern, basePath, results, stats = {}) {
   const time = stats.time || 0;
   const maxShow = 10;
   const shown = results.slice(0, maxShow);
+  const isGrep = stats.isGrep || false;
+  const cacheHits = stats.cacheHits || 0;
+  const diskHits = stats.diskHits || 0;
+  
+  // Build status message with cache info
+  let statusMsg = `${results.length} matches found • ${time}ms`;
+  if (cacheHits > 0 || diskHits > 0) {
+    statusMsg += ` • ${color(`cache: ${cacheHits}`, COLORS.green)} / ${color(`disk: ${diskHits}`, COLORS.yellow)}`;
+  }
   
   const output = [
     // Header
-    color(`🔍 Search Results for "${pattern}"`, COLORS.bold),
+    color(`🔍 ${isGrep ? 'Grep' : 'Search'} Results for "${pattern}"`, COLORS.bold),
     color(createLine(50), COLORS.dim),
     
     // Status
     color(`📍 ${basePath}`, COLORS.cyan),
-    createStatusLine(results.length > 0, `${results.length} matches found • ${time}ms`),
+    createStatusLine(results.length > 0, statusMsg),
     '',
     
     // Results
     ...shown.map(result => {
-      const pathInfo = formatPath(result);
-      return `  📄 ${color(pathInfo.filename, COLORS.green)} ${color(pathInfo.shortDir, COLORS.gray, COLORS.dim)}`;
+      if (isGrep && result.line) {
+        // Grep result with line number and text
+        const pathInfo = formatPath(result.file);
+        const cached = result.cached ? ' ⚡' : '';
+        return `  📄 ${color(pathInfo.filename, COLORS.green)}:${color(result.line, COLORS.yellow)}${cached}\n     ${color(result.text || '', COLORS.gray)}`;
+      } else {
+        // Regular file search
+        const pathInfo = formatPath(result.file || result);
+        return `  📄 ${color(pathInfo.filename, COLORS.green)} ${color(pathInfo.shortDir, COLORS.gray, COLORS.dim)}`;
+      }
     }),
     results.length > maxShow ? color(`  ... and ${results.length - maxShow} more matches`, COLORS.dim) : ''
   ].filter(line => line !== '').join('\n');

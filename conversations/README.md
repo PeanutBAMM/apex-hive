@@ -2,6 +2,7 @@
 
 ## 2025-07-06
 
+- [Cache-first search implementation with performance optimization](2025-07-06-22-23-26-cache-first-search-implementation-with-performance.md) - `cache`, `search`, `performance`, `mcp`, `optimization`
 - [MCP Cached FileOps + Smart Output Formatting](2025-07-06-21-21-41-mcp-cached-fileops-smart-output-formatting.md) - `mcp`, `cache`, `formatting`, `token-optimization`
 - [MCP Output Formatting & Cache Implementation](2025-07-06-21-20-52-mcp-output-formatting-cache-implementation.md) - `mcp`, `formatting`, `cache`, `output`, `ux`
 - [AI Session 2025-07-06](2025-07-06-12-02-43-ai-session-2025-07-06.md)

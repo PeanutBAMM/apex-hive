@@ -173,6 +173,39 @@ export class UnifiedCache {
     }
   }
 
+  async getAllKeys() {
+    try {
+      await this.ensureDir();
+      const files = await fs.readdir(this.cacheDir);
+      const keys = [];
+      const now = Date.now();
+
+      // Get all valid keys from meta files
+      for (const file of files) {
+        if (file.endsWith(".meta")) {
+          try {
+            const metaPath = path.join(this.cacheDir, file);
+            const metaContent = await fs.readFile(metaPath, "utf8");
+            const meta = JSON.parse(metaContent);
+
+            if (now <= meta.expires) {
+              keys.push(meta.key);
+            }
+          } catch (e) {
+            // Skip invalid meta files
+          }
+        }
+      }
+
+      return keys;
+    } catch (error) {
+      if (error.code === "ENOENT") {
+        return []; // Directory doesn't exist
+      }
+      throw error;
+    }
+  }
+
   async size() {
     try {
       const files = await fs.readdir(this.cacheDir);

@@ -3,6 +3,7 @@
 import { promises as fs } from "fs";
 import path from "path";
 import { fileCache } from "./unified-cache.js";
+import { cachedSearch } from "./cached-search.js";
 
 // File locking mechanism
 const activeLocks = new Map();
@@ -371,4 +372,62 @@ export async function batchReadSafe(filePaths, options = {}) {
   }
 
   return { results: allResults, errors: allErrors };
+}
+
+/**
+ * Cache-first grep search (content search)
+ * Searches in cached files first, then falls back to disk
+ */
+export async function cachedGrep(pattern, options = {}) {
+  const {
+    paths = ['.'],
+    ignoreCase = true,
+    maxMatches = 20,
+    maxDiskResults = 500,
+    includeLineNumbers = true
+  } = options;
+  
+  // Use cachedSearch with content search enabled
+  const results = await cachedSearch(pattern, {
+    ...options,
+    contentSearch: true,
+    paths,
+    maxDiskResults
+  });
+  
+  return {
+    matches: results.results,
+    stats: {
+      ...results.stats,
+      pattern,
+      type: 'content'
+    }
+  };
+}
+
+/**
+ * Cache-first find search (filename search)
+ * Searches filenames in cache first, then falls back to disk
+ */
+export async function cachedFind(pattern, options = {}) {
+  const {
+    paths = ['.'],
+    ignoreCase = true
+  } = options;
+  
+  // Use cachedSearch with content search disabled
+  const results = await cachedSearch(pattern, {
+    ...options,
+    contentSearch: false,
+    paths
+  });
+  
+  return {
+    files: results.results.map(r => r.file),
+    stats: {
+      ...results.stats,
+      pattern,
+      type: 'filename'
+    }
+  };
 }

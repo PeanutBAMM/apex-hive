@@ -1,6 +1,7 @@
-// search.js - Smart search wrapper with multiple search strategies
+// search.js - Smart search wrapper with cache-first approach
 import { execSync } from "child_process";
 import path from "path";
+import { cachedGrep } from "../modules/file-ops.js";
 
 export async function run(args) {
   const {
@@ -24,9 +25,34 @@ export async function run(args) {
   try {
     let results;
 
-    // Always use direct search with ripgrep (fast and simple)
-    console.error("[SEARCH] Using direct search...");
-    results = await directSearch(searchQuery, { type, paths, limit });
+    // Use cache-first search for content searches
+    if (type === "content") {
+      console.error("[SEARCH] Using cache-first content search...");
+      const grepResults = await cachedGrep(searchQuery, {
+        paths,
+        maxMatches: limit,
+        ignoreCase: true
+      });
+      
+      // Convert grep results to expected format
+      results = {
+        matches: grepResults.matches.map(m => ({
+          file: m.file,
+          line: m.matches?.[0]?.line || m.line || 1,
+          column: m.matches?.[0]?.column || 1,
+          match: m.matches?.[0]?.match || searchQuery,
+          content: m.matches?.[0]?.text || m.text || '',
+          cached: m.cached
+        })),
+        stats: grepResults.stats
+      };
+      
+      console.error(`[SEARCH] Cache hits: ${grepResults.stats.cacheHits || 0}, Disk hits: ${grepResults.stats.diskHits || 0}`);
+    } else {
+      // Use direct search for other types
+      console.error("[SEARCH] Using direct search...");
+      results = await directSearch(searchQuery, { type, paths, limit });
+    }
 
     // Post-process results
     const processed = await processSearchResults(results, searchQuery);
