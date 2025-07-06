@@ -293,10 +293,10 @@ export class UnifiedCache {
 
 // Export singleton instances for each cache type
 export const commandCache = new UnifiedCache("commands", {
-  ttl: 5 * 60 * 1000,
+  ttl: 6 * 60 * 60 * 1000, // 6 hours
 });
-export const fileCache = new UnifiedCache("files", { ttl: 10 * 60 * 1000 });
-export const searchCache = new UnifiedCache("search", { ttl: 30 * 60 * 1000 });
+export const fileCache = new UnifiedCache("files", { ttl: 6 * 60 * 60 * 1000 }); // 6 hours
+export const searchCache = new UnifiedCache("search", { ttl: 6 * 60 * 60 * 1000 }); // 6 hours
 export const conversationCache = new UnifiedCache("conversations", {
   ttl: 7 * 24 * 60 * 60 * 1000, // 7 days
   maxSize: 10 * 1024 * 1024, // 10MB

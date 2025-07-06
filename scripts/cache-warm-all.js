@@ -1,8 +1,10 @@
-// cache-warm-all.js - Combined cache warming for READMEs, high-value documentation, conversations, and scripts
+// cache-warm-all.js - Combined cache warming for READMEs, all documentation, conversations, scripts, and JavaScript files
 import { run as warmReadmes } from "./cache-warm-readmes.js";
 import { run as warmDocs } from "./cache-warm-docs.js";
 import { run as warmConversations } from "./cache-warm-conversations.js";
 import { run as warmScripts } from "./cache-warm-scripts.js";
+import { run as warmAllDocs } from "./cache-warm-all-docs.js";
+import { run as warmJs } from "./cache-warm-js.js";
 
 export async function run(args = {}) {
   const {
@@ -22,6 +24,8 @@ export async function run(args = {}) {
       docs: null,
       conversations: null,
       scripts: null,
+      js: null,
+      allDocs: null,
       combined: {
         success: true,
         totalCached: 0,
@@ -158,6 +162,70 @@ export async function run(args = {}) {
       results.combined.totalSize += scriptsSize;
     }
 
+    // Step 5: Warm all JavaScript files
+    if (verbose) {
+      process.stderr.write(
+        "[CACHE-WARM-ALL] Phase 5: Warming all JavaScript files...\n",
+      );
+    }
+
+    results.js = await warmJs({
+      dryRun,
+      verbose,
+      maxSize,
+    });
+
+    if (!results.js.success) {
+      process.stderr.write(
+        `[CACHE-WARM-ALL] JavaScript warming failed: ${results.js.error}\n`,
+      );
+      results.combined.success = false;
+    } else {
+      results.combined.totalCached += results.js.data.cached;
+      results.combined.totalSkipped += results.js.data.skipped;
+      results.combined.categories.javascript = results.js.data.cached;
+
+      // Parse size if it's a string
+      const jsSize = parseSizeString(results.js.data.totalSize);
+      results.combined.totalSize += jsSize;
+    }
+
+    // Step 6: Warm all documentation files (replaces high-value docs)
+    if (verbose) {
+      process.stderr.write(
+        "[CACHE-WARM-ALL] Phase 6: Warming all documentation files...\n",
+      );
+    }
+
+    results.allDocs = await warmAllDocs({
+      dryRun,
+      verbose,
+      maxSize,
+      encoding,
+    });
+
+    if (!results.allDocs.success) {
+      process.stderr.write(
+        `[CACHE-WARM-ALL] All documentation warming failed: ${results.allDocs.error}\n`,
+      );
+      results.combined.success = false;
+    } else {
+      results.combined.totalCached += results.allDocs.data.cached;
+      results.combined.totalSkipped += results.allDocs.data.skipped;
+      
+      // Merge category stats from all docs
+      if (results.allDocs.data.categoryStats) {
+        Object.assign(
+          results.combined.categories,
+          results.allDocs.data.categoryStats,
+        );
+      }
+
+      // Parse size if it's a string
+      const allDocsSize = parseSizeString(results.allDocs.data.totalSize);
+      results.combined.totalSize += allDocsSize;
+    }
+
     // Generate summary
     const summary = {
       success: results.combined.success,
@@ -194,6 +262,20 @@ export async function run(args = {}) {
                 message: results.scripts.message,
               }
             : null,
+          javascript: results.js
+            ? {
+                success: results.js.success,
+                cached: results.js.data?.cached || 0,
+                message: results.js.message,
+              }
+            : null,
+          allDocs: results.allDocs
+            ? {
+                success: results.allDocs.success,
+                cached: results.allDocs.data?.cached || 0,
+                message: results.allDocs.message,
+              }
+            : null,
         },
         totals: {
           cached: results.combined.totalCached,
@@ -204,8 +286,8 @@ export async function run(args = {}) {
         },
       },
       message: dryRun
-        ? `Would cache ${results.combined.totalCached} items (${formatSize(results.combined.totalSize)}) across READMEs, documentation, conversations, and scripts`
-        : `Successfully cached ${results.combined.totalCached} items (${formatSize(results.combined.totalSize)}) - READMEs, high-value documentation, conversations, and scripts`,
+        ? `Would cache ${results.combined.totalCached} items (${formatSize(results.combined.totalSize)}) across READMEs, documentation, conversations, scripts, and JavaScript files`
+        : `Successfully cached ${results.combined.totalCached} items (${formatSize(results.combined.totalSize)}) - READMEs, all documentation, conversations, scripts, and JavaScript files`,
     };
 
     if (verbose) {
@@ -221,6 +303,12 @@ export async function run(args = {}) {
       );
       process.stderr.write(
         `  Scripts: ${results.scripts?.data?.scripts?.cached || 0} scripts, ${results.scripts?.data?.recipes?.cached || 0} recipes\n`,
+      );
+      process.stderr.write(
+        `  JavaScript: ${results.js?.data?.cached || 0} files\n`,
+      );
+      process.stderr.write(
+        `  All Docs: ${results.allDocs?.data?.cached || 0} files\n`,
       );
       process.stderr.write(
         `  Total: ${results.combined.totalCached} items (${formatSize(results.combined.totalSize)})\n`,
