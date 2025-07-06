@@ -1,0 +1,5 @@
+Dit is een test bestand voor MCP file operations.
+Het bevat meerdere regels om te testen.
+Regel 3 - AANGEPAST
+Regel 4
+Regel 5 - OOK AANGEPAST

@@ -417,6 +417,24 @@ apex help
 
 Configuration is stored in `.apex-hive/config.json`.
 
+## Troubleshooting
+
+### MaxListenersExceededWarning
+
+If you see this warning:
+```
+MaxListenersExceededWarning: Possible EventTarget memory leak detected. 11 abort listeners added to [AbortSignal]
+```
+
+This is caused by MCP servers (like Supabase) adding many event listeners. To fix:
+
+1. **Quick fix**: The mcp-filesystem-cached.js already includes the fix
+2. **Global fix**: Run `node fix-listeners.js` before starting MCP servers
+3. **Permanent fix**: Add to your shell profile:
+   ```bash
+   export NODE_OPTIONS="--max-old-space-size=4096"
+   ```
+
 ## License
 
 MIT

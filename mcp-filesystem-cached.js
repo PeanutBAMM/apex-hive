@@ -2,6 +2,11 @@
 
 // mcp-filesystem-cached.js - MCP server for filesystem operations with apex-hive cache integration
 
+// Fix MaxListenersExceededWarning for MCP servers
+import { EventEmitter } from 'events';
+EventEmitter.defaultMaxListeners = 20;
+process.setMaxListeners(20);
+
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { 
@@ -484,7 +489,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         
         if (args.dryRun) {
           // Create preview summary
-          const summary = formatEditSummary(args.path, appliedEdits, {
+          const summary = formatEditOperation(args.path, appliedEdits, {
             time: editTime,
             cachedRead,
             lines: editLines,
@@ -499,8 +504,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         // Write using cache (invalidates cache for this file)
         await writeFile(args.path, modified);
         
-        // Create summary for display
-        const summary = formatEditSummary(args.path, appliedEdits, {
+        // Create formatted output for display
+        const summary = formatEditOperation(args.path, appliedEdits, {
           time: editTime,
           cachedRead,
           lines: editLines
@@ -672,14 +677,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   }
 });
 
-// Helper to format file size
-function formatSize(bytes) {
-  if (bytes === 0) return '0B';
-  const k = 1024;
-  const sizes = ['B', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))}${sizes[i]}`;
-}
 
 // Start server
 async function main() {

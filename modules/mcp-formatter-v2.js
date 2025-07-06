@@ -228,7 +228,10 @@ export function formatListOperation(path, entries, stats = {}) {
     
     // Files section
     files.length > 0 ? color('Files:', COLORS.bold) : '',
-    ...filesShown.map(f => `  📄 ${color(f.name, COLORS.white)} ${color(`(${formatSize(f.size)})`, COLORS.gray)}`),
+    ...filesShown.map(f => {
+      const sizeStr = f.size !== undefined ? ` ${color(`(${formatSize(f.size)})`, COLORS.gray)}` : '';
+      return `  📄 ${color(f.name, COLORS.white)}${sizeStr}`;
+    }),
     files.length > maxShow ? color(`  ... and ${files.length - maxShow} more files`, COLORS.dim) : '',
     '',
     

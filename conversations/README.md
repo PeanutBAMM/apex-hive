@@ -2,6 +2,8 @@
 
 ## 2025-07-06
 
+- [MCP Cached FileOps + Smart Output Formatting](2025-07-06-21-21-41-mcp-cached-fileops-smart-output-formatting.md) - `mcp`, `cache`, `formatting`, `token-optimization`
+- [MCP Output Formatting & Cache Implementation](2025-07-06-21-20-52-mcp-output-formatting-cache-implementation.md) - `mcp`, `formatting`, `cache`, `output`, `ux`
 - [AI Session 2025-07-06](2025-07-06-12-02-43-ai-session-2025-07-06.md)
 
 ## 2025-07-04
