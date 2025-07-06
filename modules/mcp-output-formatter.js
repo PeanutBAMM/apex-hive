@@ -193,9 +193,12 @@ export function formatBatchReadSummary(files, results, errors, stats = {}) {
   
   const cacheInfo = cachedCount > 0 ? `\n\n⚡ = cached (${cachedCount}/${successful} files from cache)` : '';
   
+  const truncatedInfo = truncated > 0 ? `⚠️ ${truncated} files truncated to limit` : '';
+  
   return [
     `${OPERATION_EMOJI.batch} Batch Read: ${total} files`,
     `✅ ${successful}/${total} success • ${totalLines} lines • ${formatSize(totalSize)} • ${time}ms`,
+    truncatedInfo,
     '',
     ...fileDetails.slice(0, 10),
     fileDetails.length > 10 ? `... and ${fileDetails.length - 10} more files` : '',
