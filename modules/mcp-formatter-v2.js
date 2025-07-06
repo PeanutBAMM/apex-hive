@@ -177,9 +177,26 @@ export function formatWriteOperation(path, content, stats = {}) {
        ...contentType.features.slice(0, 2).map(f => color(`• ${f}`, COLORS.gray))]
     : [];
   
+  // Add content preview (truncated if too long)
+  const maxPreviewLength = 150;
+  let contentPreview = '';
+  
+  if (content && content.length > 0) {
+    if (content.length > maxPreviewLength) {
+      contentPreview = content.substring(0, maxPreviewLength).replace(/\n/g, ' ') + '...';
+    } else {
+      contentPreview = content.replace(/\n/g, ' ');
+    }
+  }
+  
+  const previewLine = contentPreview 
+    ? [`${color('Content:', COLORS.dim)} ${contentPreview}`]
+    : [];
+  
   const output = [
     summary,
-    ...typeInfo
+    ...typeInfo,
+    ...previewLine
   ].filter(line => line !== '').join('\n');
   
   return output;
@@ -193,14 +210,26 @@ export function formatEditOperation(path, edits, stats = {}) {
   const time = stats.time || 0;
   const changeCount = edits.length;
   
+  // Calculate line statistics
+  let addedLines = 0;
+  let removedLines = 0;
+  
+  edits.forEach(edit => {
+    const oldLines = edit.oldText.split('\n').length;
+    const newLines = edit.newText.split('\n').length;
+    removedLines += oldLines;
+    addedLines += newLines;
+  });
+  
   // Create change box
   const changeBox = createChangeBox(edits);
   
-  // Compact one-line summary
+  // Compact one-line summary with Option B format
+  const editStats = `${changeCount} edits (+${addedLines} lines, -${removedLines} lines)`;
   const summary = createCompactSummary(
     'File updated',
     `${pathInfo.filename}`,
-    `${changeCount} changes • ${time}ms`
+    `${editStats} • ${time}ms`
   );
   
   // Show first few changes in compact format

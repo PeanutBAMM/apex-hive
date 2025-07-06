@@ -83,15 +83,15 @@ const FILESYSTEM_TOOLS = [
       properties: {
         path: {
           type: 'string',
-          description: 'Path to the file to read'
+          description: 'File'
         },
         offset: {
           type: 'number',
-          description: 'Line number to start reading from (1-based)'
+          description: 'Start line'
         },
         limit: {
           type: 'number',
-          description: 'Maximum number of lines to read'
+          description: 'Max lines'
         }
       },
       required: ['path']
@@ -106,19 +106,19 @@ const FILESYSTEM_TOOLS = [
         paths: {
           type: 'array',
           items: { type: 'string' },
-          description: 'Array of file paths to read'
+          description: 'Files'
         },
         offset: {
           type: 'number',
-          description: 'Line number to start reading from (1-based) for all files'
+          description: 'Start line'
         },
         limit: {
           type: 'number',
-          description: 'Maximum number of lines to read per file (default: 50)'
+          description: 'Max lines'
         },
         full: {
           type: 'boolean',
-          description: 'Read full content of all files (overrides limit)'
+          description: 'Full'
         }
       },
       required: ['paths']
@@ -133,13 +133,10 @@ const FILESYSTEM_TOOLS = [
         path: {
           type: 'string',
           description: 'File'
-        },
-        content: {
-          type: 'string',
-          description: 'Data'
         }
       },
-      required: ['path', 'content']
+      required: ['path'],
+      additionalProperties: true
     }
   },
   {
@@ -151,25 +148,10 @@ const FILESYSTEM_TOOLS = [
         path: {
           type: 'string',
           description: 'File'
-        },
-        edits: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              oldText: { type: 'string' },
-              newText: { type: 'string' }
-            },
-            required: ['oldText', 'newText']
-          },
-          description: 'Edits'
-        },
-        dryRun: {
-          type: 'boolean',
-          description: 'Preview'
         }
       },
-      required: ['path', 'edits']
+      required: ['path'],
+      additionalProperties: true
     }
   },
   {
@@ -180,7 +162,7 @@ const FILESYSTEM_TOOLS = [
       properties: {
         path: {
           type: 'string',
-          description: 'Path of the directory to create'
+          description: 'Dir'
         }
       },
       required: ['path']
@@ -194,11 +176,11 @@ const FILESYSTEM_TOOLS = [
       properties: {
         path: {
           type: 'string',
-          description: 'Path of the directory to list'
+          description: 'Dir'
         },
         verbose: {
           type: 'boolean',
-          description: 'Show full listing instead of summary'
+          description: 'Verbose'
         }
       },
       required: ['path']
@@ -212,11 +194,11 @@ const FILESYSTEM_TOOLS = [
       properties: {
         source: {
           type: 'string',
-          description: 'Source path'
+          description: 'From'
         },
         destination: {
           type: 'string',
-          description: 'Destination path'
+          description: 'To'
         }
       },
       required: ['source', 'destination']
@@ -230,19 +212,19 @@ const FILESYSTEM_TOOLS = [
       properties: {
         path: {
           type: 'string',
-          description: 'Starting directory for search'
+          description: 'Dir'
         },
         pattern: {
           type: 'string',
-          description: 'Filename pattern (case-insensitive)'
+          description: 'Pattern'
         },
         excludePatterns: {
           type: 'array',
           items: { type: 'string' },
-          description: 'Patterns to exclude from search'
+          description: 'Exclude'
         }
       },
-      required: ['path', 'pattern']
+      required: ['path']
     }
   },
   {
@@ -253,19 +235,19 @@ const FILESYSTEM_TOOLS = [
       properties: {
         path: {
           type: 'string',
-          description: 'Starting directory for search'
+          description: 'Dir'
         },
         pattern: {
           type: 'string',
-          description: 'Search pattern (case-insensitive)'
+          description: 'Pattern'
         },
         excludePatterns: {
           type: 'array',
           items: { type: 'string' },
-          description: 'Patterns to exclude from search'
+          description: 'Exclude'
         }
       },
-      required: ['path', 'pattern']
+      required: ['path']
     }
   },
   {
@@ -276,22 +258,22 @@ const FILESYSTEM_TOOLS = [
       properties: {
         path: {
           type: 'string',
-          description: 'Starting directory for search'
+          description: 'Dir'
         },
         pattern: {
           type: 'string',
-          description: 'Content pattern to search for'
+          description: 'Pattern'
         },
         ignoreCase: {
           type: 'boolean',
-          description: 'Case-insensitive search (default: true)'
+          description: 'Ignore case'
         },
         maxMatches: {
           type: 'number',
-          description: 'Maximum matches per file (default: 5)'
+          description: 'Max matches'
         }
       },
-      required: ['pattern']
+      required: []
     }
   },
   {
@@ -302,7 +284,7 @@ const FILESYSTEM_TOOLS = [
       properties: {
         path: {
           type: 'string',
-          description: 'Path to get information about'
+          description: 'File'
         }
       },
       required: ['path']
