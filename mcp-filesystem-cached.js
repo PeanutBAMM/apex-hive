@@ -133,10 +133,13 @@ const FILESYSTEM_TOOLS = [
         path: {
           type: 'string',
           description: 'File'
+        },
+        content: {
+          type: 'string',
+          description: 'Data'
         }
       },
-      required: ['path'],
-      additionalProperties: true
+      required: ['path', 'content']
     }
   },
   {
@@ -148,10 +151,25 @@ const FILESYSTEM_TOOLS = [
         path: {
           type: 'string',
           description: 'File'
+        },
+        edits: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              oldText: { type: 'string' },
+              newText: { type: 'string' }
+            },
+            required: ['oldText', 'newText']
+          },
+          description: 'Edits'
+        },
+        dryRun: {
+          type: 'boolean',
+          description: 'Preview'
         }
       },
-      required: ['path'],
-      additionalProperties: true
+      required: ['path', 'edits']
     }
   },
   {
