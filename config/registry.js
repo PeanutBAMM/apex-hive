@@ -76,11 +76,13 @@ export default {
   "fix-detected": "./scripts/fix-detected.js",
   report: "./scripts/report-status.js",
 
-  // Cache Scripts (8)
+  // Cache Scripts (10)
   "cache:warm-readmes": "./scripts/cache-warm-readmes.js",
   "cache:warm-docs": "./scripts/cache-warm-docs.js",
   "cache:warm-conversations": "./scripts/cache-warm-conversations.js",
   "cache:warm-scripts": "./scripts/cache-warm-scripts.js",
+  "cache:warm-js": "./scripts/cache-warm-js.js",
+  "cache:warm-all-docs": "./scripts/cache-warm-all-docs.js",
   "cache:warm-all": "./scripts/cache-warm-all.js",
   "cache:clear": "./scripts/cache-clear.js",
   "cache:status": "./scripts/cache-status.js",
