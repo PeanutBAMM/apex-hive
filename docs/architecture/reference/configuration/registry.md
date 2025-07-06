@@ -3,7 +3,7 @@
 **File**: `config/registry.js`
 **Language**: javascript
 **Lines**: 98
-**Last Modified**: 2025-07-04T17:00:51.094Z
+**Last Modified**: 2025-07-06T10:02:22.306Z
 
 ## Source Code
 

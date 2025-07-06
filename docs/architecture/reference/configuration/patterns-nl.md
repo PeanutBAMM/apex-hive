@@ -3,7 +3,7 @@
 **File**: `config/patterns-nl.js`
 **Language**: javascript
 **Lines**: 118
-**Last Modified**: 2025-07-04T17:00:51.061Z
+**Last Modified**: 2025-07-06T10:02:22.261Z
 
 ## Source Code
 

@@ -6,14 +6,22 @@ System architecture and design
 
 ```
 ├── components
-│   └── modules-backlog-parser.md
+│   ├── index.md
+│   ├── modules-backlog-parser.md
+│   └── output-formatter.md
 ├── design
+│   ├── apex-router.md
 │   ├── architecture.md
-│   └── mcp-integration.md
+│   ├── mcp-integration.md
+│   ├── mcp-server.md
+│   ├── mcp-shared-cache-performance.md
+│   └── MCP-TROUBLESHOOTING.md
 ├── features
 │   ├── backlog-system.md
 │   ├── conversation-memory.md
+│   ├── generate-claude-md.md
 │   ├── natural-language.md
+│   ├── prepare-release.md
 │   └── unified-cache-system-complete.md
 └── reference
     ├── api
@@ -28,22 +36,15 @@ System architecture and design
     ├── commands
     │   └── recipes.md
     └── configuration
-        ├── apex-router.md
-        ├── generate-claude-md.md
-        ├── index.md
         ├── jest.config.md
-        ├── mcp-server.md
-        ├── output-formatter.md
         ├── patterns-nl.md
         ├── patterns.md
-        ├── prepare-release.md
-        ├── registry.md
-        └── test-performance-runner.md
+        └── registry.md
 ```
 
 ## Overview
 
-- Total documents: 27
+- Total documents: 32
 - Subfolders: 4
 
 ## Navigation

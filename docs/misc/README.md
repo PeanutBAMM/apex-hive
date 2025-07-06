@@ -10,7 +10,8 @@ Other documentation
 │   ├── cache-test-plan-complete.md
 │   ├── cache-test-results.md
 │   ├── link-validation-report.md
-│   └── missing-docs-report.md
+│   ├── missing-docs-report.md
+│   └── ROLLBACK-REPORT-2025-01-06.md
 ├── doc-generate-missing-analysis.md
 └── setup.md
 ```
@@ -22,7 +23,7 @@ Other documentation
 
 ## Overview
 
-- Total documents: 7
+- Total documents: 8
 - Subfolders: 1
 
 ## Navigation

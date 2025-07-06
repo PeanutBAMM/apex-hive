@@ -105,7 +105,7 @@ Script documentation
 
 ## Overview
 
-- Total documents: 100
+- Total documents: 86
 - Subfolders: 10
 
 ## Navigation
