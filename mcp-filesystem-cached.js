@@ -241,7 +241,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
 function formatResponse(content, displaySummary) {
   // MCP doesn't support _display, so we return the summary as the main content
   // when MCP_MINIMAL_OUTPUT is set
-  if (process.env.MCP_MINIMAL_OUTPUT === 'true' && displaySummary) {
+  // Default to minimal output unless explicitly disabled
+  if (process.env.MCP_MINIMAL_OUTPUT !== 'false' && displaySummary) {
     return {
       content: [{
         type: 'text',
