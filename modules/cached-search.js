@@ -115,11 +115,11 @@ export async function searchOnDisk(pattern, excludePaths = [], options = {}) {
       const excludeArgs = excludePaths.map(p => `--glob '!${p}'`).join(' ');
       const cmd = `rg ${flags} "${pattern}" ${searchPath} --json ${excludeArgs}`;
       
-      // Debug: log the command for analysis
-      console.log(`[DEBUG] Ripgrep command: ${cmd}`);
-      console.log(`[DEBUG] Excluding ${excludePaths.length} paths`);
+      // Debug: log exclusion info
       if (excludePaths.length > 0) {
-        console.log(`[DEBUG] Sample excludes: ${excludePaths.slice(0, 3).join(', ')}`);
+        console.log(`[RIPGREP DEBUG] Excluding ${excludePaths.length} paths`);
+        console.log(`[RIPGREP DEBUG] Sample excludes: ${excludePaths.slice(0, 3).join(', ')}`);
+        console.log(`[RIPGREP DEBUG] Command: ${cmd}`);
       }
       
       const output = execSync(cmd, { encoding: 'utf8' });
@@ -188,14 +188,18 @@ export async function cachedSearch(pattern, options = {}) {
   
   // Step 2: Search non-cached files (limited to save tokens)
   if (includeNonCached) {
-    // Normalize cached paths to relative format for exclusion
+    // Convert cache paths to relative format for proper ripgrep exclusion
     const cachedPaths = cacheResults.results.map(r => {
       const filePath = r.file;
-      // Convert absolute paths to relative
+      // Convert absolute paths to relative for ripgrep compatibility
       if (filePath.includes('/apex-hive/')) {
-        return './' + filePath.split('/apex-hive/')[1];
+        // Ripgrep glob patterns work without ./ prefix
+        return filePath.split('/apex-hive/')[1];
       }
-      // Already relative paths stay as-is
+      // Convert ./path to path (remove ./ prefix)
+      if (filePath.startsWith('./')) {
+        return filePath.substring(2);
+      }
       return filePath;
     });
     
