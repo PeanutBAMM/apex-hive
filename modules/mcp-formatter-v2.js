@@ -105,12 +105,21 @@ function countLines(content) {
 }
 
 /**
- * Create status line
+ * Create compact status line with performance info inline
  */
-function createStatusLine(success, details) {
+function createStatusLine(success, details, performance = null) {
   const icon = success ? '✅' : '❌';
   const colorFn = success ? COLORS.green : COLORS.red;
-  return color(`${icon} ${details}`, colorFn);
+  const perfText = performance ? ` • ${performance}` : '';
+  return color(`${icon} ${details}${perfText}`, colorFn);
+}
+
+/**
+ * Create compact one-line summary for operations
+ */
+function createCompactSummary(operation, details, performance = null) {
+  const perfText = performance ? ` • ${performance}` : '';
+  return `${color('✅', COLORS.green)} ${operation}${perfText} • ${color(details, COLORS.cyan)}`;
 }
 
 /**
@@ -123,13 +132,15 @@ export function formatReadOperation(path, content, stats = {}) {
   const time = stats.time || 0;
   const cached = stats.cached ? ' • cached ⚡' : '';
   
+  // Compact one-line summary
+  const summary = createCompactSummary(
+    'File read',
+    `${pathInfo.filename}`,
+    `${lines} lines • ${size} • ${time}ms${cached}`
+  );
+  
   const output = [
-    // Header
-    color(`📖 Reading ${pathInfo.filename}`, COLORS.bold),
-    color(createLine(50), COLORS.dim),
-    
-    // Status
-    createStatusLine(true, `${lines} lines • ${size} • ${time}ms${cached}`),
+    summary,
     
     // Path info (if needed)
     pathInfo.shortDir ? color(`📍 ${pathInfo.shortDir}`, COLORS.cyan, COLORS.dim) : '',
@@ -153,20 +164,23 @@ export function formatWriteOperation(path, content, stats = {}) {
   // Analyze content type
   const contentType = detectContentType(path, content);
   
+  // Compact one-line summary
+  const summary = createCompactSummary(
+    'Created new file',
+    `${pathInfo.filename}`,
+    `${lines} lines • ${size} • ${time}ms`
+  );
+  
+  // Optional type info (only if interesting features)
+  const typeInfo = contentType.features.length > 0 
+    ? [`${color('Type:', COLORS.dim)} ${color(contentType.name, COLORS.cyan)}`,
+       ...contentType.features.slice(0, 2).map(f => color(`• ${f}`, COLORS.gray))]
+    : [];
+  
   const output = [
-    // Header
-    color('💾 Created new file', COLORS.bold),
-    color(createLine(50), COLORS.dim),
-    
-    // File info
-    color(`📄 ${pathInfo.filename}`, COLORS.cyan),
-    createStatusLine(true, `${lines} lines • ${size} • ${time}ms`),
-    '',
-    
-    // Content type
-    color('Type: ' + contentType.name, COLORS.bold),
-    ...contentType.features.map(f => color(`• ${f}`, COLORS.gray))
-  ].join('\n');
+    summary,
+    ...typeInfo
+  ].filter(line => line !== '').join('\n');
   
   return output;
 }
@@ -182,20 +196,27 @@ export function formatEditOperation(path, edits, stats = {}) {
   // Create change box
   const changeBox = createChangeBox(edits);
   
+  // Compact one-line summary
+  const summary = createCompactSummary(
+    'File updated',
+    `${pathInfo.filename}`,
+    `${changeCount} changes • ${time}ms`
+  );
+  
+  // Show first few changes in compact format
+  const compactChanges = edits.slice(0, 3).map(edit => {
+    const line = edit.line || '?';
+    const preview = edit.newText.substring(0, 30) + (edit.newText.length > 30 ? '...' : '');
+    return `${color('Line', COLORS.dim)} ${color(line, COLORS.yellow)}: \"${preview}\"`;
+  });
+  
+  const moreChanges = edits.length > 3 ? [`${color(`... and ${edits.length - 3} more changes`, COLORS.dim)}`] : [];
+  
   const output = [
-    // Header
-    color('✏️ File updated successfully', COLORS.bold),
-    color(createLine(50), COLORS.dim),
-    
-    // File info
-    color(`📄 ${pathInfo.filename}`, COLORS.cyan),
-    createStatusLine(true, `${changeCount} changes applied • ${time}ms`),
-    '',
-    
-    // Changes
-    color('Changes made:', COLORS.bold),
-    changeBox
-  ].join('\n');
+    summary,
+    ...compactChanges,
+    ...moreChanges
+  ].filter(line => line !== '').join('\n');
   
   return output;
 }
@@ -216,29 +237,31 @@ export function formatListOperation(path, entries, stats = {}) {
   const filesShown = files.slice(0, maxShow);
   const dirsShown = dirs.slice(0, maxShow);
   
-  const output = [
-    // Header
-    color('📁 Directory Contents', COLORS.bold),
-    color(createLine(50), COLORS.dim),
-    
-    // Path
-    color(`📍 ${pathInfo.full}`, COLORS.cyan),
-    createStatusLine(true, `${files.length} files • ${dirs.length} directories • ${time}ms`),
-    '',
-    
-    // Files section
-    files.length > 0 ? color('Files:', COLORS.bold) : '',
+  // Compact one-line summary
+  const summary = createCompactSummary(
+    'Directory contents',
+    `${pathInfo.shortDir || pathInfo.filename}`,
+    `${files.length} files, ${dirs.length} dirs • ${time}ms`
+  );
+  
+  // Show first few items in compact format
+  // maxShow already defined above
+  const items = [
     ...filesShown.map(f => {
       const sizeStr = f.size !== undefined ? ` ${color(`(${formatSize(f.size)})`, COLORS.gray)}` : '';
       return `  📄 ${color(f.name, COLORS.white)}${sizeStr}`;
     }),
-    files.length > maxShow ? color(`  ... and ${files.length - maxShow} more files`, COLORS.dim) : '',
+    ...dirsShown.map(d => `  📁 ${color(d.name + '/', COLORS.blue)}`)
+  ];
+  
+  const totalHidden = (files.length - filesShown.length) + (dirs.length - dirsShown.length);
+  const moreItems = totalHidden > 0 ? [`${color(`  ... and ${totalHidden} more items`, COLORS.dim)}`] : [];
+  
+  const output = [
+    summary,
     '',
-    
-    // Dirs section  
-    dirs.length > 0 ? color('Directories:', COLORS.bold) : '',
-    ...dirsShown.map(d => `  📁 ${color(d.name + '/', COLORS.blue)}`),
-    dirs.length > maxShow ? color(`  ... and ${dirs.length - maxShow} more directories`, COLORS.dim) : ''
+    ...items,
+    ...moreItems
   ].filter(line => line !== '').join('\n');
   
   return output;
@@ -261,15 +284,16 @@ export function formatSearchOperation(pattern, basePath, results, stats = {}) {
     statusMsg += ` • ${color(`cache: ${cacheHits}`, COLORS.green)} / ${color(`disk: ${diskHits}`, COLORS.yellow)}`;
   }
   
+  // Ultra compact one-line header
+  const emoji = results.length > 0 ? '✅' : '❌';
+  const summary = createCompactSummary(
+    `${results.length} matches found`,
+    `"${pattern}"`,
+    `${time}ms • ${color(`cache: ${cacheHits}`, COLORS.green)} / ${color(`disk: ${diskHits}`, COLORS.yellow)}`
+  );
+  
   const output = [
-    // Header
-    color(`🔍 ${isGrep ? 'Grep' : 'Search'} Results for "${pattern}"`, COLORS.bold),
-    color(createLine(50), COLORS.dim),
-    
-    // Status
-    color(`📍 ${basePath}`, COLORS.cyan),
-    createStatusLine(results.length > 0, statusMsg),
-    '',
+    summary,
     
     // Results
     ...shown.map(result => {
@@ -303,18 +327,15 @@ export function formatBatchReadOperation(paths, results, errors, stats = {}) {
   const total = paths.length;
   const truncated = stats.truncated || 0;
   
+  // Compact one-line summary
+  const summary = createCompactSummary(
+    'Files read',
+    `${successful}/${total} files`,
+    `${time}ms${truncated > 0 ? ` • ${truncated} truncated` : ''}`
+  );
+  
   const output = [
-    // Header
-    color('📚 Reading Multiple Files', COLORS.bold),
-    color(createLine(50), COLORS.dim),
-    
-    // Status
-    createStatusLine(failed === 0, `${successful}/${total} files read • ${time}ms`),
-    truncated > 0 ? color(`⚠️  ${truncated} files truncated to limit`, COLORS.yellow) : '',
-    '',
-    
-    // File summaries
-    color('Files read:', COLORS.bold),
+    summary,
     ...Object.entries(results).slice(0, 10).map(([path, content]) => {
       const pathInfo = formatPath(path);
       const lines = countLines(content);
@@ -342,18 +363,15 @@ export function formatInfoOperation(path, info, stats = {}) {
   const pathInfo = formatPath(path);
   const time = stats.time || 0;
   
+  // Compact one-line summary
+  const summary = createCompactSummary(
+    'File info',
+    `${pathInfo.filename}`,
+    `${time}ms • ${info.type} • ${info.size}`
+  );
+  
   const output = [
-    // Header
-    color('ℹ️  File Information', COLORS.bold),
-    color(createLine(50), COLORS.dim),
-    
-    // File
-    color(`📄 ${pathInfo.filename}`, COLORS.cyan),
-    color(`📍 ${pathInfo.full}`, COLORS.gray, COLORS.dim),
-    '',
-    
-    // Details
-    color('Details:', COLORS.bold),
+    summary,
     `  Type: ${info.type}`,
     `  Size: ${formatSize(info.size)}`,
     `  Modified: ${new Date(info.modified).toLocaleString()}`,
@@ -369,20 +387,16 @@ export function formatInfoOperation(path, info, stats = {}) {
 export function formatError(operation, error, path) {
   const pathInfo = formatPath(path);
   
+  // Compact one-line error
+  const summary = createCompactSummary(
+    `${operation} failed`,
+    path ? pathInfo.filename : '',
+    error.message,
+    COLORS.red
+  );
+  
   const output = [
-    // Header
-    color(`❌ ${operation} failed`, COLORS.bold, COLORS.red),
-    color(createLine(50), COLORS.dim),
-    
-    // File (if applicable)
-    path ? color(`📄 ${pathInfo.filename}`, COLORS.cyan) : '',
-    
-    // Error
-    color('Error: ' + error.message, COLORS.red),
-    
-    // Help text
-    '',
-    color('💡 Suggestions:', COLORS.yellow),
+    summary,
     ...getErrorSuggestions(error).map(s => color(`  • ${s}`, COLORS.gray))
   ].filter(line => line !== '').join('\n');
   

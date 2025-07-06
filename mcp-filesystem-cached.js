@@ -7,6 +7,18 @@ import { EventEmitter } from 'events';
 EventEmitter.defaultMaxListeners = 20;
 process.setMaxListeners(20);
 
+// Fix for AbortSignal listeners (MCP SDK uses these extensively)
+if (typeof AbortSignal !== 'undefined') {
+  try {
+    // Increase max listeners for AbortSignal to prevent warnings
+    if (AbortSignal.prototype && typeof AbortSignal.prototype.setMaxListeners === 'function') {
+      AbortSignal.prototype.setMaxListeners(20);
+    }
+  } catch (e) {
+    // Silently ignore if this doesn't work in some environments
+  }
+}
+
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { 
@@ -65,7 +77,7 @@ const server = new Server({
 const FILESYSTEM_TOOLS = [
   {
     name: 'read_file',
-    description: 'Read complete contents of a file',
+    description: 'Read file',
     inputSchema: {
       type: 'object',
       properties: {
@@ -87,7 +99,7 @@ const FILESYSTEM_TOOLS = [
   },
   {
     name: 'read_multiple_files',
-    description: 'Read multiple files simultaneously',
+    description: 'Read multiple files',
     inputSchema: {
       type: 'object',
       properties: {
@@ -114,17 +126,17 @@ const FILESYSTEM_TOOLS = [
   },
   {
     name: 'write_file',
-    description: 'Create new file or overwrite existing',
+    description: 'Write file',
     inputSchema: {
       type: 'object',
       properties: {
         path: {
           type: 'string',
-          description: 'Path to write the file'
+          description: 'File'
         },
         content: {
           type: 'string',
-          description: 'Content to write to the file'
+          description: 'Data'
         }
       },
       required: ['path', 'content']
@@ -132,13 +144,13 @@ const FILESYSTEM_TOOLS = [
   },
   {
     name: 'edit_file',
-    description: 'Make selective edits using advanced pattern matching',
+    description: 'Edit file',
     inputSchema: {
       type: 'object',
       properties: {
         path: {
           type: 'string',
-          description: 'Path to the file to edit'
+          description: 'File'
         },
         edits: {
           type: 'array',
@@ -150,11 +162,11 @@ const FILESYSTEM_TOOLS = [
             },
             required: ['oldText', 'newText']
           },
-          description: 'Array of edit operations'
+          description: 'Edits'
         },
         dryRun: {
           type: 'boolean',
-          description: 'Preview changes without applying them'
+          description: 'Preview'
         }
       },
       required: ['path', 'edits']
@@ -162,7 +174,7 @@ const FILESYSTEM_TOOLS = [
   },
   {
     name: 'create_directory',
-    description: 'Create new directory or ensure it exists',
+    description: 'Create directory',
     inputSchema: {
       type: 'object',
       properties: {
@@ -176,7 +188,7 @@ const FILESYSTEM_TOOLS = [
   },
   {
     name: 'list_directory',
-    description: 'List directory contents with [FILE] or [DIR] prefixes',
+    description: 'List directory',
     inputSchema: {
       type: 'object',
       properties: {
@@ -194,7 +206,7 @@ const FILESYSTEM_TOOLS = [
   },
   {
     name: 'move_file',
-    description: 'Move or rename files and directories',
+    description: 'Move file',
     inputSchema: {
       type: 'object',
       properties: {
@@ -212,7 +224,7 @@ const FILESYSTEM_TOOLS = [
   },
   {
     name: 'search_files',
-    description: 'Recursively search for files/directories by name',
+    description: 'Search files',
     inputSchema: {
       type: 'object',
       properties: {
@@ -235,7 +247,7 @@ const FILESYSTEM_TOOLS = [
   },
   {
     name: 'grep_files',
-    description: 'Search file contents using cache-first approach (super fast)',
+    description: 'Search content',
     inputSchema: {
       type: 'object',
       properties: {
@@ -258,7 +270,7 @@ const FILESYSTEM_TOOLS = [
   },
   {
     name: 'grep_files',
-    description: 'Search file contents using cache-first approach (super fast)',
+    description: 'Search content',
     inputSchema: {
       type: 'object',
       properties: {
@@ -284,7 +296,7 @@ const FILESYSTEM_TOOLS = [
   },
   {
     name: 'get_file_info',
-    description: 'Get detailed file/directory metadata',
+    description: 'File info',
     inputSchema: {
       type: 'object',
       properties: {
@@ -448,8 +460,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           truncated: truncatedFiles.length
         });
         
-        // Build response with formatted content
-        let response = formattedFiles.join('\n\n');
+        // Build response with compact summary at the top
+        let response = summary;
+        
+        // Add file contents after the summary  
+        if (formattedFiles.length > 0) {
+          response += '\n' + formattedFiles.join('\n\n');
+        }
         
         if (truncatedFiles.length > 0) {
           response += '\n\n[Files truncated at ' + limit + ' lines each: ' + truncatedFiles.join(', ') + ']';
@@ -459,7 +476,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           response += '\n\nFailed reads:\n' + failures.join('\n');
         }
         
-        return formatResponse(response, summary, 'read_multiple');
+        return formatResponse(response, null, 'read_multiple');
       }
       
       case 'write_file': {
