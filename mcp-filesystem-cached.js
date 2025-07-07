@@ -25,7 +25,7 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema 
 } from '@modelcontextprotocol/sdk/types.js';
-import { readFile, writeFile, batchRead, cachedFind, cachedGrep } from './modules/file-ops.js';
+import { readFile, writeFile, batchRead, batchWrite, cachedFind, cachedGrep } from './modules/file-ops.js';
 import { promises as fs } from 'fs';
 import path from 'path';
 import {
