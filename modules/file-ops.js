@@ -69,21 +69,27 @@ export async function readFile(filePath, options = {}) {
           }
         } else {
           // Handle both direct content and structured cache data
+          let content;
           if (typeof cached === "string") {
-            return cached;
+            content = cached;
           } else if (cached.content) {
-            return cached.content;
+            content = cached.content;
+          } else {
+            content = cached;
           }
-          return cached;
+          return { content, cached: true };
         }
       } catch (statError) {
         // If we can't stat the file, assume cache is valid
+        let content;
         if (typeof cached === "string") {
-          return cached;
+          content = cached;
         } else if (cached.content) {
-          return cached.content;
+          content = cached.content;
+        } else {
+          content = cached;
         }
-        return cached;
+        return { content, cached: true };
       }
     }
   }
@@ -108,7 +114,7 @@ export async function readFile(filePath, options = {}) {
       }
     }
 
-    return content;
+    return { content, cached: false };
   } catch (error) {
     if (error.code === "ENOENT") {
       throw new Error(`File not found: ${filePath}`);
@@ -297,19 +303,27 @@ export async function deleteFile(filePath) {
 export async function batchRead(filePaths, options = {}) {
   const results = {};
   const errors = {};
+  let cacheHits = 0;
+  let diskReads = 0;
 
   // Process files in parallel for better performance
   await Promise.all(
     filePaths.map(async (filePath) => {
       try {
-        results[filePath] = await readFile(filePath, options);
+        const result = await readFile(filePath, options);
+        results[filePath] = result.content;
+        if (result.cached) {
+          cacheHits++;
+        } else {
+          diskReads++;
+        }
       } catch (error) {
         errors[filePath] = error.message;
       }
     }),
   );
 
-  return { results, errors };
+  return { results, errors, stats: { cacheHits, diskReads } };
 }
 
 /**

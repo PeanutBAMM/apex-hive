@@ -48,7 +48,7 @@ echo ""
 
 # Test 6: Module loading
 echo "6️⃣ Testing module loading..."
-node -e "import('./modules/cache.js').then(() => console.log('✅ PASS: Modules load correctly')).catch(() => console.log('❌ FAIL: Module loading failed'))"
+node -e "import('./modules/unified-cache.js').then(() => console.log('✅ PASS: Modules load correctly')).catch(() => console.log('❌ FAIL: Module loading failed'))"
 echo ""
 
 echo "================================="

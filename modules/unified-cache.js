@@ -50,9 +50,10 @@ export class UnifiedCache {
       const cachePath = this.getCachePath(key);
       const content = await fs.readFile(cachePath, this.encoding);
 
-      // Update access time
+      // Update access time and track successful hit
       meta.lastAccess = Date.now();
       meta.hits = (meta.hits || 0) + 1;
+      meta.attempts = (meta.attempts || 0) + 1;
       await fs.writeFile(metaPath, JSON.stringify(meta, null, 2));
 
       // this._attempts.hits++; // Deprecated - using meta.hits instead
@@ -93,6 +94,7 @@ export class UnifiedCache {
         lastAccess: Date.now(),
         size,
         hits: 0,
+        attempts: 0,
       };
 
       // Write files atomically with unique temp names
@@ -111,6 +113,23 @@ export class UnifiedCache {
     } catch (error) {
       console.error(`[CACHE] Error writing ${key}:`, error.message);
       return false;
+    }
+  }
+
+  async trackAttempt(key) {
+    // Track a cache attempt (miss) by incrementing attempts counter
+    try {
+      const metaPath = this.getMetaPath(key);
+      const metaContent = await fs.readFile(metaPath, "utf8");
+      const meta = JSON.parse(metaContent);
+      
+      // Only track if not expired
+      if (Date.now() <= meta.expires) {
+        meta.attempts = (meta.attempts || 0) + 1;
+        await fs.writeFile(metaPath, JSON.stringify(meta, null, 2));
+      }
+    } catch (error) {
+      // Key doesn't exist in cache, which is fine for a miss
     }
   }
 
@@ -258,6 +277,7 @@ export class UnifiedCache {
                 key: meta.key,
                 size: meta.size,
                 hits: meta.hits || 0,
+                attempts: meta.attempts || 0,
                 age: Date.now() - meta.created,
                 lastAccess: Date.now() - meta.lastAccess,
                 created: meta.created,
@@ -282,13 +302,10 @@ export class UnifiedCache {
       const sortedByHits = active.sort((a, b) => b.hits - a.hits);
       const sortedByAge = [...active].sort((a, b) => a.created - b.created);
 
-      // Calculate hit rate from persistent meta hits
-      // Each cache get attempt either results in a hit (if found and not expired) or miss
-      // The meta.hits tracks successful cache hits per entry
-      // Total attempts = total hits + total misses
-      // We can estimate misses as: initial cache sets (items) + expired items
-      const totalMisses = items + expired.length;
-      const totalAttempts = totalHits + totalMisses;
+      // Calculate hit rate from persistent meta hits and attempts
+      // Each entry tracks both hits (successful cache retrievals) and attempts (all get calls)
+      // Hit rate = total hits / total attempts across all entries
+      const totalAttempts = active.reduce((sum, entry) => sum + (entry.attempts || 0), 0);
       const hitRate = totalAttempts > 0 ? totalHits / totalAttempts : 0;
 
       return {
@@ -297,6 +314,7 @@ export class UnifiedCache {
         entries: sortedByHits.slice(0, 10), // Top 10 by hits
         count: items,
         hitRate: parseFloat(hitRate.toFixed(2)),
+        totalAttempts,
         oldestEntry: sortedByAge[0] || null,
         newestEntry: sortedByAge[sortedByAge.length - 1] || null,
         // Legacy properties for backward compatibility

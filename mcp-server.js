@@ -4,6 +4,8 @@
 console.log = () => {};
 console.error = () => {};
 
+// Note: MaxListenersExceededWarning is handled by global warning-filter.js via NODE_OPTIONS
+
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { 

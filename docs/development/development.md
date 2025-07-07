@@ -447,7 +447,7 @@ node --inspect-brk scripts/my-command.js
 ## 📖 Documentation
 
 When adding features, update:
-1. Command in `docs/architecture/reference/commands/commands-reference.md`
+1. Command in `docs/scripts/core-scripts/commands-reference.md`
 2. Examples in `docs/architecture/features/natural-language.md`
 3. Recipe in `docs/architecture/reference/commands/recipes.md` (if applicable)
 4. This guide for development patterns

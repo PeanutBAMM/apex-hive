@@ -2,10 +2,7 @@
 
 // mcp-filesystem-cached.js - MCP server for filesystem operations with apex-hive cache integration
 
-// Fix MaxListenersExceededWarning for MCP servers
-import { EventEmitter } from 'events';
-EventEmitter.defaultMaxListeners = 20;
-process.setMaxListeners(20);
+// Note: MaxListenersExceededWarning is handled by global warning-filter.js via NODE_OPTIONS
 
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
@@ -13,7 +10,7 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema 
 } from '@modelcontextprotocol/sdk/types.js';
-import { readFile, writeFile, batchRead, cachedFind, cachedGrep } from './modules/file-ops.js';
+import { readFile, writeFile, batchRead, batchWrite, cachedFind, cachedGrep } from './modules/file-ops.js';
 import { promises as fs } from 'fs';
 import path from 'path';
 import {
@@ -23,6 +20,8 @@ import {
   formatListOperation,
   formatSearchOperation,
   formatBatchReadOperation,
+  formatBatchWriteOperation,
+  formatBatchEditOperation,
   formatInfoOperation,
   formatError
 } from './modules/mcp-formatter-v2.js';
@@ -65,21 +64,21 @@ const server = new Server({
 const FILESYSTEM_TOOLS = [
   {
     name: 'read_file',
-    description: 'Read complete contents of a file',
+    description: 'Read file',
     inputSchema: {
       type: 'object',
       properties: {
         path: {
           type: 'string',
-          description: 'Path to the file to read'
+          description: 'File'
         },
         offset: {
           type: 'number',
-          description: 'Line number to start reading from (1-based)'
+          description: 'Start line'
         },
         limit: {
           type: 'number',
-          description: 'Maximum number of lines to read'
+          description: 'Max lines'
         }
       },
       required: ['path']
@@ -87,88 +86,40 @@ const FILESYSTEM_TOOLS = [
   },
   {
     name: 'read_multiple_files',
-    description: 'Read multiple files simultaneously',
+    description: 'Read multiple files',
     inputSchema: {
       type: 'object',
       properties: {
         paths: {
           type: 'array',
           items: { type: 'string' },
-          description: 'Array of file paths to read'
+          description: 'Files'
         },
         offset: {
           type: 'number',
-          description: 'Line number to start reading from (1-based) for all files'
+          description: 'Start line'
         },
         limit: {
           type: 'number',
-          description: 'Maximum number of lines to read per file (default: 50)'
+          description: 'Max lines'
         },
         full: {
           type: 'boolean',
-          description: 'Read full content of all files (overrides limit)'
+          description: 'Full'
         }
       },
       required: ['paths']
     }
   },
   {
-    name: 'write_file',
-    description: 'Create new file or overwrite existing',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        path: {
-          type: 'string',
-          description: 'Path to write the file'
-        },
-        content: {
-          type: 'string',
-          description: 'Content to write to the file'
-        }
-      },
-      required: ['path', 'content']
-    }
-  },
-  {
-    name: 'edit_file',
-    description: 'Make selective edits using advanced pattern matching',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        path: {
-          type: 'string',
-          description: 'Path to the file to edit'
-        },
-        edits: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              oldText: { type: 'string' },
-              newText: { type: 'string' }
-            },
-            required: ['oldText', 'newText']
-          },
-          description: 'Array of edit operations'
-        },
-        dryRun: {
-          type: 'boolean',
-          description: 'Preview changes without applying them'
-        }
-      },
-      required: ['path', 'edits']
-    }
-  },
-  {
     name: 'create_directory',
-    description: 'Create new directory or ensure it exists',
+    description: 'Create directory',
     inputSchema: {
       type: 'object',
       properties: {
         path: {
           type: 'string',
-          description: 'Path of the directory to create'
+          description: 'Dir'
         }
       },
       required: ['path']
@@ -176,17 +127,17 @@ const FILESYSTEM_TOOLS = [
   },
   {
     name: 'list_directory',
-    description: 'List directory contents with [FILE] or [DIR] prefixes',
+    description: 'List directory',
     inputSchema: {
       type: 'object',
       properties: {
         path: {
           type: 'string',
-          description: 'Path of the directory to list'
+          description: 'Dir'
         },
         verbose: {
           type: 'boolean',
-          description: 'Show full listing instead of summary'
+          description: 'Verbose'
         }
       },
       required: ['path']
@@ -194,17 +145,17 @@ const FILESYSTEM_TOOLS = [
   },
   {
     name: 'move_file',
-    description: 'Move or rename files and directories',
+    description: 'Move file',
     inputSchema: {
       type: 'object',
       properties: {
         source: {
           type: 'string',
-          description: 'Source path'
+          description: 'From'
         },
         destination: {
           type: 'string',
-          description: 'Destination path'
+          description: 'To'
         }
       },
       required: ['source', 'destination']
@@ -212,85 +163,85 @@ const FILESYSTEM_TOOLS = [
   },
   {
     name: 'search_files',
-    description: 'Recursively search for files/directories by name',
+    description: 'Search files',
     inputSchema: {
       type: 'object',
       properties: {
         path: {
           type: 'string',
-          description: 'Starting directory for search'
+          description: 'Dir'
         },
         pattern: {
           type: 'string',
-          description: 'Filename pattern (case-insensitive)'
+          description: 'Pattern'
         },
         excludePatterns: {
           type: 'array',
           items: { type: 'string' },
-          description: 'Patterns to exclude from search'
+          description: 'Exclude'
         }
       },
-      required: ['path', 'pattern']
+      required: ['path']
     }
   },
   {
     name: 'grep_files',
-    description: 'Search file contents using cache-first approach (super fast)',
+    description: 'Search content',
     inputSchema: {
       type: 'object',
       properties: {
         path: {
           type: 'string',
-          description: 'Starting directory for search'
+          description: 'Dir'
         },
         pattern: {
           type: 'string',
-          description: 'Search pattern (case-insensitive)'
+          description: 'Pattern'
         },
         excludePatterns: {
           type: 'array',
           items: { type: 'string' },
-          description: 'Patterns to exclude from search'
+          description: 'Exclude'
         }
       },
-      required: ['path', 'pattern']
+      required: ['path']
     }
   },
   {
     name: 'grep_files',
-    description: 'Search file contents using cache-first approach (super fast)',
+    description: 'Search content',
     inputSchema: {
       type: 'object',
       properties: {
         path: {
           type: 'string',
-          description: 'Starting directory for search'
+          description: 'Dir'
         },
         pattern: {
           type: 'string',
-          description: 'Content pattern to search for'
+          description: 'Pattern'
         },
         ignoreCase: {
           type: 'boolean',
-          description: 'Case-insensitive search (default: true)'
+          description: 'Ignore case'
         },
         maxMatches: {
           type: 'number',
-          description: 'Maximum matches per file (default: 5)'
+          description: 'Max matches'
         }
       },
-      required: ['pattern']
+      required: []
     }
   },
   {
     name: 'get_file_info',
-    description: 'Get detailed file/directory metadata',
+    description: 'File info',
     inputSchema: {
       type: 'object',
       properties: {
         path: {
           type: 'string',
-          description: 'Path to get information about'
+          description: 'File'
         }
       },
       required: ['path']
@@ -302,6 +253,50 @@ const FILESYSTEM_TOOLS = [
     inputSchema: {
       type: 'object',
       properties: {}
+    }
+  },
+  {
+    name: 'write_multiple_files',
+    description: 'Write multiple files',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        files: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+          description: 'Object mapping paths to content'
+        }
+      },
+      required: ['files']
+    }
+  },
+  {
+    name: 'edit_multiple_files',
+    description: 'Edit multiple files',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        edits: {
+          type: 'object',
+          additionalProperties: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                oldText: { type: 'string' },
+                newText: { type: 'string' }
+              },
+              required: ['oldText', 'newText']
+            }
+          },
+          description: 'Object mapping paths to edit arrays'
+        },
+        dryRun: {
+          type: 'boolean',
+          description: 'Preview changes'
+        }
+      },
+      required: ['edits']
     }
   }
 ];
@@ -354,13 +349,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const startTime = Date.now();
         
         // Use cached readFile from file-ops
-        const fullContent = await readFile(args.path);
-        
-        // Check if this was a cache hit
-        const lastTime = lastReadTimes.get(args.path) || 0;
-        const timeSinceLastRead = Date.now() - lastTime;
-        const fromCache = timeSinceLastRead < 1000; // If read within 1s, likely cached
-        lastReadTimes.set(args.path, Date.now());
+        const result = await readFile(args.path);
+        const fullContent = result.content;
+        const fromCache = result.cached;
         
         // Apply offset/limit if specified (matching native Read behavior)
         let lines = fullContent.split('\n');
@@ -399,7 +390,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const offset = args.offset || 1;
         
         // Use batchRead for efficient cached reading
-        const { results, errors } = await batchRead(args.paths);
+        const { results, errors, stats } = await batchRead(args.paths);
         
         const formattedFiles = [];
         const failures = [];
@@ -444,12 +435,18 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         // Create formatted output
         const summary = formatBatchReadOperation(args.paths, results, errors, {
           time: batchTime,
-          cached: cacheStats,
+          cacheHits: stats.cacheHits,
+          diskReads: stats.diskReads,
           truncated: truncatedFiles.length
         });
         
-        // Build response with formatted content
-        let response = formattedFiles.join('\n\n');
+        // Build response with compact summary at the top
+        let response = summary;
+        
+        // Add file contents after the summary  
+        if (formattedFiles.length > 0) {
+          response += '\n' + formattedFiles.join('\n\n');
+        }
         
         if (truncatedFiles.length > 0) {
           response += '\n\n[Files truncated at ' + limit + ' lines each: ' + truncatedFiles.join(', ') + ']';
@@ -459,119 +456,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           response += '\n\nFailed reads:\n' + failures.join('\n');
         }
         
-        return formatResponse(response, summary, 'read_multiple');
+        return formatResponse(response, null, 'read_multiple');
       }
       
-      case 'write_file': {
-        const startTime = Date.now();
-        
-        // Use cached writeFile from file-ops
-        await writeFile(args.path, args.content);
-        
-        const writeTime = Date.now() - startTime;
-        
-        // Create formatted output for display
-        const summary = formatWriteOperation(args.path, args.content, {
-          time: writeTime
-        });
-        
-        // Return format matching native Write tool
-        const nativeFormat = `File created successfully at: ${args.path}`;
-        
-        return formatResponse(nativeFormat, summary, 'write');
-      }
-      
-      case 'edit_file': {
-        const startTime = Date.now();
-        const readStart = Date.now();
-        
-        // Read file using cache
-        let content = await readFile(args.path);
-        const cachedRead = (Date.now() - readStart) < 5; // If <5ms, likely cached
-        
-        let modified = content;
-        const appliedEdits = [];
-        const editLines = [];
-        
-        // Apply edits in sequence
-        for (const edit of args.edits) {
-          // Check if exact text exists
-          if (modified.includes(edit.oldText)) {
-            // Find line numbers where changes occur
-            const lines = modified.split('\n');
-            const lineNum = lines.findIndex(line => line.includes(edit.oldText)) + 1;
-            editLines.push(lineNum);
-            
-            // Replace all occurrences
-            const regex = new RegExp(edit.oldText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
-            const matches = modified.match(regex);
-            const count = matches ? matches.length : 0;
-            
-            modified = modified.replace(regex, edit.newText);
-            appliedEdits.push({
-              oldText: edit.oldText,
-              newText: edit.newText,
-              count,
-              line: lineNum
-            });
-          } else {
-            // Try to find similar text for better error message
-            const lines = modified.split('\n');
-            const lineWithSimilar = lines.findIndex(line => 
-              line.includes(edit.oldText.trim()) || 
-              line.includes(edit.oldText.substring(0, 20))
-            );
-            
-            if (lineWithSimilar >= 0) {
-              throw new Error(
-                `Could not find exact text to replace.\n` +
-                `Looking for: "${edit.oldText}"\n` +
-                `Similar text found on line ${lineWithSimilar + 1}: "${lines[lineWithSimilar].trim()}"`
-              );
-            } else {
-              throw new Error(`Could not find text to replace: "${edit.oldText.substring(0, 50)}..."`);
-            }
-          }
-        }
-        
-        const editTime = Date.now() - startTime;
-        
-        if (args.dryRun) {
-          // Create preview summary
-          const summary = formatEditOperation(args.path, appliedEdits, {
-            time: editTime,
-            cachedRead,
-            lines: editLines,
-            dryRun: true
-          });
-          
-          const dryRunResponse = `Dry run - changes that would be made:\n${appliedEdits.map(e => `• ${e.oldText} → ${e.newText}`).join('\n')}\n\nResulting file:\n${modified}`;
-          
-          return formatResponse(dryRunResponse, summary, 'edit');
-        }
-        
-        // Write using cache (invalidates cache for this file)
-        await writeFile(args.path, modified);
-        
-        // Create formatted output for display
-        const summary = formatEditOperation(args.path, appliedEdits, {
-          time: editTime,
-          cachedRead,
-          lines: editLines
-        });
-        
-        // Show snippet around the edit for Claude (matching native format)
-        const lines = modified.split('\n');
-        const snippetStart = Math.max(0, Math.min(...editLines) - 3);
-        const snippetEnd = Math.min(lines.length, Math.max(...editLines) + 2);
-        const snippet = lines.slice(snippetStart, snippetEnd).map((line, i) => {
-          return `${(snippetStart + i + 1).toString().padStart(5)}→${line}`;
-        }).join('\n');
-        
-        const nativeFormat = `The file ${args.path} has been updated. Here's the result of running \`cat -n\` on a snippet of the edited file:\n${snippet}`;
-        
-        return formatResponse(nativeFormat, summary, 'write');
-      }
       
       case 'create_directory': {
         const startTime = Date.now();
@@ -733,6 +620,84 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const nativeFormat = JSON.stringify(dirs, null, 2);
         
         return formatResponse(nativeFormat, summary, 'list_allowed');
+      }
+      
+      case 'write_multiple_files': {
+        const startTime = Date.now();
+        
+        // Use batchWrite from file-ops for efficient writing
+        const { results, errors } = await batchWrite(args.files);
+        const writeTime = Date.now() - startTime;
+        
+        // Format the response
+        const summary = formatBatchWriteOperation(args.files, results, errors, {
+          time: writeTime
+        });
+        
+        // Create native-style response
+        const successCount = results.length;
+        const errorCount = Object.keys(errors).length;
+        const nativeFormat = `Batch write completed: ${successCount} succeeded, ${errorCount} failed`;
+        
+        return formatResponse(nativeFormat, summary, 'batch_write');
+      }
+      
+      case 'edit_multiple_files': {
+        const startTime = Date.now();
+        const results = {};
+        const errors = {};
+        const allEdits = [];
+        
+        // Process each file's edits
+        for (const [filePath, edits] of Object.entries(args.edits)) {
+          try {
+            // Read file using cache
+            let content = await readFile(filePath);
+            let modified = content;
+            const appliedEdits = [];
+            
+            // Apply edits in sequence
+            for (const edit of edits) {
+              if (modified.includes(edit.oldText)) {
+                const regex = new RegExp(edit.oldText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+                modified = modified.replace(regex, edit.newText);
+                appliedEdits.push(edit);
+              } else {
+                throw new Error(`Text not found: "${edit.oldText.substring(0, 50)}..."`);
+              }
+            }
+            
+            // Write back if not dry run
+            if (!args.dryRun) {
+              await writeFile(filePath, modified);
+            }
+            
+            results[filePath] = {
+              editsApplied: appliedEdits.length,
+              content: args.dryRun ? modified : undefined
+            };
+            allEdits.push({ filePath, edits: appliedEdits });
+            
+          } catch (error) {
+            errors[filePath] = error.message;
+          }
+        }
+        
+        const editTime = Date.now() - startTime;
+        
+        // Format the response
+        const summary = formatBatchEditOperation(args.edits, results, errors, {
+          time: editTime,
+          dryRun: args.dryRun
+        });
+        
+        // Create native-style response
+        const successCount = Object.keys(results).length;
+        const errorCount = Object.keys(errors).length;
+        const mode = args.dryRun ? ' (dry run)' : '';
+        const nativeFormat = `Batch edit completed${mode}: ${successCount} files succeeded, ${errorCount} failed`;
+        
+        return formatResponse(nativeFormat, summary, 'batch_edit');
       }
       
       default:

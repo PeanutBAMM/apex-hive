@@ -12,18 +12,20 @@ Other documentation
 │   ├── link-validation-report.md
 │   ├── missing-docs-report.md
 │   └── ROLLBACK-REPORT-2025-01-06.md
+├── cache-first-search-optimization.md
 ├── doc-generate-missing-analysis.md
 └── setup.md
 ```
 
 ## Documents
 
+- [Cache-First Search Optimization](./cache-first-search-optimization.md)
 - [doc:generate-missing Analysis](./doc-generate-missing-analysis.md)
 - [setup.js](./setup.md)
 
 ## Overview
 
-- Total documents: 8
+- Total documents: 9
 - Subfolders: 1
 
 ## Navigation

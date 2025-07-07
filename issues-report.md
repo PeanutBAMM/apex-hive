@@ -1,28 +1,28 @@
 # Issues Report
 
-Generated: 2025-07-06T10:54:49.135Z
+Generated: 2025-07-07T12:09:50.274Z
 
 ## Summary
 
-- Total Issues: 168
+- Total Issues: 107
 - Critical: 0
 - High: 0
-- Medium: 46
-- Low: 122
+- Medium: 57
+- Low: 50
 - Info: 0
 
-## 🟡 MEDIUM (46)
-
-### console-log
-- **Category**: code
-- **File**: generate-claude-md.js:43
-- **Message**: 1 console.log statement found (lines: 43)
-- **Fixable**: Yes - Remove console.log statements
+## 🟡 MEDIUM (57)
 
 ### console-log
 - **Category**: code
 - **File**: install-mcp.js:11
 - **Message**: 6 console.log statements found (lines: 11, 24, 41, 60, 72, 80)
+- **Fixable**: Yes - Remove console.log statements
+
+### console-log
+- **Category**: code
+- **File**: mcp-filesystem-cached.js:38
+- **Message**: 2 console.log statements found (lines: 38, 40)
 - **Fixable**: Yes - Remove console.log statements
 
 ### console-log
@@ -35,6 +35,12 @@ Generated: 2025-07-06T10:54:49.135Z
 - **Category**: code
 - **File**: mcp-server.js:4
 - **Message**: 1 console.log statement found (lines: 4)
+- **Fixable**: Yes - Remove console.log statements
+
+### console-log
+- **Category**: code
+- **File**: modules/cached-search.js:120
+- **Message**: 3 console.log statements found (lines: 120, 121, 122)
 - **Fixable**: Yes - Remove console.log statements
 
 ### console-log
@@ -59,6 +65,30 @@ Generated: 2025-07-06T10:54:49.135Z
 - **Category**: code
 - **File**: scripts/code-stub.js:217
 - **Message**: 7 console.log statements found (lines: 217, 1067, 1345, 1351, 1355, 1361, 1363)
+- **Fixable**: Yes - Remove console.log statements
+
+### console-log
+- **Category**: code
+- **File**: scripts/debug-cache-coverage.js:13
+- **Message**: 34 console.log statements found (lines: 13, 14, 18, 21, 24, 26, 32, 34, 35, 54, 55, 81, 82, 83, 84, 85, 86, 88, 89, 92, 94, 96, 100, 102, 104, 108, 119, 122, 123, 125, 126, 127, 129, 130)
+- **Fixable**: Yes - Remove console.log statements
+
+### console-log
+- **Category**: code
+- **File**: scripts/debug-cache-exclusion.js:12
+- **Message**: 32 console.log statements found (lines: 12, 13, 17, 23, 24, 25, 26, 27, 28, 29, 35, 36, 38, 40, 43, 45, 46, 48, 50, 53, 75, 76, 78, 80, 81, 82, 85, 86, 88, 93, 94, 95)
+- **Fixable**: Yes - Remove console.log statements
+
+### console-log
+- **Category**: code
+- **File**: scripts/debug-cache-keys.js:12
+- **Message**: 45 console.log statements found (lines: 12, 13, 18, 19, 72, 73, 74, 75, 76, 77, 80, 82, 83, 86, 87, 90, 91, 94, 95, 97, 100, 101, 103, 104, 105, 108, 109, 111, 113, 117, 126, 127, 128, 129, 132, 133, 135, 136, 138, 140, 145, 178, 179, 180, 181)
+- **Fixable**: Yes - Remove console.log statements
+
+### console-log
+- **Category**: code
+- **File**: scripts/debug-cache-search-efficiency.js:12
+- **Message**: 32 console.log statements found (lines: 12, 13, 18, 21, 28, 29, 30, 36, 37, 38, 39, 42, 55, 56, 57, 58, 59, 60, 63, 67, 75, 85, 92, 99, 100, 101, 102, 103, 104, 105, 108, 109)
 - **Fixable**: Yes - Remove console.log statements
 
 ### console-log
@@ -135,8 +165,26 @@ Generated: 2025-07-06T10:54:49.135Z
 
 ### console-log
 - **Category**: code
+- **File**: scripts/test-ripgrep-exclusion.js:12
+- **Message**: 21 console.log statements found (lines: 12, 13, 23, 24, 25, 28, 36, 39, 48, 50, 55, 56, 66, 68, 72, 79, 82, 85, 88, 106, 108)
+- **Fixable**: Yes - Remove console.log statements
+
+### console-log
+- **Category**: code
 - **File**: test/setup.js:39
 - **Message**: 2 console.log statements found (lines: 39, 45)
+- **Fixable**: Yes - Remove console.log statements
+
+### console-log
+- **Category**: code
+- **File**: test-mcp-filesystem.js:59
+- **Message**: 55 console.log statements found (lines: 59, 77, 82, 95, 98, 102, 107, 124, 127, 131, 136, 144, 145, 148, 153, 163, 164, 167, 172, 192, 193, 196, 200, 205, 215, 218, 222, 227, 237, 240, 244, 249, 266, 267, 270, 274, 278, 283, 296, 299, 303, 308, 320, 323, 327, 331, 345, 346, 347, 348, 349, 350, 353, 354, 356)
+- **Fixable**: Yes - Remove console.log statements
+
+### console-log
+- **Category**: code
+- **File**: test-mcp-integration.js:50
+- **Message**: 26 console.log statements found (lines: 50, 64, 67, 71, 84, 85, 162, 174, 180, 195, 196, 198, 209, 210, 212, 213, 214, 216, 217, 218, 220, 226, 227, 228, 229, 231)
 - **Fixable**: Yes - Remove console.log statements
 
 ### console-log
@@ -147,7 +195,27 @@ Generated: 2025-07-06T10:54:49.135Z
 
 ### unsafe-regex
 - **Category**: security
-- **File**: modules/file-ops.js:191
+- **File**: mcp-filesystem-cached.js:662
+- **Message**: Dynamic RegExp construction (potential ReDoS)
+
+### unsafe-regex
+- **Category**: security
+- **File**: modules/cached-search.js:28
+- **Message**: Dynamic RegExp construction (potential ReDoS)
+
+### unsafe-regex
+- **Category**: security
+- **File**: modules/cached-search.js:29
+- **Message**: Dynamic RegExp construction (potential ReDoS)
+
+### unsafe-regex
+- **Category**: security
+- **File**: modules/cached-search.js:286
+- **Message**: Dynamic RegExp construction (potential ReDoS)
+
+### unsafe-regex
+- **Category**: security
+- **File**: modules/file-ops.js:198
 - **Message**: Dynamic RegExp construction (potential ReDoS)
 
 ### unsafe-regex
@@ -217,18 +285,13 @@ Generated: 2025-07-06T10:54:49.135Z
 
 ### unsafe-regex
 - **Category**: security
-- **File**: scripts/search.js:250
+- **File**: scripts/search.js:276
 - **Message**: Dynamic RegExp construction (potential ReDoS)
 
 ### unsafe-regex
 - **Category**: security
 - **File**: scripts/version-bump.js:278
 - **Message**: Dynamic RegExp construction (potential ReDoS)
-
-### outdated-dependency
-- **Category**: dependencies
-- **Message**: @modelcontextprotocol/sdk: 1.13.2 → 1.15.0
-- **Fixable**: Yes
 
 ### outdated-dependency
 - **Category**: dependencies
@@ -265,7 +328,7 @@ Generated: 2025-07-06T10:54:49.135Z
 - **File**: scripts/detect-issues.js:560
 - **Message**: Synchronous operation 'mkdirSync' found
 
-## 🔵 LOW (122)
+## 🔵 LOW (50)
 
 ### todo-comment
 - **Category**: code
@@ -507,373 +570,13 @@ Generated: 2025-07-06T10:54:49.135Z
 - **File**: scripts/quality-validate.js:217
 - **Message**: message: "No TODOs found",
 
-### long-function
-- **Category**: code
-- **File**: generate-claude-md.js:106
-- **Message**: Function 'generateClaudeMd' is 51 lines long (max: 50)
-
-### long-function
-- **Category**: code
-- **File**: scripts/doc-generate.js:279
-- **Message**: Function 'anonymous' is 52 lines long (max: 50)
-
-### long-function
-- **Category**: code
-- **File**: scripts/doc-organize.js:385
-- **Message**: Function 'detectScriptType' is 68 lines long (max: 50)
-
 ### outdated-dependency
 - **Category**: dependencies
 - **Message**: jest: 30.0.3 → 30.0.4
 - **Fixable**: Yes
 
-### missing-jsdoc
-- **Category**: documentation
-- **File**: modules/unified-cache.js:306
-- **Message**: 1 function missing JSDoc: formatBytes
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/backlog-analyze.js:6
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/backlog-display.js:5
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/backlog-score.js:5
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/backlog-sync.js:6
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/backlog-table.js:4
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/build.js:12
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/cache-clear.js:10
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/cache-status.js:10
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/cache-warm-all-docs.js:7
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/cache-warm-all.js:9
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/cache-warm-conversations.js:6
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/cache-warm-docs.js:18
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/cache-warm-js.js:7
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/cache-warm-readmes.js:14
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/cache-warm-scripts.js:31
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/changelog-generate.js:5
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/ci-fix.js:5
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/ci-heal.js:4
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/ci-monitor.js:5
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/ci-parse.js:4
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/ci-smart-push.js:4
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/ci-status.js:7
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/ci-watch.js:4
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/code-stub.js:5
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/deploy.js:6
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/detect-issues.js:12
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/doc-check.js:5
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/doc-cleanup-prefixes.js:5
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/doc-cleanup.js:13
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/doc-fix-links.js:6
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/doc-generate-changed.js:13
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/doc-generate-missing.js:7
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/doc-generate.js:12
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/doc-organize.js:6
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/doc-post-merge.js:12
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/doc-search.js:5
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/doc-sync.js:13
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/doc-update-readme.js:5
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/doc-update.js:11
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/doc-validate-links.js:14
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/doc-validate.js:13
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/fix-detected.js:5
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/git-branch.js:4
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/git-commit.js:6
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/git-init.js:7
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/git-pull.js:4
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/git-push-tags.js:4
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/git-push.js:5
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/git-status.js:5
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/git-tag.js:4
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/init-project.js:6
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/quality-check.js:4
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/quality-console-clean.js:11
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/quality-fix-all.js:4
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/quality-fix-versions.js:5
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/quality-format.js:6
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/quality-lint.js:6
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/quality-setup.js:5
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/quality-validate.js:5
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/release.js:5
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/report-status.js:6
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/save-conversation.js:9
-- **Message**: 3 functions missing JSDoc: run, getRecentConversations, extractKeywords
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/search.js:5
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/startup-context.js:290
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/test-runner.js:6
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/test-setup.js:7
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: scripts/version-bump.js:5
-- **Message**: 1 function missing JSDoc: run
-
-### missing-jsdoc
-- **Category**: documentation
-- **File**: test/setup.js:14
-- **Message**: 5 functions missing JSDoc: setupTestCache, cleanupTestCache, delay, generateTestData, mockConsole
-
 ### missing-tests
 - **Category**: testing
 - **File**: multiple
-- **Message**: 89 files missing tests (showing first 10: apex-router.js, config/patterns-nl.js, config/patterns.js, config/registry.js, generate-claude-md.js, index.js, install-mcp.js, jest.config.js, mcp-server-debug.js, mcp-server-fixed.js, and 79 more)
+- **Message**: 100 files missing tests (showing first 10: apex-router.js, config/patterns-nl.js, config/patterns.js, config/registry.js, index.js, install-mcp.js, jest.config.js, mcp-filesystem-cached.js, mcp-server-debug.js, mcp-server-fixed.js, and 90 more)
 

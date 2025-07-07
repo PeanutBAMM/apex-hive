@@ -45,10 +45,10 @@ await check('MCP server file exists', async () => {
   return exists;
 });
 
-await check('All 60 scripts exist', async () => {
+await check('All 70+ scripts exist', async () => {
   const scriptsDir = path.join(__dirname, 'scripts');
   const files = await fs.readdir(scriptsDir);
-  return files.length >= 60;
+  return files.length >= 70;
 });
 
 await check('No stdout pollution', async () => {
@@ -91,13 +91,13 @@ await check('Package.json valid', async () => {
   return pkg.name === 'apex-hive' && pkg.version && pkg.type === 'module';
 });
 
-await check('Registry has 60+ commands', async () => {
+await check('Registry has 70+ commands', async () => {
   const { default: registry } = await import('./config/registry.js');
-  return Object.keys(registry).length >= 60;
+  return Object.keys(registry).length >= 70;
 });
 
 await check('Modules load correctly', async () => {
-  await import('./modules/cache.js');
+  await import('./modules/unified-cache.js');
   await import('./modules/file-ops.js');
   await import('./modules/rag-system.js');
   await import('./modules/git-ops.js');

@@ -9,14 +9,14 @@
 
 ### config
 
-- [registry.js](./registry.md) - 0.2KB
+- [registry.js](config/registry.md) - 0.2KB
 
 ### modules
 
-- [unified-cache.js](./unified-cache.md) - 1.2KB
+- [unified-cache.js](modules/unified-cache.md) - 1.2KB
 
 ### scripts
 
-- [cache-warm-all-docs.js](./cache-warm-all-docs.md) - 0.6KB
-- [cache-warm-js.js](./cache-warm-js.md) - 0.4KB
+- [cache-warm-all-docs.js](scripts/cache-warm-all-docs.md) - 0.6KB
+- [cache-warm-js.js](scripts/cache-warm-js.md) - 0.4KB
 

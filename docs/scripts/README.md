@@ -15,9 +15,11 @@ Script documentation
 ├── cache-scripts
 │   ├── cache-clear.md
 │   ├── cache-status.md
+│   ├── cache-warm-all-docs.md
 │   ├── cache-warm-all.md
 │   ├── cache-warm-conversations.md
 │   ├── cache-warm-docs.md
+│   ├── cache-warm-js.md
 │   ├── cache-warm-readmes.md
 │   ├── cache-warm-scripts.md
 │   └── cache-warm.md
@@ -105,7 +107,7 @@ Script documentation
 
 ## Overview
 
-- Total documents: 86
+- Total documents: 88
 - Subfolders: 10
 
 ## Navigation
