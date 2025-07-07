@@ -433,6 +433,99 @@ export function formatError(operation, error, path) {
 }
 
 /**
+ * Format batch write operation
+ */
+export function formatBatchWriteOperation(files, results, errors, stats = {}) {
+  const time = stats.time || 0;
+  const successCount = results.length;
+  const errorCount = Object.keys(errors).length;
+  const totalCount = Object.keys(files).length;
+  
+  // Compact one-line summary
+  const summary = createCompactSummary(
+    'Batch write',
+    `${successCount}/${totalCount} files`,
+    `${time}ms`
+  );
+  
+  // Show successful writes
+  const successLines = results.slice(0, 5).map(path => {
+    const pathInfo = formatPath(path);
+    const size = formatSize(Buffer.byteLength(files[path] || '', 'utf8'));
+    return `  ✅ ${color(pathInfo.filename, COLORS.green)} ${color(`(${size})`, COLORS.gray)}`;
+  });
+  
+  if (results.length > 5) {
+    successLines.push(color(`  ... and ${results.length - 5} more files`, COLORS.dim));
+  }
+  
+  // Show errors
+  const errorLines = Object.entries(errors).slice(0, 3).map(([path, error]) => {
+    const pathInfo = formatPath(path);
+    return `  ❌ ${color(pathInfo.filename, COLORS.red)}: ${error}`;
+  });
+  
+  if (Object.keys(errors).length > 3) {
+    errorLines.push(color(`  ... and ${Object.keys(errors).length - 3} more errors`, COLORS.dim));
+  }
+  
+  const output = [
+    summary,
+    ...successLines,
+    ...errorLines
+  ].filter(line => line !== '').join('\n');
+  
+  return output;
+}
+
+/**
+ * Format batch edit operation
+ */
+export function formatBatchEditOperation(edits, results, errors, stats = {}) {
+  const time = stats.time || 0;
+  const successCount = Object.keys(results).length;
+  const errorCount = Object.keys(errors).length;
+  const totalCount = Object.keys(edits).length;
+  const mode = stats.dryRun ? ' (preview)' : '';
+  
+  // Compact one-line summary
+  const summary = createCompactSummary(
+    `Batch edit${mode}`,
+    `${successCount}/${totalCount} files`,
+    `${time}ms`
+  );
+  
+  // Show successful edits
+  const successLines = Object.entries(results).slice(0, 5).map(([path, result]) => {
+    const pathInfo = formatPath(path);
+    const editCount = result.editsApplied;
+    return `  ✅ ${color(pathInfo.filename, COLORS.green)} ${color(`(${editCount} edits)`, COLORS.gray)}`;
+  });
+  
+  if (Object.keys(results).length > 5) {
+    successLines.push(color(`  ... and ${Object.keys(results).length - 5} more files`, COLORS.dim));
+  }
+  
+  // Show errors
+  const errorLines = Object.entries(errors).slice(0, 3).map(([path, error]) => {
+    const pathInfo = formatPath(path);
+    return `  ❌ ${color(pathInfo.filename, COLORS.red)}: ${error}`;
+  });
+  
+  if (Object.keys(errors).length > 3) {
+    errorLines.push(color(`  ... and ${Object.keys(errors).length - 3} more errors`, COLORS.dim));
+  }
+  
+  const output = [
+    summary,
+    ...successLines,
+    ...errorLines
+  ].filter(line => line !== '').join('\n');
+  
+  return output;
+}
+
+/**
  * Create a box for changes
  */
 function createChangeBox(edits) {

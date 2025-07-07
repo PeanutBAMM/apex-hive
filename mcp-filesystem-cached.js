@@ -35,6 +35,8 @@ import {
   formatListOperation,
   formatSearchOperation,
   formatBatchReadOperation,
+  formatBatchWriteOperation,
+  formatBatchEditOperation,
   formatInfoOperation,
   formatError
 } from './modules/mcp-formatter-v2.js';
@@ -314,6 +316,50 @@ const FILESYSTEM_TOOLS = [
     inputSchema: {
       type: 'object',
       properties: {}
+    }
+  },
+  {
+    name: 'write_multiple_files',
+    description: 'Write multiple files',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        files: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+          description: 'Object mapping paths to content'
+        }
+      },
+      required: ['files']
+    }
+  },
+  {
+    name: 'edit_multiple_files',
+    description: 'Edit multiple files',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        edits: {
+          type: 'object',
+          additionalProperties: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                oldText: { type: 'string' },
+                newText: { type: 'string' }
+              },
+              required: ['oldText', 'newText']
+            }
+          },
+          description: 'Object mapping paths to edit arrays'
+        },
+        dryRun: {
+          type: 'boolean',
+          description: 'Preview changes'
+        }
+      },
+      required: ['edits']
     }
   }
 ];
@@ -750,6 +796,84 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const nativeFormat = JSON.stringify(dirs, null, 2);
         
         return formatResponse(nativeFormat, summary, 'list_allowed');
+      }
+      
+      case 'write_multiple_files': {
+        const startTime = Date.now();
+        
+        // Use batchWrite from file-ops for efficient writing
+        const { results, errors } = await batchWrite(args.files);
+        const writeTime = Date.now() - startTime;
+        
+        // Format the response
+        const summary = formatBatchWriteOperation(args.files, results, errors, {
+          time: writeTime
+        });
+        
+        // Create native-style response
+        const successCount = results.length;
+        const errorCount = Object.keys(errors).length;
+        const nativeFormat = `Batch write completed: ${successCount} succeeded, ${errorCount} failed`;
+        
+        return formatResponse(nativeFormat, summary, 'batch_write');
+      }
+      
+      case 'edit_multiple_files': {
+        const startTime = Date.now();
+        const results = {};
+        const errors = {};
+        const allEdits = [];
+        
+        // Process each file's edits
+        for (const [filePath, edits] of Object.entries(args.edits)) {
+          try {
+            // Read file using cache
+            let content = await readFile(filePath);
+            let modified = content;
+            const appliedEdits = [];
+            
+            // Apply edits in sequence
+            for (const edit of edits) {
+              if (modified.includes(edit.oldText)) {
+                const regex = new RegExp(edit.oldText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+                modified = modified.replace(regex, edit.newText);
+                appliedEdits.push(edit);
+              } else {
+                throw new Error(`Text not found: "${edit.oldText.substring(0, 50)}..."`);
+              }
+            }
+            
+            // Write back if not dry run
+            if (!args.dryRun) {
+              await writeFile(filePath, modified);
+            }
+            
+            results[filePath] = {
+              editsApplied: appliedEdits.length,
+              content: args.dryRun ? modified : undefined
+            };
+            allEdits.push({ filePath, edits: appliedEdits });
+            
+          } catch (error) {
+            errors[filePath] = error.message;
+          }
+        }
+        
+        const editTime = Date.now() - startTime;
+        
+        // Format the response
+        const summary = formatBatchEditOperation(args.edits, results, errors, {
+          time: editTime,
+          dryRun: args.dryRun
+        });
+        
+        // Create native-style response
+        const successCount = Object.keys(results).length;
+        const errorCount = Object.keys(errors).length;
+        const mode = args.dryRun ? ' (dry run)' : '';
+        const nativeFormat = `Batch edit completed${mode}: ${successCount} files succeeded, ${errorCount} failed`;
+        
+        return formatResponse(nativeFormat, summary, 'batch_edit');
       }
       
       default:
