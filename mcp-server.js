@@ -4,6 +4,25 @@
 console.log = () => {};
 console.error = () => {};
 
+// Fix MaxListenersExceededWarning for MCP servers
+import { EventEmitter } from 'events';
+EventEmitter.defaultMaxListeners = 20;
+process.setMaxListeners(20);
+
+// Proper fix for AbortSignal max listeners
+const originalAbortSignal = globalThis.AbortSignal;
+if (originalAbortSignal) {
+  globalThis.AbortSignal = class extends originalAbortSignal {
+    constructor(...args) {
+      super(...args);
+      // Increase max listeners for this instance
+      if (typeof this.setMaxListeners === 'function') {
+        this.setMaxListeners(50);
+      }
+    }
+  };
+}
+
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { 

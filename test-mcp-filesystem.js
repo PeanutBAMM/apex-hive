@@ -84,7 +84,7 @@ async function runTests() {
       
       // Verify tool names
       const expectedTools = [
-        'read_file', 'read_multiple_files', 'write_file', 'edit_file',
+        'read_file', 'read_multiple_files', 'write_multiple_files', 'edit_multiple_files',
         'create_directory', 'list_directory', 'move_file', 'search_files',
         'get_file_info', 'list_allowed_directories'
       ];
@@ -103,13 +103,15 @@ async function runTests() {
       failed++;
     }
     
-    // Test 2: Write file
-    console.log('\n2️⃣ Testing write_file...');
+    // Test 2: Write multiple files
+    console.log('\n2️⃣ Testing write_multiple_files...');
     const writeReq = createMCPRequest('tools/call', {
-      name: 'write_file',
+      name: 'write_multiple_files',
       arguments: {
-        path: TEST_FILE,
-        content: 'Hello from MCP test!'
+        files: {
+          [TEST_FILE]: 'Hello from MCP test!',
+          [TEST_FILE.replace('.txt', '-2.txt')]: 'Second test file'
+        }
       }
     }, 2);
     const writeResp = await sendRequest(serverProcess, writeReq);
@@ -119,14 +121,14 @@ async function runTests() {
       const content = fileExists ? await fs.readFile(TEST_FILE, 'utf8') : '';
       
       if (content === 'Hello from MCP test!') {
-        console.log('✅ write_file: File written correctly');
+        console.log('✅ write_multiple_files: Files written correctly');
         passed++;
       } else {
-        console.log('❌ write_file: Content mismatch');
+        console.log('❌ write_multiple_files: Content mismatch');
         failed++;
       }
     } else {
-      console.log('❌ write_file failed:', writeResp.error);
+      console.log('❌ write_multiple_files failed:', writeResp.error);
       failed++;
     }
     
@@ -166,19 +168,20 @@ async function runTests() {
       failed++;
     }
     
-    // Test 5: Edit file
-    console.log('\n5️⃣ Testing edit_file...');
+    // Test 5: Edit multiple files
+    console.log('\n5️⃣ Testing edit_multiple_files...');
     const editReq = createMCPRequest('tools/call', {
-      name: 'edit_file',
+      name: 'edit_multiple_files',
       arguments: {
-        path: TEST_FILE,
-        edits: [{
-          oldText: 'Hello',
-          newText: 'Hi'
-        }, {
-          oldText: 'test!',
-          newText: 'cached MCP!'
-        }]
+        edits: {
+          [TEST_FILE]: [{
+            oldText: 'Hello',
+            newText: 'Hi'
+          }, {
+            oldText: 'test!',
+            newText: 'cached MCP!'
+          }]
+        }
       }
     }, 5);
     const editResp = await sendRequest(serverProcess, editReq);
@@ -186,15 +189,15 @@ async function runTests() {
     if (editResp.result && editResp.result.content) {
       const edited = await fs.readFile(TEST_FILE, 'utf8');
       if (edited === 'Hi from MCP cached MCP!') {
-        console.log('✅ edit_file: Edits applied correctly');
+        console.log('✅ edit_multiple_files: Edits applied correctly');
         console.log('   💾 Cache should be invalidated for this file');
         passed++;
       } else {
-        console.log('❌ edit_file: Unexpected content:', edited);
+        console.log('❌ edit_multiple_files: Unexpected content:', edited);
         failed++;
       }
     } else {
-      console.log('❌ edit_file failed');
+      console.log('❌ edit_multiple_files failed');
       failed++;
     }
     

@@ -130,13 +130,14 @@ export function formatReadOperation(path, content, stats = {}) {
   const lines = countLines(content);
   const size = formatSize(Buffer.byteLength(content, 'utf8'));
   const time = stats.time || 0;
-  const cached = stats.cached ? ' • cached ⚡' : '';
+  const cacheHits = stats.cached ? 1 : 0;
+  const diskReads = stats.cached ? 0 : 1;
   
   // Compact one-line summary
   const summary = createCompactSummary(
     'File read',
     `${pathInfo.filename}`,
-    `${lines} lines • ${size} • ${time}ms${cached}`
+    `${time}ms • ${color(`cache: ${cacheHits}`, COLORS.green)} / ${color(`disk: ${diskReads}`, COLORS.yellow)} • ${lines} lines • ${size}`
   );
   
   const output = [
@@ -355,12 +356,14 @@ export function formatBatchReadOperation(paths, results, errors, stats = {}) {
   const failed = Object.keys(errors).length;
   const total = paths.length;
   const truncated = stats.truncated || 0;
+  const cacheHits = stats.cacheHits || 0;
+  const diskReads = stats.diskReads || 0;
   
   // Compact one-line summary
   const summary = createCompactSummary(
     'Files read',
     `${successful}/${total} files`,
-    `${time}ms${truncated > 0 ? ` • ${truncated} truncated` : ''}`
+    `${time}ms • ${color(`cache: ${cacheHits}`, COLORS.green)} / ${color(`disk: ${diskReads}`, COLORS.yellow)}${truncated > 0 ? ` • ${truncated} truncated` : ''}`
   );
   
   const output = [

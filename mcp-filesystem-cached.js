@@ -7,16 +7,18 @@ import { EventEmitter } from 'events';
 EventEmitter.defaultMaxListeners = 20;
 process.setMaxListeners(20);
 
-// Fix for AbortSignal listeners (MCP SDK uses these extensively)
-if (typeof AbortSignal !== 'undefined') {
-  try {
-    // Increase max listeners for AbortSignal to prevent warnings
-    if (AbortSignal.prototype && typeof AbortSignal.prototype.setMaxListeners === 'function') {
-      AbortSignal.prototype.setMaxListeners(20);
+// Proper fix for AbortSignal max listeners
+const originalAbortSignal = globalThis.AbortSignal;
+if (originalAbortSignal) {
+  globalThis.AbortSignal = class extends originalAbortSignal {
+    constructor(...args) {
+      super(...args);
+      // Increase max listeners for this instance
+      if (typeof this.setMaxListeners === 'function') {
+        this.setMaxListeners(50);
+      }
     }
-  } catch (e) {
-    // Silently ignore if this doesn't work in some environments
-  }
+  };
 }
 
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
@@ -124,54 +126,6 @@ const FILESYSTEM_TOOLS = [
         }
       },
       required: ['paths']
-    }
-  },
-  {
-    name: 'write_file',
-    description: 'Write file',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        path: {
-          type: 'string',
-          description: 'File'
-        },
-        content: {
-          type: 'string',
-          description: 'Data'
-        }
-      },
-      required: ['path', 'content']
-    }
-  },
-  {
-    name: 'edit_file',
-    description: 'Edit file',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        path: {
-          type: 'string',
-          description: 'File'
-        },
-        edits: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              oldText: { type: 'string' },
-              newText: { type: 'string' }
-            },
-            required: ['oldText', 'newText']
-          },
-          description: 'Edits'
-        },
-        dryRun: {
-          type: 'boolean',
-          description: 'Preview'
-        }
-      },
-      required: ['path', 'edits']
     }
   },
   {
@@ -412,13 +366,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const startTime = Date.now();
         
         // Use cached readFile from file-ops
-        const fullContent = await readFile(args.path);
-        
-        // Check if this was a cache hit
-        const lastTime = lastReadTimes.get(args.path) || 0;
-        const timeSinceLastRead = Date.now() - lastTime;
-        const fromCache = timeSinceLastRead < 1000; // If read within 1s, likely cached
-        lastReadTimes.set(args.path, Date.now());
+        const result = await readFile(args.path);
+        const fullContent = result.content;
+        const fromCache = result.cached;
         
         // Apply offset/limit if specified (matching native Read behavior)
         let lines = fullContent.split('\n');
@@ -457,7 +407,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const offset = args.offset || 1;
         
         // Use batchRead for efficient cached reading
-        const { results, errors } = await batchRead(args.paths);
+        const { results, errors, stats } = await batchRead(args.paths);
         
         const formattedFiles = [];
         const failures = [];
@@ -502,7 +452,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         // Create formatted output
         const summary = formatBatchReadOperation(args.paths, results, errors, {
           time: batchTime,
-          cached: cacheStats,
+          cacheHits: stats.cacheHits,
+          diskReads: stats.diskReads,
           truncated: truncatedFiles.length
         });
         
@@ -525,116 +476,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         return formatResponse(response, null, 'read_multiple');
       }
       
-      case 'write_file': {
-        const startTime = Date.now();
-        
-        // Use cached writeFile from file-ops
-        await writeFile(args.path, args.content);
-        
-        const writeTime = Date.now() - startTime;
-        
-        // Create formatted output for display
-        const summary = formatWriteOperation(args.path, args.content, {
-          time: writeTime
-        });
-        
-        // Return format matching native Write tool
-        const nativeFormat = `File created successfully at: ${args.path}`;
-        
-        return formatResponse(nativeFormat, summary, 'write');
-      }
-      
-      case 'edit_file': {
-        const startTime = Date.now();
-        const readStart = Date.now();
-        
-        // Read file using cache
-        let content = await readFile(args.path);
-        const cachedRead = (Date.now() - readStart) < 5; // If <5ms, likely cached
-        
-        let modified = content;
-        const appliedEdits = [];
-        const editLines = [];
-        
-        // Apply edits in sequence
-        for (const edit of args.edits) {
-          // Check if exact text exists
-          if (modified.includes(edit.oldText)) {
-            // Find line numbers where changes occur
-            const lines = modified.split('\n');
-            const lineNum = lines.findIndex(line => line.includes(edit.oldText)) + 1;
-            editLines.push(lineNum);
-            
-            // Replace all occurrences
-            const regex = new RegExp(edit.oldText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
-            const matches = modified.match(regex);
-            const count = matches ? matches.length : 0;
-            
-            modified = modified.replace(regex, edit.newText);
-            appliedEdits.push({
-              oldText: edit.oldText,
-              newText: edit.newText,
-              count,
-              line: lineNum
-            });
-          } else {
-            // Try to find similar text for better error message
-            const lines = modified.split('\n');
-            const lineWithSimilar = lines.findIndex(line => 
-              line.includes(edit.oldText.trim()) || 
-              line.includes(edit.oldText.substring(0, 20))
-            );
-            
-            if (lineWithSimilar >= 0) {
-              throw new Error(
-                `Could not find exact text to replace.\n` +
-                `Looking for: "${edit.oldText}"\n` +
-                `Similar text found on line ${lineWithSimilar + 1}: "${lines[lineWithSimilar].trim()}"`
-              );
-            } else {
-              throw new Error(`Could not find text to replace: "${edit.oldText.substring(0, 50)}..."`);
-            }
-          }
-        }
-        
-        const editTime = Date.now() - startTime;
-        
-        if (args.dryRun) {
-          // Create preview summary
-          const summary = formatEditOperation(args.path, appliedEdits, {
-            time: editTime,
-            cachedRead,
-            lines: editLines,
-            dryRun: true
-          });
-          
-          const dryRunResponse = `Dry run - changes that would be made:\n${appliedEdits.map(e => `• ${e.oldText} → ${e.newText}`).join('\n')}\n\nResulting file:\n${modified}`;
-          
-          return formatResponse(dryRunResponse, summary, 'edit');
-        }
-        
-        // Write using cache (invalidates cache for this file)
-        await writeFile(args.path, modified);
-        
-        // Create formatted output for display
-        const summary = formatEditOperation(args.path, appliedEdits, {
-          time: editTime,
-          cachedRead,
-          lines: editLines
-        });
-        
-        // Show snippet around the edit for Claude (matching native format)
-        const lines = modified.split('\n');
-        const snippetStart = Math.max(0, Math.min(...editLines) - 3);
-        const snippetEnd = Math.min(lines.length, Math.max(...editLines) + 2);
-        const snippet = lines.slice(snippetStart, snippetEnd).map((line, i) => {
-          return `${(snippetStart + i + 1).toString().padStart(5)}→${line}`;
-        }).join('\n');
-        
-        const nativeFormat = `The file ${args.path} has been updated. Here's the result of running \`cat -n\` on a snippet of the edited file:\n${snippet}`;
-        
-        return formatResponse(nativeFormat, summary, 'write');
-      }
       
       case 'create_directory': {
         const startTime = Date.now();
