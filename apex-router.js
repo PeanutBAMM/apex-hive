@@ -68,19 +68,16 @@ export default class ApexRouter {
   
   async initializeModules() {
     try {
-      // Import modules
-      const { Cache } = await import('./modules/cache.js');
-      const { readFile, writeFile, listFiles } = await import('./modules/file-ops.js');
+      // Import v2 modules
+      const { fileCache } = await import('./modules/unified-cache.js');
+      const { readFile, writeFile, batchRead, batchWrite } = await import('./modules/file-ops.js');
       const { ragSystem } = await import('./modules/rag-system.js');
       const { gitOps } = await import('./modules/git-ops.js');
       
-      // Initialize cache
-      const cache = new Cache();
-      
-      // Initialize modules
+      // Initialize modules with v2 architecture
       this.modules = {
-        cache,
-        fileOps: { readFile, writeFile, listFiles },
+        cache: fileCache,
+        fileOps: { readFile, writeFile, batchRead, batchWrite },
         rag: ragSystem,
         gitOps: gitOps
       };
