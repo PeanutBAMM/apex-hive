@@ -29,7 +29,7 @@ export default [
   },
   {
     name: "volledige-afsluiting-nl",
-    match: /sluit.*volledig.*af|volledige.*afsluiting|sla.*alles.*op.*en.*sluit.*af|alles.*opslaan/i,
+    match: /sluit.*volledig.*af|volledige.*afsluiting|volledig.*afsluiten|sla.*alles.*op.*en.*sluit.*af|alles.*opslaan/i,
     recipe: "full-close",
   },
   {
